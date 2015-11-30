@@ -4,111 +4,113 @@ import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.winston.Channel;
 
 /**
- * 
+ *
  * @author Tom Parker
- * 
+ *
  */
 public class FdsnChannelConstraint implements FdsnConstraint {
 
-    public final String network;
-    public final String station;
-    public final String channel;
-    public final String location;
+  public final String network;
+  public final String station;
+  public final String channel;
+  public final String location;
 
-    /**
-     * channel constraints submitted through a POST will also have a time
-     * constraint.
-     */
-    private FdsnTimeSimpleConstraint timeConstraint;
+  /**
+   * channel constraints submitted through a POST will also have a time
+   * constraint.
+   */
+  private FdsnTimeSimpleConstraint timeConstraint;
 
-    public FdsnChannelConstraint(String station, String channel, String network, String location) {
+  public FdsnChannelConstraint(final String station, final String channel, final String network,
+      final String location) {
 
-        this.station = stringToString(station, ".*");
-        this.channel = stringToString(channel, ".*");
-        this.network = stringToString(network, ".*");
-        this.location = stringToString(location, ".*");
+    this.station = stringToString(station, ".*");
+    this.channel = stringToString(channel, ".*");
+    this.network = stringToString(network, ".*");
+    this.location = stringToString(location, ".*");
 
-        if (this.station == null)
-            System.out.println("is null");
-        else if (this.station.equals("null"))
-            System.out.println("is text null");
-    }
-    
-    public void setTimeConstraint(FdsnTimeSimpleConstraint c) {
-        timeConstraint = c;
-    }
+    if (this.station == null)
+      System.out.println("is null");
+    else if (this.station.equals("null"))
+      System.out.println("is text null");
+  }
 
-    private String stringToString(String in, String def) {
-        if (in == null)
-            return def;
-        if ("".equals(in))
-            return def;
-        if ("null".equals(in))
-            return def;
+  public void setTimeConstraint(final FdsnTimeSimpleConstraint c) {
+    timeConstraint = c;
+  }
 
-        return in;
-    }
+  private String stringToString(final String in, final String def) {
+    if (in == null)
+      return def;
+    if ("".equals(in))
+      return def;
+    if ("null".equals(in))
+      return def;
 
-    public boolean matches(Channel chan) {
+    return in;
+  }
 
-        if (chan == null)
-            return false;
+  public boolean matches(final Channel chan) {
 
-        String net = chan.network;
-        if (net != null && !net.matches(network))
-            return false;
+    if (chan == null)
+      return false;
 
-        String cha = chan.channel;
-        if (cha != null && !cha.matches(channel))
-            return false;
+    final String net = chan.network;
+    if (net != null && !net.matches(network))
+      return false;
 
-        String sta = chan.station;
-        if (sta != null && !sta.matches(station))
-            return false;
+    final String cha = chan.channel;
+    if (cha != null && !cha.matches(channel))
+      return false;
 
-        String loc = chan.location;
-        if (loc != null && !loc.matches(location))
-            return false;
+    final String sta = chan.station;
+    if (sta != null && !sta.matches(station))
+      return false;
 
-        if (timeConstraint != null)
-            return timeConstraint.matches(chan);
-        
-        return true;
-    }
+    final String loc = chan.location;
+    if (loc != null && !loc.matches(location))
+      return false;
 
-    public boolean matches(TraceBuf buf) {
+    if (timeConstraint != null)
+      return timeConstraint.matches(chan);
 
-        if (buf == null)
-            return false;
+    return true;
+  }
 
-        String net = buf.network();
-        if (net != null && !net.matches(network))
-            return false;
+  public boolean matches(final TraceBuf buf) {
 
-        String cha = buf.channel();
-        if (cha != null && !cha.matches(channel))
-            return false;
+    if (buf == null)
+      return false;
 
-        String sta = buf.station();
-        if (sta != null && !sta.matches(station))
-            return false;
+    final String net = buf.network();
+    if (net != null && !net.matches(network))
+      return false;
 
-        String loc = buf.location();
-        if (loc != null && !loc.matches(location))
-            return false;
+    final String cha = buf.channel();
+    if (cha != null && !cha.matches(channel))
+      return false;
 
-        if (timeConstraint != null)
-            return timeConstraint.matches(buf);
-        
-        return true;        
-    }
+    final String sta = buf.station();
+    if (sta != null && !sta.matches(station))
+      return false;
 
-    public FdsnTimeSimpleConstraint getTimeConstraint() {
-        return timeConstraint;
-    }
-    
-    public String toString() {
-        return "FdsnChannelConstraint: " + station + ":" + channel + ":" + network + ":" + location;
-    }
+    final String loc = buf.location();
+    if (loc != null && !loc.matches(location))
+      return false;
+
+    if (timeConstraint != null)
+      return timeConstraint.matches(buf);
+
+    return true;
+  }
+
+  public FdsnTimeSimpleConstraint getTimeConstraint() {
+    return timeConstraint;
+  }
+
+  @Override
+  public String toString() {
+    return "FdsnChannelConstraint: " + station + ":" + channel + ":" + network + ":" + location;
+  }
 
 }

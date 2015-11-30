@@ -15,80 +15,71 @@ import gov.usgs.volcanoes.winston.server.WWS;
  *
  * @author Dan Cervelli
  */
-public class GetSCNRawCommand extends BaseCommand
-{
-	public GetSCNRawCommand(NetTools nt, WinstonDatabase db, WWS wws)
-	{
-		super(nt, db, wws);
-	}
-	
-	public void doCommand(Object info, SocketChannel channel)
-	{
-		String cmd = (String)info;
+public class GetSCNRawCommand extends BaseCommand {
+  public GetSCNRawCommand(final NetTools nt, final WinstonDatabase db, final WWS wws) {
+    super(nt, db, wws);
+  }
 
-		String[] ss = cmd.split(" ");
-		if (ss.length < 7)
-			return; // malformed command
+  public void doCommand(final Object info, final SocketChannel channel) {
+    final String cmd = (String) info;
 
-		String id = ss[1];
-		String s = ss[2];
-		String c = ss[3];
-		String n = ss[4];
-		double t1 = Double.NaN;
-		double t2 = Double.NaN;
-		try
-		{
-			t1 = Util.ewToJ2K(Double.parseDouble(ss[5]));
-			t1 = timeOrMaxDays(t1);
-			
-			t2 = Util.ewToJ2K(Double.parseDouble(ss[6]));
-			t2 = timeOrMaxDays(t2);
-		}
-		catch (Exception e)
-		{}
+    final String[] ss = cmd.split(" ");
+    if (ss.length < 7)
+      return; // malformed command
 
-		if (id == null || s == null || c == null || n == null || Double.isNaN(t1) || Double.isNaN(t2))
-			return; // malformed command
+    final String id = ss[1];
+    final String s = ss[2];
+    final String c = ss[3];
+    final String n = ss[4];
+    double t1 = Double.NaN;
+    double t2 = Double.NaN;
+    try {
+      t1 = Util.ewToJ2K(Double.parseDouble(ss[5]));
+      t1 = timeOrMaxDays(t1);
 
-		int sid = emulator.getChannelID(s, c, n);
-		if (sid == -1)
-		{
-			sendNoChannelResponse(id, 0, s, c, n, null, channel);
-			return;
-		}
+      t2 = Util.ewToJ2K(Double.parseDouble(ss[6]));
+      t2 = timeOrMaxDays(t2);
+    } catch (final Exception e) {
+    }
 
-		double[] bounds = checkTimes(sid, t1, t2);
-		if (!allowTransaction(bounds))
-		{
-			String error = id + " " + sid + " " + s + " " + c + " " + n + " " + getError(bounds) + "\n";
-			netTools.writeString(error, channel);
-			return;
-		}
+    if (id == null || s == null || c == null || n == null || Double.isNaN(t1) || Double.isNaN(t2))
+      return; // malformed command
 
-		Object[] result = emulator.getWaveServerRaw(s, c, n, t1, t2);
-		int totalBytes = 0;
-		if (result != null)
-		{
-			String hdr = id + " " + (String)result[0] + "\n";
-			int bytes = ((Integer)result[1]).intValue();
-			List<?> items = (List<?>)result[2];
-			ByteBuffer bb = ByteBuffer.allocate(bytes);
-			for (Iterator<?> it = items.iterator(); it.hasNext();)
-			{
-				bb.put((byte[])it.next());
-			}
-			bb.flip();
+    final int sid = emulator.getChannelID(s, c, n);
+    if (sid == -1) {
+      sendNoChannelResponse(id, 0, s, c, n, null, channel);
+      return;
+    }
 
-			netTools.writeString(hdr, channel);
-			totalBytes = netTools.writeByteBuffer(bb, channel);
-		}
-		else
-		{
-			// must be a gap
-			netTools.writeString(id + " " + sid + " " + s + " " + c + " " + n + " FG s4\n", channel);
-		}
-		String scn = s + "_" + c + "_" + n;
-		String time = Util.j2KToDateString(t1) + " - " + Util.j2KToDateString(t2);
-		wws.log(Level.FINER, "GETSCNRAW " + scn + " : " + time + ", " + totalBytes + " bytes.", channel);
-	}
+    final double[] bounds = checkTimes(sid, t1, t2);
+    if (!allowTransaction(bounds)) {
+      final String error =
+          id + " " + sid + " " + s + " " + c + " " + n + " " + getError(bounds) + "\n";
+      netTools.writeString(error, channel);
+      return;
+    }
+
+    final Object[] result = emulator.getWaveServerRaw(s, c, n, t1, t2);
+    int totalBytes = 0;
+    if (result != null) {
+      final String hdr = id + " " + (String) result[0] + "\n";
+      final int bytes = ((Integer) result[1]).intValue();
+      final List<?> items = (List<?>) result[2];
+      final ByteBuffer bb = ByteBuffer.allocate(bytes);
+      for (final Iterator<?> it = items.iterator(); it.hasNext();) {
+        bb.put((byte[]) it.next());
+      }
+      bb.flip();
+
+      netTools.writeString(hdr, channel);
+      totalBytes = netTools.writeByteBuffer(bb, channel);
+    } else {
+      // must be a gap
+      netTools.writeString(id + " " + sid + " " + s + " " + c + " " + n + " FG s4\n", channel);
+    }
+    final String scn = s + "_" + c + "_" + n;
+    final String time = Util.j2KToDateString(t1) + " - " + Util.j2KToDateString(t2);
+    wws.log(Level.FINER, "GETSCNRAW " + scn + " : " + time + ", " + totalBytes + " bytes.",
+        channel);
+  }
 }

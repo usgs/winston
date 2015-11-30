@@ -6,23 +6,25 @@ import gov.usgs.winston.server.WWS;
 import gov.usgs.winston.server.cmd.http.fdsn.command.FdsnWadlCommand;
 
 /**
- * 
+ *
  * @author Tom Parker
- * 
+ *
  */
-public class FdsnEventWadl extends FdsnWadlCommand implements FdsnEventService{
+public class FdsnEventWadl extends FdsnWadlCommand implements FdsnEventService {
 
-    public FdsnEventWadl(NetTools nt, WinstonDatabase db, WWS wws) {
-        super(nt, db, wws);
-        template = "www/fdsnws/event_application.wadl";
-        version = VERSION;
-    }
+  public FdsnEventWadl(final NetTools nt, final WinstonDatabase db, final WWS wws) {
+    super(nt, db, wws);
+    template = "www/fdsnws/event_application.wadl";
+    version = VERSION;
+  }
 
-    public void sendResponse() {
-        sendError(501, "Winston does not support the Event service");
-    }
+  @Override
+  public void sendResponse() {
+    sendError(501, "Winston does not support the Event service");
+  }
 
-    public String getCommand() {
-        return "/fdsnws/event/1/application.wadl";
-    }
+  @Override
+  public String getCommand() {
+    return "/fdsnws/event/1/application.wadl";
+  }
 }

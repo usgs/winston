@@ -6,7 +6,7 @@ import java.util.Map;
 
 /**
  * $Log: not supported by cvs2svn $
- * 
+ *
  * @author Dan Cervelli
  */
 public class GroupNode {

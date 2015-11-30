@@ -13,46 +13,49 @@ import gov.usgs.volcanoes.winston.server.cmd.http.fdsn.FdsnException;
  */
 public class FdsnTimeSimpleConstraint extends FdsnTimeConstraint {
 
-    
-    public final double startTime; // j2ksec
-    public final double endTime; // j2ksec
 
-    public FdsnTimeSimpleConstraint(String startTime, String endTime) throws FdsnException {
-        try {
-            this.startTime = dateStringToDouble(startTime, FAR_IN_PAST);
-            this.endTime = dateStringToDouble(endTime, FAR_IN_FUTURE);
-        } catch (ParseException e) {
-            throw new FdsnException(400, "Can't parse time constraint: " + this);
-        }
+  public final double startTime; // j2ksec
+  public final double endTime; // j2ksec
+
+  public FdsnTimeSimpleConstraint(final String startTime, final String endTime)
+      throws FdsnException {
+    try {
+      this.startTime = dateStringToDouble(startTime, FAR_IN_PAST);
+      this.endTime = dateStringToDouble(endTime, FAR_IN_FUTURE);
+    } catch (final ParseException e) {
+      throw new FdsnException(400, "Can't parse time constraint: " + this);
     }
+  }
 
-    public boolean matches(Channel chan) {
-        double end = chan.getMaxTime();
-        if (end != Double.NaN && chan.getMaxTime() > endTime)
-            return false;
+  public boolean matches(final Channel chan) {
+    final double end = chan.getMaxTime();
+    if (end != Double.NaN && chan.getMaxTime() > endTime)
+      return false;
 
-        double start = chan.getMinTime();
-        if (start != Double.NaN && chan.getMinTime() < startTime)
-            return false;
-        
-        return true;
-    }
-    
-    public boolean matches(TraceBuf buf) {
-        double end = buf.lastSampleTime() + buf.samplingPeriod();
-        if (end > endTime)
-            return false;
+    final double start = chan.getMinTime();
+    if (start != Double.NaN && chan.getMinTime() < startTime)
+      return false;
 
-        double start = buf.firstSampleTime();
-        if (start < startTime)
-            return false;
-        
-        return true;
-    }
+    return true;
+  }
 
-    public String toString() {
-        return "FdsnTimeSimpleConstraint: " + Util.j2KToDateString(startTime) + ":" + Util.j2KToDateString(endTime);
-    }
+  public boolean matches(final TraceBuf buf) {
+    final double end = buf.lastSampleTime() + buf.samplingPeriod();
+    if (end > endTime)
+      return false;
+
+    final double start = buf.firstSampleTime();
+    if (start < startTime)
+      return false;
+
+    return true;
+  }
+
+  @Override
+  public String toString() {
+    return "FdsnTimeSimpleConstraint: " + Util.j2KToDateString(startTime) + ":"
+        + Util.j2KToDateString(endTime);
+  }
 
 
 }

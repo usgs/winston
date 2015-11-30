@@ -54,7 +54,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Constructor from minimal info
-   * 
+   *
    * @param s
    *          sid
    * @param c
@@ -96,7 +96,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Constructor from a ResultSet
-   * 
+   *
    * @param rs
    *          ResultSet
    * @throws SQLException
@@ -145,7 +145,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Constructor from a String
-   * 
+   *
    * @param s
    *          colon-separated string of values defining a Channel
    */
@@ -201,7 +201,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Setter for metadata
-   * 
+   *
    * @param map
    *          Mapping of metadata keys to values
    */
@@ -211,7 +211,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for metadata
-   * 
+   *
    * @return mapping of metadata keys to values
    */
   public Map<String, String> getMetadata() {
@@ -220,7 +220,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Add g to list of groups
-   * 
+   *
    * @param g
    *          group to add
    */
@@ -232,7 +232,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for sid
-   * 
+   *
    * @return sid
    */
   public int getSID() {
@@ -241,7 +241,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for code
-   * 
+   *
    * @return code
    */
   public String getCode() {
@@ -250,7 +250,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for instrument
-   * 
+   *
    * @return instrument
    */
   public Instrument getInstrument() {
@@ -259,7 +259,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for min time
-   * 
+   *
    * @return min time
    */
   public double getMinTime() {
@@ -268,7 +268,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for max time
-   * 
+   *
    * @return max time
    */
   public double getMaxTime() {
@@ -277,7 +277,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for code
-   * 
+   *
    * @return code
    */
   @Override
@@ -287,7 +287,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for groups as a |-separated string
-   * 
+   *
    * @return groups as a string
    */
   public String getGroupString() {
@@ -304,7 +304,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for List of groups
-   * 
+   *
    * @return List of groups
    */
   public List<String> getGroups() {
@@ -313,7 +313,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for metadata as a :-separated string
-   * 
+   *
    * @return metadata as a string
    */
   public String toMetadataString(final int maxDays) {
@@ -327,7 +327,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for PV2 as a :-separated string
-   * 
+   *
    * @return PV2 as a string
    */
   public String toPV2String(final int maxDays) {
@@ -349,7 +349,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for VDX as a :-separated string
-   * 
+   *
    * @return VDX as a string
    */
   public String toVDXString() {
@@ -364,7 +364,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for linearA
-   * 
+   *
    * @return linearA
    */
   public double getLinearA() {
@@ -373,7 +373,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Setter for linearA
-   * 
+   *
    * @param linearA
    */
   public void setLinearA(final double linearA) {
@@ -382,7 +382,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for linearB
-   * 
+   *
    * @return linearB
    */
   public double getLinearB() {
@@ -391,7 +391,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Setter for linearB
-   * 
+   *
    * @param linearB
    */
   public void setLinearB(final double linearB) {
@@ -400,7 +400,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for alias
-   * 
+   *
    * @return alias
    */
   public String getAlias() {
@@ -412,7 +412,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Setter for alias
-   * 
+   *
    * @param alias
    */
   public void setAlias(final String alias) {
@@ -421,7 +421,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for unit
-   * 
+   *
    * @return unit
    */
   public String getUnit() {
@@ -433,7 +433,7 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Setter for unit
-   * 
+   *
    * @param unit
    */
   public void setUnit(final String unit) {

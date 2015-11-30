@@ -21,79 +21,85 @@ import gov.usgs.volcanoes.winston.tools.WinstonToolsRunnablePanel;
 
 public class ImportInstrumentLocations extends WinstonToolsRunnablePanel {
 
-	private static final long serialVersionUID = 1L;
-	private static final String CONFIG_FILE = "Winston.config";
+  private static final long serialVersionUID = 1L;
+  private static final String CONFIG_FILE = "Winston.config";
 
-	private FilePanel fileP;
-	private JButton importB;
-	private JComboBox fileType;
+  private FilePanel fileP;
+  private JButton importB;
+  private JComboBox fileType;
 
-	private enum FileType {
-		DATALESS_SEED("Dataless SEED", new ImportDataless(CONFIG_FILE)), 
-		HYPOINVERSE("Hypoinverse", new ImportHypoinverse(CONFIG_FILE));
+  private enum FileType {
+    DATALESS_SEED("Dataless SEED", new ImportDataless(CONFIG_FILE)), HYPOINVERSE("Hypoinverse",
+        new ImportHypoinverse(CONFIG_FILE));
 
-		public final String text;
-		public final AbstractMetadataImporter importer;
+    public final String text;
+    public final AbstractMetadataImporter importer;
 
-		private FileType(String text, AbstractMetadataImporter importer) {
-			this.text = text;
-			this.importer = importer;
-		}
+    private FileType(final String text, final AbstractMetadataImporter importer) {
+      this.text = text;
+      this.importer = importer;
+    }
 
-		public String toString() {
-			return text;
-		}
-		public AbstractMetadataImporter getImporter() {
-			return importer;
-		}
+    @Override
+    public String toString() {
+      return text;
+    }
 
-	}
+    public AbstractMetadataImporter getImporter() {
+      return importer;
+    }
 
-	public ImportInstrumentLocations() {
-		super("Instrument Locations");
-	}
+  }
 
-	protected void createUI() {
-		this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
-				"Update Instrument Locations"));
+  public ImportInstrumentLocations() {
+    super("Instrument Locations");
+  }
 
-		FormLayout layout = new FormLayout("right:max(40dlu;p), 4dlu, left:p", "");
+  @Override
+  protected void createUI() {
+    this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
+        "Update Instrument Locations"));
 
-		DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-		builder.setDefaultDialogBorder();
+    final FormLayout layout = new FormLayout("right:max(40dlu;p), 4dlu, left:p", "");
 
-		builder.append("Source file", fileP);
-		builder.nextLine();
-		builder.append("File type", fileType);
-		builder.nextLine();
-		builder.appendUnrelatedComponentsGapRow();
-		builder.nextLine();
-		builder.append("", importB);
-		this.add(builder.getPanel(), BorderLayout.CENTER);
-	}
+    final DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+    builder.setDefaultDialogBorder();
 
-	protected void createFields() {
-		fileP = new FilePanel(FilePanel.Type.OPEN);
+    builder.append("Source file", fileP);
+    builder.nextLine();
+    builder.append("File type", fileType);
+    builder.nextLine();
+    builder.appendUnrelatedComponentsGapRow();
+    builder.nextLine();
+    builder.append("", importB);
+    this.add(builder.getPanel(), BorderLayout.CENTER);
+  }
 
-		fileType = new JComboBox(FileType.values());
-		fileType.setSelectedItem(FileType.HYPOINVERSE);;
-		
-		importB = new JButton("import metadata");
-		importB.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				start();
-			}
-		});
+  @Override
+  protected void createFields() {
+    fileP = new FilePanel(FilePanel.Type.OPEN);
 
-	}
+    fileType = new JComboBox(FileType.values());
+    fileType.setSelectedItem(FileType.HYPOINVERSE);;
 
-	protected void go() {
-		AbstractMetadataImporter importer = ((FileType) fileType.getSelectedItem()).getImporter();
-		importer.updateInstruments(fileP.getFileName());
-	}
+    importB = new JButton("import metadata");
+    importB.addActionListener(new ActionListener() {
+      public void actionPerformed(final ActionEvent e) {
+        start();
+      }
+    });
 
-	public boolean needsWinston() {
-		return true;
-	}
+  }
+
+  @Override
+  protected void go() {
+    final AbstractMetadataImporter importer = ((FileType) fileType.getSelectedItem()).getImporter();
+    importer.updateInstruments(fileP.getFileName());
+  }
+
+  @Override
+  public boolean needsWinston() {
+    return true;
+  }
 
 }

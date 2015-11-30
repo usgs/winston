@@ -10,42 +10,41 @@ import javax.swing.JTextField;
 
 public class FilePanel extends JPanel {
 
-	public static enum Type 
-	{
-		OPEN, SAVE
-	}
-	
-	private static final long serialVersionUID = 1L;
-	
-	private JTextField fileF;
-	private JButton fileB;
-	private JFileChooser fc;
+  public static enum Type {
+    OPEN, SAVE
+  }
 
-	public FilePanel(final Type t)
-	{
-		super();
-		
-		fc = new JFileChooser();
-		fileF = new JTextField(15);
-		fileB = new JButton("Browse");
-		fileB.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (t == Type.OPEN)
-					fc.showOpenDialog(FilePanel.this);
-				else
-					fc.showSaveDialog(FilePanel.this);
-				fileF.setText(fc.getSelectedFile().getAbsolutePath());
-				}});
+  private static final long serialVersionUID = 1L;
 
-		add(fileF);
-		add(fileB);
-	}
+  private final JTextField fileF;
+  private final JButton fileB;
+  private final JFileChooser fc;
 
-	public String getFileName() {
-		return fileF.getText();
-	}
-	
-	public void setFileName(String fn) {
-		fileF.setText(fn);
-	}
+  public FilePanel(final Type t) {
+    super();
+
+    fc = new JFileChooser();
+    fileF = new JTextField(15);
+    fileB = new JButton("Browse");
+    fileB.addActionListener(new ActionListener() {
+      public void actionPerformed(final ActionEvent e) {
+        if (t == Type.OPEN)
+          fc.showOpenDialog(FilePanel.this);
+        else
+          fc.showSaveDialog(FilePanel.this);
+        fileF.setText(fc.getSelectedFile().getAbsolutePath());
+      }
+    });
+
+    add(fileF);
+    add(fileB);
+  }
+
+  public String getFileName() {
+    return fileF.getText();
+  }
+
+  public void setFileName(final String fn) {
+    fileF.setText(fn);
+  }
 }
