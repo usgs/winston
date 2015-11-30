@@ -7,13 +7,13 @@
 	<version>1.3.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>Swarm</name>
+	<name>Winston</name>
 	<url>http://volcanoes.usgs.gov/software/winston</url>
 	<description>Winston is a Java-based seismic wave server, which provides data and plots to clients.</description>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<version.template.file>src/main/resources/Version.java.template</version.template.file>
-		<version.file>src/main/java/gov/usgs/volcanoes/swarm/Version.java</version.file>
+		<version.file>src/main/java/gov/usgs/volcanoes/winston/Version.java</version.file>
 	</properties>
 
 	<licenses>
