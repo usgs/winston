@@ -454,6 +454,6 @@ public class Channel implements Comparable<Channel> {
     if (!channel.equals(o.channel))
       return channel.compareTo(o.channel);
 
-    return location.compareTo(location);
+    return location.compareTo(o.location);
   }
 }
