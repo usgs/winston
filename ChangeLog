@@ -1,0 +1,88 @@
+Changes since version 1.2.9 (r3077)
+ -----------------------------
+- RSAM options apply to both plot and data requests
+
+Changes since version 1.2.8 (r3077)
+ -----------------------------
+- updated JavaSeedLite jar
+- fixed menu sorting bug
+- add data export to HTTP RSAM command
+- only update heli table if sampling rate is > 2
+
+ Changes since version 1.2.7 (r2991)
+ -----------------------------
+ - reworked WWS HTTP usage page
+ - corrected bug in tracebuf concatenation code
+ - fix $CLASSPATH in .bat scripts
+ - Add new TTY command to list running commands
+ - ImportSEED allows user to override SCNL
+ - Allow tracing of a WWS connection
+ - flag to force ImportWS to request SCNL from the remote server
+ - Plug command handler leak observed under heavy load
+ 
+ Changes since version 1.2.6 (r2781)
+ -----------------------------
+ - Added support for importing station locations from Hypoinverse station files
+ - fixed decimal comma SQL error
+ - add option to specify MySQL storage engine
+ - Correct handling of local time on RSAM plots
+  
+ Changes since version 1.2.5
+------------------------------
+ - refactor of traceBuf class
+ - add text output option to WWSClient
+ 
+ Changes since version 1.2.4
+ -----------------------------
+ - code cleaup
+ - logging tweaks
+ - fixed bug affecting gaps in sac output
+ - added text file containing example SQL queries
+ - WWSClient uses UTC rather than system time zone
+ 
+ Changes since version 1.2.3
+ -----------------------------
+ - Cleaned up console commands a bit
+ - Made creation of VAlarm views configurable
+ - Corrected rounding error which incorrectly inserted NO_DATA (-2^31) values into continuous data returned by GETWAVERAW.
+ - Corrected formating of `Util -j2e` output.
+ 
+ Changes since version 1.2.2
+ -----------------------------
+ - Rejigger ImportEW logging levels to match usage output
+ - Corrected bug which could cause slow inserts on databases with long retention periods
+ - Removed WinstonMonitor stub
+ 
+  Changes since version 1.2.1
+ -----------------------------
+ - Add optional settings to WWS RSAM plots 
+ 
+  Changes since version 1.1.2 
+ .............................
+ - Add default NTP.config file
+ - Moved scripts into bin/ directory
+ - Moved ImportMetaData to winston.in
+ - Moved ImportSuppdata to winston.in
+ - Removed depreciated classes
+ - Added wildcard matching to db.Admin (Thanks ISTI!)
+ - import station locations with gov.usgs.winston.in.ImportDataless
+ - several new web interface pages
+ - auto-refreshing web interface plots
+ - replaced seed-pdcc with JavaSeedLite to correct issue with data quality flag
+ - added config option limiting age of data that will be returned. Intended to be used when running multiple WWS instances pointing to a single database, each presenting a different retention policy.
+ 
+ 
+ Changes since version 1.1.1
+............................
+ 
+ - added added administrative GUI
+ - several minor bug fixes
+ 
+    
+ Changes since version 1.1
+...........................
+ - added rsam.enable configuration option to ImportEW
+ - added import.exportType configuration option to ImportEW
+ - added winston.StatementCacheCap to Winston.config
+ - fixed small memory leaks
+ - added new view to db schema (today UNION yesterday)

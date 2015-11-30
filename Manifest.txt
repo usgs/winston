@@ -1,0 +1,2 @@
+Manifest-Version: 1.0
+Class-Path: winston-bin.jar colt.jar mysql.jar JavaSeedLite.jar JSAP-2.1.jar commons-collections-3.2.1.jar jgoodies-common-1.8.1.jar jgoodies-looks-2.6.0.jar jgoodies-forms-1.8.0.jar  oscache-2.1-mod2.jar seisFile-1.6.3.jar

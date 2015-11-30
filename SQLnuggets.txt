@@ -1,0 +1,31 @@
+Some SQL queries that may come in handy.
+
++----------------+
+| DB Maintenance  |
++----------------+
+
+Give the winston user database access:
+GRANT ALL ON `W\_%`.* to winstonuser@'localhost' identified by 'winstonpass';
+
+Find channels which are missing their database:
+SELECT code FROM W_ROOT.channels WHERE CONCAT('W_', code) NOT IN (SELECT schema_name FROM information_schema.schemata);
+
+
++--------+
+| Groups |
++--------+
+Create a new top-level channel group called "Networks":
+use W_ROOT;
+INSERT INTO groupnodes (parent, name, open) VALUES (0, 'Networks', 1);
+
+Create a new subgroup of Networks called "Augustine":
+use W_ROOT;
+INSERT INTO groupnodes (parent, name, open) SELECT nid, 'Augustine', 0 from groupnodes WHERE name = 'Networks';
+
+Add all broadband seismic channels at AU22 to the Augustine group:
+use W_ROOT;
+INSERT INTO grouplinks (sid, nid) SELECT channels.sid, groupnodes.nid FROM channels, groupnodes WHERE channels.code like 'AU22$BH%' and groupnodes.name='Augustine';
+
+Remove 3 channels from the Okmok group:
+use W_ROOT;
+DELETE FROM grouplinks WHERE nid IN (SELECT nid FROM groupnodes WHERE name='Okmok') AND sid IN (SELECT sid FROM channels WHERE code IN ('OKIF$ADC$AV', 'OKIF$BDF$AV', 'OKIF$HDF$AV'));

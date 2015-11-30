@@ -1,0 +1,150 @@
+<project name="Winston" default="compile" basedir=".">
+	<description>USGS Winston Build File</description>
+
+	<property name="package" value="gov.usgs.winston" />
+	<property name="version" value="1.2.12" />
+	<property name="jarfile" value="winston.jar" />
+	<property name="classpath" location="../USGS/lib/earthworm.jar;../USGS/lib/math.jar;../USGS/lib/net.jar;../USGS/lib/plot.jar;../USGS/lib/util.jar;../USGS/contrib/colt.jar;../USGS/contrib/JSAP-2.1.jar;../USGS/contrib/commons-collections-3.2.1.jar;../USGS/contrib/rrd4j-2.0.5.jar;../USGS/contrib/jgoodies-forms-1.8.0.jar;../USGS/contrib/jgoodies-looks-2.6.0.jar;../USGS/contrib/jgoodies-common-1.8.1.jar;../USGS/contrib/seisFile-1.6.3.jar;../USGS/contrib/JavaSeedLite.jar" />
+	<property name="source" location="." />
+	<property name="destination" location="./classes" />
+
+	<property name="dist-appdir" value="Winston1.2" />
+	<property name="dist-tempdir" value="./temp" />
+	<property name="dist-basedir" value="./dist" />
+	<property name="dist-jarfile" value="winston.jar" />
+	<property name="dist-jarfile-bin" value="winston-bin.jar" />
+	<property name="classdir" value="classes" />
+
+	<target name="help">
+		<echo>
+Available targets:			
+help    -- displays this help information
+init    -- 
+clean   -- remove the classes directory
+compile -- compile the source
+jar     -- generates new jarfile
+deploy  -- build usgs.jar file
+dist    -- creates a binary distribution
+		</echo>
+	</target>
+
+	<target name="init">
+	</target>
+
+	<target name="clean" description="remove the classes directory">
+		<delete dir="${destination}" />
+		<mkdir dir="${destination}" />
+	</target>
+
+	<target name="compile" depends="clean" description="compile the source">
+		<javac srcdir="${source}" destdir="${destination}" classpath="${classpath}" target="1.6" source="1.6" debug="on" includeantruntime="false" />
+		<ant antfile="${source}/../USGS/buildversion.xml" target="version" dir="${source}/../USGS" inheritAll="true">
+			<property name="package" value="${package}" />
+			<property name="version" value="${version}" />
+			<property name="srcpath" value="${source}" />
+			<property name="destpath" value="${destination}" />
+		</ant>
+	</target>
+
+	<target name="jar" depends="compile" description="generates new jarfile">
+		<mkdir dir="${source}/../USGS/lib" />
+		<jar destfile="${source}/../USGS/lib/${jarfile}" basedir="${destination}">
+			<fileset dir="${source}">
+				<include name="**/**.class" />
+				<include name="www/**" />
+			</fileset>
+		</jar>
+	</target>
+
+	<target name="deploy">
+		<ant target="jar" inheritAll="false" antfile="../USGS/build.xml" />
+	</target>
+
+	<target name="dist" depends="deploy">
+
+		<!-- rebuild the dist dir -->
+		<delete dir="${dist-basedir}" />
+		<mkdir dir="${dist-basedir}" />
+
+		<!-- Create the distribution directory structure -->
+		<mkdir dir="${dist-tempdir}/${dist-appdir}/lib/" />
+		<mkdir dir="${dist-tempdir}/${dist-appdir}/bin/" />
+
+		<!-- Copy the distribution files -->
+		<copy todir="${dist-tempdir}/${dist-appdir}">
+			<fileset dir="${source}">
+				<include name="ImportEW.config" />
+				<include name="ImportWS.config" />
+				<include name="WWS.config" />
+				<include name="Winston.config" />
+				<include name="WinstonMonitor.config" />
+				<include name="NTP.config" />
+				<include name="SQLnuggets.txt" />
+				<include name="my.cnf" />
+				<include name="ChangeLog" />
+			</fileset>
+		</copy>
+
+		<copy todir="${dist-tempdir}/${dist-appdir}/lib">
+			<fileset dir="${source}/../USGS/contrib">
+				<include name="colt.jar" />
+				<include name="mysql.jar" />
+				<include name="JSAP-2.1.jar" />
+				<include name="JavaSeedLite.jar" />
+				<include name="commons-collections-3.2.1.jar" />
+				<include name="jgoodies-common-1.8.1.jar" />
+				<include name="jgoodies-forms-1.8.0.jar" />
+				<include name="jgoodies-looks-2.6.0.jar" />
+				<include name="rrd4j-2.0.5.jar" />
+				<include name="oscache-2.1-mod2.jar" />
+				<include name="seisFile-1.6.3.jar" />
+			</fileset>
+		</copy>
+
+		<copy todir="${dist-tempdir}/${dist-appdir}/bin">
+			<fileset dir="${source}/bin">
+				<include name="**.sh" />
+				<include name="**.bat" />
+			</fileset>
+		</copy>
+
+		<jar destfile="${dist-tempdir}/${dist-appdir}/lib/${dist-jarfile-bin}">
+			<fileset dir="${source}/../Earthworm/${classdir}">
+				<include name="**/**.class" />
+			</fileset>
+			<fileset dir="${source}/../Math/${classdir}">
+				<include name="**/**.class" />
+			</fileset>
+			<fileset dir="${source}/../Net/${classdir}">
+				<include name="**/**.class" />
+			</fileset>
+			<fileset dir="${source}/../Plot/${classdir}">
+				<include name="**/**.class" />
+			</fileset>
+			<fileset dir="${source}/../Util/${classdir}">
+				<include name="**/**.class" />
+			</fileset>
+			<fileset dir="${source}/../VDX/${classdir}">
+				<include name="**/**.class" />
+			</fileset>
+			<fileset dir="${source}/../Winston/${classdir}">
+				<include name="**/**.class" />
+				<include name="../www/**" />
+			</fileset>
+			<fileset dir="${source}">
+				<include name="www/**" />
+			</fileset>
+
+		</jar>
+
+		<jar manifest="Manifest.txt" destfile="${dist-tempdir}/${dist-appdir}/lib/${dist-jarfile}" />
+
+		<tar destfile="${dist-basedir}/winston-${version}.tar.gz" basedir="${dist-tempdir}" compression="gzip" />
+		<zip destfile="${dist-basedir}/winston-${version}.zip" basedir="${dist-tempdir}" />
+
+		<!-- Delete the temporary distribution folder -->
+		<delete dir="${dist-tempdir}" />
+
+	</target>
+
+</project>

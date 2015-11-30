@@ -1,0 +1,8 @@
+<b><big>Winston Time Conversion</big></b><br><br>Winston provides a utility class to convert times between the common time formats used with Winston and Earthworm.<br><br><u><b>Time Formats</b></u><br><b>Standard</b> <br>yyyy-MM-dd HH:mm:ss<br>Human readable output format.<br><br><b>Input</b> <br>yyyyMMddHHmmss<br>Format used in winston configuration files.<br><br><b>J2K</b><br>Decimal seconds past 00:00:00 NZST on 1 Janurary 2000<br>Winston's internal time standard.<br><br><b>EW</b><br>Decimal seconds past 00:00:00 UTC on 1 January 1970<br>Earthworm internal time standard.<br><br>Winston comes with a command line utility to convert between time formats:<br> % java -cp lib/winston.jar gov.usgs.util.Util
+<br>-j2d [j2k]				j2k to date
+<br>-j2e [j2k]              j2k to earthworm
+<br>-d2j [yyyymmddhhmmss]	date to j2k
+<br>-e2d [ewtime]           earthworm to date
+<br>-md5 [string]			md5 of string
+<br>-md5r [resource]        md5 of a resource (filename, url)
+<br>%

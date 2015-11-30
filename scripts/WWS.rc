@@ -1,0 +1,23 @@
+#!/bin/sh
+
+dirs="/usr/local/WinstonAVO /usr/local/WinstonNMI"
+
+case "$1" in
+  start)
+	for dir in $dirs ; do
+		session=`basename $dir`-WWS
+		cmd=${dir}/WWS.sh
+		su - winston -c "/usr/local/bin/screen -dmS ${session} ${cmd}"
+	done
+    ;;
+  stop)
+    ;;
+  *)
+        echo "Usage: $0 {start}"
+        exit 1
+esac
+
+exit 0
+
+
+

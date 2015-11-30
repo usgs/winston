@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<H2>Plot Helicorder</H2>
+<pre>
+java -cp lib/winston.jar gov.usgs.winston.PlotHelicorder
+
+Server/station/time options
+-wws  [host]:[port], the WWS, mandatory argument
+-s    station, mandatory argument
+-e    end time [now], format: 'YYYYMMDDHHMMSS' (GMT) or 'now'
+-m    minutes on x-axis [20]
+-h    hours on y-axis [12]
+-tz   time zone abbreviation [GMT]
+-to   time zone offset, hours [0]
+
+Output options
+-x    total plot x-pixel size [1000]
+-y    total plot y-pixel size [1000]
+-lm   left margin pixels [70]
+-rm   right margin pixels [70]
+-o    output file name [heli.png]
+-c    clip value, a number [auto]
+-b    bar range, a number [auto]
+-r    show clipped trace as red, 0 or 1 [0]
+</pre>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<b><big>Winston Admin</big></b>
+
+<pre>
+% java -cp lib/winston.jar gov.usgs.winston.db.Admin
+Winston Admin
+
+A collection of commands for administering a Winston database.
+
+Information about connecting to the Winston database must be present
+in Winston.config in the current directory.
+
+Usage:
+  java gov.usgs.winston.db.Admin [command] [options]
+
+
+Valid commands:
+  --list                          lists all channels
+  --list times                    lists all channels with time span
+  --delete [channel]              delete the specified channel
+  --span                          recalculate table spans
+  --purge [channel] [days]        purge
+  --repair [YYYY_MM_DD] <channel> repair all tables on given day
+                                  optionally, just repair one channel
+</pre>

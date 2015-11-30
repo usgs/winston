@@ -1,0 +1,15 @@
+<b><big>Export SAC</big></b>
+<br>
+<br>Winston can write data from WWS to a SAC file.
+<br><br>Writing files from several stations is easier with the command line utility.<br><br> 
+<pre>
+% java -cp lib/winston.jar gov.usgs.winston.server.WWSClient --help
+java gov.usgs.winston.server.WWSClient [OPTIONS]
+
+-s [server]		Winston server
+-p [port]		port
+-st [yyyymmddHHmmss]	start time
+-et [yyyymmddHHmmss]	end time
+-c [s$c$n$l]		channel
+-sac			output sac file
+</pre>
