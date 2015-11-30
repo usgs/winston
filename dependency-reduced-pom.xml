@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>gov.usgs.volcanoes</groupId>
   <artifactId>winston</artifactId>
-  <name>Swarm</name>
+  <name>Winston</name>
   <version>1.3.0-SNAPSHOT</version>
   <description>Winston is a Java-based seismic wave server, which provides data and plots to clients.</description>
   <url>http://volcanoes.usgs.gov/software/winston</url>
@@ -56,7 +56,7 @@
   <licenses>
     <license>
       <name>CC0 1.0 Universal</name>
-      <url>http://creativecommons.org/publicdomain/zero/1.0 /&gt;</url>
+      <url>http://creativecommons.org/publicdomain/zero/1.0/</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -362,7 +362,7 @@
   </distributionManagement>
   <properties>
     <version.template.file>src/main/resources/Version.java.template</version.template.file>
-    <version.file>src/main/java/gov/usgs/volcanoes/swarm/Version.java</version.file>
+    <version.file>src/main/java/gov/usgs/volcanoes/winston/Version.java</version.file>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 </project>

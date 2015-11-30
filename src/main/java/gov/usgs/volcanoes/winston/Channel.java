@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
+
 
 /**
  * A class representing one row of the channels table.
@@ -335,8 +336,8 @@ public class Channel implements Comparable<Channel> {
     double max = maxTime;
 
     if (maxDays > 0) {
-      min = Math.max(min, Util.nowJ2K() - (maxDays * ONE_DAY));
-      max = Math.max(max, Util.nowJ2K() - (maxDays * ONE_DAY));
+      min = Math.max(min, J2kSec.now() - (maxDays * ONE_DAY));
+      max = Math.max(max, J2kSec.now() - (maxDays * ONE_DAY));
     }
 
     return String.format("%d:%s:%f:%f:%f:%f", sid, code, minTime, maxTime,
