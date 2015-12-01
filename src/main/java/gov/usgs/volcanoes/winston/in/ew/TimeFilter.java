@@ -1,9 +1,9 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.CurrentTime;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.util.StringUtils;
 
 /**
  * A TraceBuf filter that rejects packets based on the difference between
@@ -31,13 +31,13 @@ public class TimeFilter extends TraceBufFilter {
     if (cf == null)
       return;
 
-    tLessThan = Util.stringToDouble(cf.getString("past"), Double.NaN);
-    tGreaterThan = Util.stringToDouble(cf.getString("future"), Double.NaN);
+    tLessThan = StringUtils.stringToDouble(cf.getString("past"), Double.NaN);
+    tGreaterThan = StringUtils.stringToDouble(cf.getString("future"), Double.NaN);
   }
 
   @Override
   public boolean match(final TraceBuf tb, final Options options) {
-    final double dt = tb.getStartTimeJ2K() - CurrentTime.getInstance().nowJ2K();
+    final double dt = tb.getStartTimeJ2K() - CurrentTime.getInstance().nowJ2k();
     if (!Double.isNaN(tLessThan) && dt < tLessThan)
       return true;
 

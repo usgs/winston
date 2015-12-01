@@ -8,6 +8,11 @@ import com.martiansoftware.jsap.SimpleJSAP;
 import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.UnflaggedOption;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -26,8 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gov.usgs.earthworm.ImportGeneric;
 import gov.usgs.earthworm.MessageListener;
@@ -35,10 +38,11 @@ import gov.usgs.earthworm.message.Message;
 import gov.usgs.earthworm.message.MessageType;
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.util.CodeTimer;
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.CurrentTime;
-import gov.usgs.util.Log;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.winston.db.Admin;
 import gov.usgs.winston.db.Channels;
 import gov.usgs.winston.db.InputEW;
@@ -52,6 +56,8 @@ import gov.usgs.winston.db.WinstonDatabase;
  * @author Tom Parker
  */
 public class ImportEW extends Thread {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImportEW.class);
 
   public static final String DEFAULT_CONFIG_FILENAME = "ImportEW.config";
   public static final String DEFAULT_HOST = "localhost";
@@ -126,7 +132,6 @@ public class ImportEW extends Thread {
   private final Set<String> existingChannels;
   private final Map<String, ConcurrentLinkedQueue<TraceBuf>> channelTraceBufs;
 
-  protected final Logger logger;
   protected String logFile;
   protected int logNumFiles;
   protected int logSize;
@@ -166,7 +171,7 @@ public class ImportEW extends Thread {
   public ImportEW(final String fn) {
     this();
 
-    configFilename = Util.stringToString(fn, DEFAULT_CONFIG_FILENAME);
+    configFilename = StringUtils.stringToString(fn, DEFAULT_CONFIG_FILENAME);
 
     importGeneric = new ImportGeneric() {
       @Override
@@ -174,7 +179,6 @@ public class ImportEW extends Thread {
         handleOutOfMemoryError(e);
       }
     };
-    importGeneric.setLogger(logger);
 
     config = new ConfigFile(configFilename);
 
@@ -190,7 +194,7 @@ public class ImportEW extends Thread {
   public ImportEW() {
     setName("ImportEW");
 
-    importStartTime = CurrentTime.getInstance().nowDate();
+    importStartTime = new Date(CurrentTime.getInstance().now());
     dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     winstonDateFormat = new SimpleDateFormat("yyyy_MM_dd");
@@ -205,9 +209,6 @@ public class ImportEW extends Thread {
     underRepair = Collections.synchronizedSet(new HashSet<String>());
     attemptedRepair = Collections.synchronizedMap(new HashMap<String, Double>());
     existingChannels = Collections.synchronizedSet(new HashSet<String>());
-
-    logger = Log.getLogger("gov.usgs.winston");
-    logger.setLevel(Level.parse(DEFAULT_LOG_LEVEL));
   }
 
   /**
@@ -218,7 +219,7 @@ public class ImportEW extends Thread {
    */
   public void handleOutOfMemoryError(final OutOfMemoryError e) {
     channelTraceBufs.clear();
-    logger.warning("Handled OutOfMemoryError, TraceBuf queues cleared.");
+    LOGGER.warn("Handled OutOfMemoryError, TraceBuf queues cleared.");
     e.printStackTrace();
   }
 
@@ -226,7 +227,7 @@ public class ImportEW extends Thread {
    * Logs a severe message and exits uncleanly.
    */
   protected void fatalError(final String msg) {
-    logger.severe(msg);
+    LOGGER.error(msg);
     System.exit(1);
   }
 
@@ -247,68 +248,69 @@ public class ImportEW extends Thread {
    * Extracts logging configuration information.
    */
   protected void processLoggerConfig() {
-    logFile = Util.stringToString(config.getString("import.log.name"), DEFAULT_LOG_FILE);
-    logNumFiles = Util.stringToInt(config.getString("import.log.numFiles"), DEFAULT_LOG_NUM_FILES);
-    logSize = Util.stringToInt(config.getString("import.log.maxSize"), DEFAULT_LOG_FILE_SIZE);
+    logFile = StringUtils.stringToString(config.getString("import.log.name"), DEFAULT_LOG_FILE);
+    logNumFiles =
+        StringUtils.stringToInt(config.getString("import.log.numFiles"), DEFAULT_LOG_NUM_FILES);
+    logSize =
+        StringUtils.stringToInt(config.getString("import.log.maxSize"), DEFAULT_LOG_FILE_SIZE);
 
-    if (logNumFiles > 0)
-      Log.attachFileLogger(logger, logFile, logSize, logNumFiles, true);
 
     final String[] version = Util.getVersion("gov.usgs.winston");
     if (version != null)
-      logger.info("Version: " + version[0] + " Built: " + version[1]);
+      LOGGER.info("Version: " + version[0] + " Built: " + version[1]);
     else
-      logger.info("No version information available.");
+      LOGGER.info("No version information available.");
 
-    logger.info("config: import.log.name=" + logFile);
-    logger.info("config: import.log.numFiles=" + logNumFiles);
-    logger.info("config: import.log.maxSize=" + logSize);
+    LOGGER.info("config: import.log.name=" + logFile);
+    LOGGER.info("config: import.log.numFiles=" + logNumFiles);
+    LOGGER.info("config: import.log.maxSize=" + logSize);
   }
 
   /**
    * Extracts generalised configuration information.
    */
   protected void processImportConfig() {
-    final String host = Util.stringToString(config.getString("import.host"), DEFAULT_HOST);
-    final int port = Util.stringToInt(config.getString("import.port"), DEFAULT_PORT);
+    final String host = StringUtils.stringToString(config.getString("import.host"), DEFAULT_HOST);
+    final int port = StringUtils.stringToInt(config.getString("import.port"), DEFAULT_PORT);
     // String exportType =
     // Util.stringToString(config.getString("import.exportType"),
     // DEFAULT_EXPORT_TYPE);
-    logger.info("config: import.host=" + host);
-    logger.info("config: import.port=" + port);
+    LOGGER.info("config: import.host=" + host);
+    LOGGER.info("config: import.port=" + port);
     // logger.info("config: import.exportType=" + exportType);
 
     // importGeneric.setHostAndPortAndType(host, port, exportType);
     importGeneric.setHostAndPort(host, port);
 
     final String recvID =
-        Util.stringToString(config.getString("import.receiveID"), DEFAULT_RECEIVE_ID);
+        StringUtils.stringToString(config.getString("import.receiveID"), DEFAULT_RECEIVE_ID);
     importGeneric.setRecvIDString(recvID);
-    logger.info("config: import.receiveID=" + recvID);
-    final String sendID = Util.stringToString(config.getString("import.sendID"), DEFAULT_SEND_ID);
+    LOGGER.info("config: import.receiveID=" + recvID);
+    final String sendID =
+        StringUtils.stringToString(config.getString("import.sendID"), DEFAULT_SEND_ID);
     importGeneric.setSendIDString(sendID);
-    logger.info("config: import.sendID=" + sendID);
+    LOGGER.info("config: import.sendID=" + sendID);
 
-    final int hbInt =
-        Util.stringToInt(config.getString("import.heartbeatInterval"), DEFAULT_HEARTBEAT_INTERVAL);
+    final int hbInt = StringUtils.stringToInt(config.getString("import.heartbeatInterval"),
+        DEFAULT_HEARTBEAT_INTERVAL);
     importGeneric.setHeartbeatInterval(hbInt);
-    logger.info("config: import.heartbeatInterval=" + hbInt);
+    LOGGER.info("config: import.heartbeatInterval=" + hbInt);
 
-    final int ehbInt = Util.stringToInt(config.getString("import.expectedHeartbeatInterval"),
+    final int ehbInt = StringUtils.stringToInt(config.getString("import.expectedHeartbeatInterval"),
         DEFAULT_EXPECTED_HEARTBEAT_INTERVAL);
     importGeneric.setExpectedHeartbeatInterval(ehbInt);
-    logger.info("config: import.expectedHeartbeatInterval=" + ehbInt);
+    LOGGER.info("config: import.expectedHeartbeatInterval=" + ehbInt);
 
-    final int to = Util.stringToInt(config.getString("import.timeout"), DEFAULT_TIMEOUT);
+    final int to = StringUtils.stringToInt(config.getString("import.timeout"), DEFAULT_TIMEOUT);
     importGeneric.setTimeout(to);
-    logger.info("config: import.timeout=" + to);
+    LOGGER.info("config: import.timeout=" + to);
 
-    dropTableDelay =
-        Util.stringToInt(config.getString("import.dropTableDelay"), DEFAULT_DROP_TABLE_DELAY);
+    dropTableDelay = StringUtils.stringToInt(config.getString("import.dropTableDelay"),
+        DEFAULT_DROP_TABLE_DELAY);
     dropTableDelay *= 1000;
-    logger.info("config: import.dropTableDelay=" + dropTableDelay);
+    LOGGER.info("config: import.dropTableDelay=" + dropTableDelay);
 
-    enableValarmView = Util.stringToBoolean(config.getString("import.enableValarmView"),
+    enableValarmView = StringUtils.stringToBoolean(config.getString("import.enableValarmView"),
         DEFAULT_ENABLE_VALARM_VIEW);
 
   }
@@ -319,26 +321,26 @@ public class ImportEW extends Thread {
    */
   protected void processWinstonConfig() {
     final String winstonDriver =
-        Util.stringToString(config.getString("winston.driver"), DEFAULT_DRIVER);
-    logger.info("config: winston.driver=" + winstonDriver);
+        StringUtils.stringToString(config.getString("winston.driver"), DEFAULT_DRIVER);
+    LOGGER.info("config: winston.driver=" + winstonDriver);
 
     final String winstonPrefix = config.getString("winston.prefix");
     if (winstonPrefix == null)
       fatalError("winston.prefix is missing from config file.");
-    logger.info("config: winston.prefix=" + winstonPrefix);
+    LOGGER.info("config: winston.prefix=" + winstonPrefix);
 
     final String winstonURL = config.getString("winston.url");
     if (winstonURL == null)
       fatalError("winston.url is missing from config file.");
-    logger.info("config: winston.url=" + winstonURL);
+    LOGGER.info("config: winston.url=" + winstonURL);
 
     final String winstonTableEngine = config.getString("winston.tableEngine");
     if (winstonTableEngine != null)
-      logger.info("config: winston.tableEngine=" + winstonTableEngine);
+      LOGGER.info("config: winston.tableEngine=" + winstonTableEngine);
 
     final int winstonStatementCacheCap =
-        Util.stringToInt(config.getString("winston.statementCacheCap"), 100);
-    logger.info("config: winston.statementCacheCap=" + winstonStatementCacheCap);
+        StringUtils.stringToInt(config.getString("winston.statementCacheCap"), 100);
+    LOGGER.info("config: winston.statementCacheCap=" + winstonStatementCacheCap);
 
     winston = new WinstonDatabase(winstonDriver, winstonURL, winstonPrefix, winstonTableEngine,
         winstonStatementCacheCap);
@@ -369,7 +371,7 @@ public class ImportEW extends Thread {
 
     final ConfigFile dcf = config.getSubConfig("Default");
     defaultOptions = Options.createOptions(dcf, defaultOptions);
-    logger.info("config, options, Default: " + defaultOptions);
+    LOGGER.info("config, options, Default: " + defaultOptions);
   }
 
   protected void processOptions() {
@@ -383,11 +385,11 @@ public class ImportEW extends Thread {
         final OptionsFilter filter = new OptionsFilter(options, tc, defaultOptions);
         optionFilters.add(filter);
       } catch (final Exception ex) {
-        logger.log(Level.SEVERE, "Could not create options: ", ex);
+        LOGGER.error("Could not create options: {}", ex);
       }
     }
     for (final OptionsFilter filter : optionFilters)
-      logger.info("config, options, " + filter.getName() + ": " + filter);
+      LOGGER.info("config, options, {}: {}", filter.getName(), filter);
   }
 
   protected void processFilters() {
@@ -401,12 +403,12 @@ public class ImportEW extends Thread {
         filter.configure(fc);
         traceBufFilters.add(filter);
       } catch (final Exception ex) {
-        logger.log(Level.SEVERE, "Could not create TraceBuf filter: ", ex);
+        LOGGER.error("Could not create TraceBuf filter: {}", ex);
       }
     }
     Collections.sort(traceBufFilters);
     for (final TraceBufFilter filter : traceBufFilters)
-      logger.info("config, filter: " + filter);
+      LOGGER.info("config, filter: {}", filter);
   }
 
   /**
@@ -456,7 +458,7 @@ public class ImportEW extends Thread {
     public void messageReceived(final Message msg) {
       totalTraceBufs++;
       final TraceBuf tb = (TraceBuf) msg;
-      logger.finest("RX: " + tb.toString());
+      LOGGER.debug("RX: {}", tb.toString());
 
       final TraceBufFilter matchingFilter = matchFilter(tb);
       boolean accept = false;
@@ -468,11 +470,9 @@ public class ImportEW extends Thread {
         // to be logged. Yes, it does matter. Running String.format for
         // every
         // single tracebuf adds up.
-        if (logger.isLoggable(matchingFilter.getLogLevel()))
-          logger.log(matchingFilter.getLogLevel(),
-              String.format("%s: %s", matchingFilter, tb.toString()));
+        LOGGER.debug("{}: {}", matchingFilter, tb);
       } else
-        logger.finest("No matching filter, rejected: " + tb);
+        LOGGER.debug("No matching filter, rejected: " + tb);
 
       if (accept) {
         totalTraceBufsAccepted++;
@@ -507,7 +507,7 @@ public class ImportEW extends Thread {
       // TODO: improve logging of dropped tracebufs
       totalTraceBufsDropped++;
       if (totalTraceBufsDropped % 100 == 1) {
-        logger.fine("Overfull backlog, dropped TraceBuf");
+        LOGGER.info("Overfull backlog, dropped TraceBuf");
       }
     }
   }
@@ -555,7 +555,7 @@ public class ImportEW extends Thread {
 
     final Double lastRepair = attemptedRepair.get(table);
     if (lastRepair != null) {
-      if (CurrentTime.getInstance().nowJ2K() - lastRepair.doubleValue() > repairRetryInterval)
+      if (CurrentTime.getInstance().nowJ2k() - lastRepair.doubleValue() > repairRetryInterval)
         attemptedRepair.remove(table);
       else
         return null;
@@ -566,9 +566,9 @@ public class ImportEW extends Thread {
       public void run() {
         try {
           final boolean healthy = fixerAdmin.repairTable(database, table);
-          logger.info(String.format("After repair attempt, table %s appears to %s.", table,
-              (healthy ? "be healthy" : "still be broken")));
-          attemptedRepair.put(table, CurrentTime.getInstance().nowJ2K());
+          LOGGER.info("After repair attempt, table {} appears to {}.", table,
+              (healthy ? "be healthy" : "still be broken"));
+          attemptedRepair.put(table, CurrentTime.getInstance().nowJ2k());
           underRepair.remove(table);
         } catch (final OutOfMemoryError e) {
           handleOutOfMemoryError(e);
@@ -587,7 +587,7 @@ public class ImportEW extends Thread {
     final String code = tb.toWinstonString();
 
     if (!existingChannels.contains(code) && !channels.channelExists(code)) {
-      logger.info("Creating new channel '" + code + "' in Winston database.");
+      LOGGER.info("Creating new channel '" + code + "' in Winston database.");
       channels.createChannel(code);
     }
     existingChannels.add(code);
@@ -626,13 +626,13 @@ public class ImportEW extends Thread {
           // should never happen, conditions checked before call
           break;
         case ERROR_TIME_SPAN:
-          logger.warning("Time span error.");
+          LOGGER.warn("Time span error.");
           final Runnable repairTask = getRepairRunnable("ROOT", "channels");
           if (repairTask != null)
             fixer.submit(repairTask);
           break;
         default:
-          logger.warning("Error: " + result.code);
+          LOGGER.warn("Error: " + result.code);
       }
     } else {
       for (int i = 0; i < results.size() - 2; i++) {
@@ -641,38 +641,38 @@ public class ImportEW extends Thread {
         boolean repair = false;
         switch (result.code) {
           case SUCCESS_CREATED_TABLE:
-            logger.fine("Day table created: " + tb.toWinstonString() + " "
-                + winstonDateFormat.format(Util.j2KToDate(tb.getStartTimeJ2K())));
+            LOGGER.info("Day table created: " + tb.toWinstonString() + " "
+                + winstonDateFormat.format(J2kSec.asDate(tb.getStartTimeJ2K())));
             fixer.submit(getPurgeRunnable(code, ip.maxDays));
           case SUCCESS:
             attemptedRepair.remove(code);
             totalTraceBufsWritten++;
-            logger.finest("Insert: " + tb.toString());
+            LOGGER.debug("Insert: " + tb.toString());
             break;
           case ERROR_DATABASE:
             totalTraceBufsFailed++;
             repair = true;
-            logger.warning("Database error: " + tb.toString());
+            LOGGER.warn("Database error: " + tb.toString());
             break;
           case ERROR_UNKNOWN:
             totalTraceBufsFailed++;
             repair = true;
-            logger.warning("Unknown insert error: " + tb.toString());
+            LOGGER.warn("Unknown insert error: " + tb.toString());
             break;
           case ERROR_CHANNEL:
           case ERROR_NULL_TRACEBUF:
             totalTraceBufsFailed++;
             // these errors should never occur
-            logger.warning("Bad channel/null TraceBuf.");
+            LOGGER.warn("Bad channel/null TraceBuf.");
             break;
           case ERROR_DUPLICATE:
             totalTraceBufsFailed++;
-            logger.warning("Duplicate TraceBuf: " + tb.toString());
+            LOGGER.warn("Duplicate TraceBuf: " + tb.toString());
             break;
           case NO_CODE:
             // this should never occur
             totalTraceBufsFailed++;
-            logger.warning("No error/success code: " + tb.toString());
+            LOGGER.warn("No error/success code: " + tb.toString());
             break;
           case ERROR_HELICORDER:
             break;
@@ -690,7 +690,7 @@ public class ImportEW extends Thread {
             break;
         }
         if (repair) {
-          final String dt = winstonDateFormat.format(Util.j2KToDate(tb.getStartTimeJ2K()));
+          final String dt = winstonDateFormat.format(J2kSec.asDate(tb.getStartTimeJ2K()));
           final Runnable repairTask = getRepairRunnable(code, code + "$$" + dt);
           if (repairTask != null)
             fixer.submit(repairTask);
@@ -699,16 +699,16 @@ public class ImportEW extends Thread {
 
       final InputEW.InputResult timeSpanResult = results.get(results.size() - 1);
       if (timeSpanResult.code == InputEW.InputResult.Code.ERROR_TIME_SPAN) {
-        logger.warning("Time span error.");
+        LOGGER.warn("Time span error.");
         final Runnable repairTask = getRepairRunnable("ROOT", "channels");
         if (repairTask != null)
           fixer.submit(repairTask);
       }
       final InputEW.InputResult heliResult = results.get(results.size() - 2);
       if (heliResult.code == InputEW.InputResult.Code.ERROR_HELICORDER) {
-        final String dt = winstonDateFormat.format(Util.j2KToDate(heliResult.failedHeliJ2K));
+        final String dt = winstonDateFormat.format(J2kSec.asDate(heliResult.failedHeliJ2K));
         final String table = code + "$$H" + dt;
-        logger.warning("Error writing helicorder data to table " + table + ".");
+        LOGGER.warn("Error writing helicorder data to table " + table + ".");
         final Runnable repairTask = getRepairRunnable(code, table);
         if (repairTask != null)
           fixer.submit(repairTask);
@@ -753,14 +753,14 @@ public class ImportEW extends Thread {
       } catch (final OutOfMemoryError e) {
         handleOutOfMemoryError(e);
       } catch (final Throwable e) {
-        logger.log(Level.SEVERE, "Main loop exception: ", e.getLocalizedMessage());
+        LOGGER.error("Main loop exception: {}", e.getLocalizedMessage());
         e.printStackTrace();
       }
     }
     try {
       cycle(true);
     } catch (final Throwable e) {
-      logger.log(Level.SEVERE, "Exception during final cycle: ", e);
+      LOGGER.error("Exception during final cycle: {}", e);
     }
   }
 
@@ -780,25 +780,20 @@ public class ImportEW extends Thread {
     return ip;
   }
 
-  public void setLogLevel(final Level level) {
-    System.out.println("Logging set to " + level);
-    logger.setLevel(level);
-  }
-
   public void quit() {
     importGeneric.shutdown();
     try {
       importGeneric.join();
     } catch (final Throwable e) {
-      logger.log(Level.SEVERE, "Failed to cleanly shutdown SeedLink Collector", e);
+      LOGGER.error("Failed to cleanly shutdown SeedLink Collector {}", e);
     }
 
-    logger.fine("Quitting cleanly.");
+    LOGGER.info("Quitting cleanly.");
     quit = true;
   }
 
   public void printStatus() {
-    final Date now = CurrentTime.getInstance().nowDate();
+    final Date now = new Date(CurrentTime.getInstance().now());
     final long nowST = System.currentTimeMillis();
     final double uptime = (now.getTime() - importStartTime.getTime()) / 1000.0;
     final List<String> strings = new ArrayList<String>(4);
@@ -917,18 +912,16 @@ public class ImportEW extends Thread {
    *          The Winston importer.
    */
   public static void consoleInputManager(final ImportEW im) {
-    im.logger.entering(im.getClass().getName(), "consoleInputManager");
     boolean acceptCommands = true;
     final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-    im.logger.info("Enter ? for console commands.");
+    LOGGER.info("Enter ? for console commands.");
     while (acceptCommands) {
       try {
         String s = null;
         try {
           s = in.readLine();
         } catch (final IOException ioex) {
-          im.logger.log(Level.SEVERE,
-              "IOException encountered while attempting to read console input.", ioex);
+          LOGGER.error("IOException encountered while attempting to read console input. {}", ioex);
         }
 
         if (s != null) {
@@ -938,7 +931,7 @@ public class ImportEW extends Thread {
             try {
               im.join();
             } catch (final Throwable e) {
-              im.logger.log(Level.SEVERE, "Failed to quit cleanly.", e);
+              LOGGER.error("Failed to quit cleanly. {}");
             } finally {
               im.printStatus();
             }
@@ -948,16 +941,16 @@ public class ImportEW extends Thread {
           else if (s.startsWith("c"))
             im.printChannels(s);
           else if (s.equals("0"))
-            im.setLogLevel(Level.OFF);
+            LogManager.getRootLogger().setLevel(Level.OFF);
           else if (s.equals("1"))
-            im.setLogLevel(Level.WARNING);
+            LogManager.getRootLogger().setLevel(Level.ERROR);
           else if (s.equals("2"))
-            im.setLogLevel(Level.FINE);
+            LogManager.getRootLogger().setLevel(Level.INFO);
           else if (s.equals("3"))
-            im.setLogLevel(Level.ALL);
+            LogManager.getRootLogger().setLevel(Level.TRACE);
           else if (s.equals("i")) {
             acceptCommands = false;
-            im.logger.warning("No longer accepting console commands.");
+            LOGGER.error("No longer accepting console commands.");
           } else if (s.equals("?"))
             ImportEW.printKeys();
           else
@@ -967,41 +960,16 @@ public class ImportEW extends Thread {
         im.handleOutOfMemoryError(e);
       }
     }
-    im.logger.exiting(im.getClass().getName(), "consoleInputManager");
   }
 
   public static void main(final String[] args) {
     final JSAPResult config = getArguments(args);
 
     final String fn =
-        Util.stringToString(config.getString("configFilename"), DEFAULT_CONFIG_FILENAME);
+        StringUtils.stringToString(config.getString("configFilename"), DEFAULT_CONFIG_FILENAME);
 
-    Level logLevel = Level.parse(DEFAULT_LOG_LEVEL);
-
-    if (config.getString("logLevel") != null) {
-      try {
-        logLevel = Level.parse(config.getString("logLevel"));
-      } catch (final IllegalArgumentException ex) {
-        System.err.println("Invalid log level: " + config.getString("logLevel"));
-        System.err.println("Using default log level: " + logLevel);
-      }
-    } else {
-      if (config.getBoolean("logoff"))
-        logLevel = Level.OFF;
-
-      if (config.getBoolean("lognormal"))
-        logLevel = Level.WARNING;
-
-      if (config.getBoolean("loghigh"))
-        logLevel = Level.FINE;
-
-      if (config.getBoolean("logall"))
-        logLevel = Level.ALL;
-
-    }
 
     final ImportEW im = new ImportEW(fn);
-    im.setLogLevel(logLevel);
 
     // Start the importer. start() automatically calls run()
     im.start();

@@ -1,10 +1,10 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.regex.Pattern;
-
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.Log;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
 
 /**
  *
@@ -13,6 +13,9 @@ import gov.usgs.util.Log;
  * @author Dan Cervelli
  */
 public class SCNLFilter extends TraceBufFilter {
+  
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImportEW.class);
+
   private String station;
   private String channel;
   private String network;
@@ -41,8 +44,7 @@ public class SCNLFilter extends TraceBufFilter {
   public void setFilter(final String scnl) {
     final String[] ss = scnl.split(" ");
     if (ss.length != 4) {
-      Log.getLogger("gov.usgs.winston.in.ew")
-          .warning("SCNLFilter: scnl must have four space-separated fields.");
+      LOGGER.warn("SCNLFilter: scnl must have four space-separated fields.");
       return;
     }
 

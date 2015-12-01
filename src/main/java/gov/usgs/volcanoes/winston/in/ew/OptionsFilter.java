@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.ConfigFile;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
 
 /**
  *
