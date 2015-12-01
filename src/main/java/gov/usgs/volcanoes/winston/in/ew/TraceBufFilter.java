@@ -5,8 +5,8 @@ import java.util.Map;
 import java.util.logging.Level;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.util.StringUtils;
 
 /**
  *
@@ -31,7 +31,7 @@ abstract public class TraceBufFilter implements Comparable<TraceBufFilter> {
     if (cf == null)
       return;
 
-    order = Util.stringToInt(cf.getString("order"), -1);
+    order = StringUtils.stringToInt(cf.getString("order"), -1);
 
     final String action = cf.getString("action");
     if (action == null) {
@@ -42,7 +42,7 @@ abstract public class TraceBufFilter implements Comparable<TraceBufFilter> {
     if (action.toLowerCase().equals("reject"))
       accept = false;
 
-    final int log = Util.stringToInt(cf.getString("log"), 0);
+    final int log = StringUtils.stringToInt(cf.getString("log"), 0);
     switch (log) {
       case 0:
         logLevel = Level.FINEST;

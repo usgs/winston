@@ -12,7 +12,7 @@ import gov.usgs.plot.PlotException;
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.util.CodeTimer;
 import gov.usgs.util.Util;
-import gov.usgs.util.UtilException;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
 

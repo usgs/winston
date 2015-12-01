@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd `dirname $0`/..
-java -cp lib/winston.jar gov.usgs.winston.in.metadata.ImportDataless $*
+java -cp lib/winston.jar gov.usgs.volcanoes.winston.in.metadata.ImportDataless $*

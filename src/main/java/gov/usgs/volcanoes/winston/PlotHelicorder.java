@@ -11,8 +11,9 @@ import gov.usgs.plot.PlotException;
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.plot.render.HelicorderRenderer;
 import gov.usgs.util.Arguments;
-import gov.usgs.util.CurrentTime;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.winston.server.WWSClient;
 
 /**
@@ -31,7 +32,7 @@ public class PlotHelicorder {
   private final Arguments args;
 
   private final SimpleDateFormat dateFormat =
-      new SimpleDateFormat(gov.usgs.util.Time.INPUT_TIME_FORMAT);
+      new SimpleDateFormat(Time.INPUT_TIME_FORMAT);
 
   public enum FileType {
     JPEG("jpg"), PNG("png"), PS("ps");
@@ -343,7 +344,7 @@ public class PlotHelicorder {
       settings.timeZoneOffset = h;
     }
 
-    settings.endTime = CurrentTime.getInstance().nowJ2K();
+    settings.endTime = CurrentTime.getInstance().nowJ2k();
     s = args.get("-e");
     if (s != null) {
       if (!s.equals("now")) {
@@ -356,7 +357,7 @@ public class PlotHelicorder {
           error("Error with '-e' value.");
 
         System.out.println("end time: " + s);
-        settings.endTime = Util.dateToJ2K(date);
+        settings.endTime = J2kSec.fromDate(date);
       }
     }
 

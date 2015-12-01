@@ -20,4 +20,4 @@ GOTO Loop
 :Continue
 
 cd %~dp0\..
-java -cp lib\winston.jar gov.usgs.winston.in.ImportSAC %args%
+java -cp lib\winston.jar gov.usgs.volcanoes.winston.in.ImportSAC %args%

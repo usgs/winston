@@ -17,9 +17,9 @@ import gov.usgs.math.DownsamplingType;
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.data.Wave;
-import gov.usgs.util.Time;
 import gov.usgs.util.Util;
-import gov.usgs.util.UtilException;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.UtilException;
 
 /**
  * A class to handle data acquistion from a Winston database.
@@ -96,7 +96,7 @@ public class Data {
     final ArrayList<String> result = new ArrayList<String>();
     double ct = t1;
     while (ct < t2 + ONE_DAY) {
-      result.add(Time.format(WinstonDatabase.WINSTON_TABLE_DATE_FORMAT, ct));
+      result.add(J2kSec.format(WinstonDatabase.WINSTON_TABLE_DATE_FORMAT, ct));
       ct += ONE_DAY;
     }
     return result;
@@ -131,7 +131,7 @@ public class Data {
       dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
       final List<double[]> bufs = new ArrayList<double[]>(2 * ONE_DAY);
       for (final String day : days) {
-        final double tst = Time.parse(WinstonDatabase.WINSTON_TABLE_DATE_FORMAT, day);
+        final double tst = J2kSec.parse(WinstonDatabase.WINSTON_TABLE_DATE_FORMAT, day);
         final double tet = tst + ONE_DAY;
         final String table = code + "$$" + day;
         if (!winston.tableExists(code, table))
@@ -249,7 +249,7 @@ public class Data {
       double ct = t1;
 
       final ArrayList<byte[]> bufs = new ArrayList<byte[]>((int) Math.ceil(t2 - t1) + 1);
-      final String endDate = dateFormat.format(Util.j2KToDate(t2));
+      final String endDate = dateFormat.format(J2kSec.asDate(t2));
       boolean done = false;
       ResultSet rs = null;
 
@@ -261,8 +261,8 @@ public class Data {
       // edge case of selecting data right at the UTC day boundary. To
       // fix this the query must be run against the day of the st of the
       // desired interval plus the day before.
-      final String[] initialDates = new String[] {dateFormat.format(Util.j2KToDate(t1 - ONE_DAY)),
-          dateFormat.format(Util.j2KToDate(t1))};
+      final String[] initialDates = new String[] {dateFormat.format(J2kSec.asDate(t1 - ONE_DAY)),
+          dateFormat.format(J2kSec.asDate(t1))};
 
       for (final String date : initialDates) {
         final String sql = "SELECT st, et, sr, datatype, tracebuf FROM `" + code + "$$" + date
@@ -286,13 +286,13 @@ public class Data {
           rs.close();
         } catch (final SQLException e) {
           winston.getLogger().log(Level.FINEST,
-              "No table found for " + date + ", " + t1 + "->" + t2, Util.getLineNumber(this, e));
+              "No table found for " + date + ", " + t1 + "->" + t2);
         }
       }
 
       // got the first tracebuf, now lets get the rest.
       while (!done) {
-        final String date = dateFormat.format(Util.j2KToDate(ct));
+        final String date = dateFormat.format(J2kSec.asDate(ct));
         if (date.equals(endDate))
           done = true;
 
@@ -322,12 +322,10 @@ public class Data {
       return bufs;
     } catch (final SQLException e) {
       winston.getLogger().log(Level.FINEST,
-          "Could not get TraceBuf bytes for " + code + ", " + t1 + "->" + t2,
-          Util.getLineNumber(this, e));
+          "Could not get TraceBuf bytes for " + code + ", " + t1 + "->" + t2);
     } catch (final IOException e) {
       winston.getLogger().log(Level.FINEST,
-          "Could not get TraceBuf bytes for " + code + ", " + t1 + "->" + t2,
-          Util.getLineNumber(this, e));
+          "Could not get TraceBuf bytes for " + code + ", " + t1 + "->" + t2);
     }
     return null;
 
@@ -366,8 +364,7 @@ public class Data {
       return traceBufs;
     } catch (final Exception e) {
       winston.getLogger().log(Level.SEVERE,
-          "Could not get TraceBufs for " + code + ", " + t1 + "->" + t2,
-          Util.getLineNumber(this, e));
+          "Could not get TraceBufs for " + code + ", " + t1 + "->" + t2);
     }
     return null;
   }
@@ -408,11 +405,11 @@ public class Data {
       // this 'fixes' problems when a start time of 0000 UTC is asked for
       // and that data are actually stored in the previous day. Some
       // issues remain.
-      final String endDate = dateFormat.format(Util.j2KToDate(t2));
+      final String endDate = dateFormat.format(J2kSec.asDate(t2));
       boolean done = false;
       final ArrayList<double[]> list = new ArrayList<double[]>((int) (t2 - t1) + 2);
       while (!done) {
-        final String date = dateFormat.format(Util.j2KToDate(ct));
+        final String date = dateFormat.format(J2kSec.asDate(ct));
         if (date.equals(endDate))
           done = true;
         ct += ONE_DAY;
@@ -463,8 +460,7 @@ public class Data {
       return new HelicorderData(list);
     } catch (final SQLException e) {
       winston.getLogger().log(Level.SEVERE,
-          "Could not get helicorder for " + code + ", " + t1 + "->" + t2,
-          Util.getLineNumber(this, e));
+          "Could not get helicorder for " + code + ", " + t1 + "->" + t2);
     }
     return null;
   }
@@ -479,12 +475,12 @@ public class Data {
       // this 'fixes' problems when a start time of 0000 UTC is asked for
       // and that data are actually stored in the previous day. Some
       // issues remain.
-      final String endDate = dateFormat.format(Util.j2KToDate(t2));
+      final String endDate = dateFormat.format(J2kSec.asDate(t2));
       boolean done = false;
       int numSamplesCounter = 0;
       final ArrayList<double[]> list = new ArrayList<double[]>((int) (t2 - t1) + 2);
       while (!done) {
-        final String date = dateFormat.format(Util.j2KToDate(ct));
+        final String date = dateFormat.format(J2kSec.asDate(ct));
         if (date.equals(endDate))
           done = true;
         ct += ONE_DAY;
@@ -551,7 +547,7 @@ public class Data {
       return new RSAMData(list);
     } catch (final SQLException e) {
       winston.getLogger().log(Level.SEVERE,
-          "Could not get RSAM for " + code + ", " + t1 + "->" + t2, Util.getLineNumber(this, e));
+          "Could not get RSAM for " + code + ", " + t1 + "->" + t2);
     }
     return null;
   }

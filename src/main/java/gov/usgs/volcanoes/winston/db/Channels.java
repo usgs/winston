@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
-import gov.usgs.util.Util;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.GroupNode;
 import gov.usgs.volcanoes.winston.Instrument;
@@ -58,7 +57,7 @@ public class Channels {
 
       return result;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get groups.", Util.getLineNumber(this, e));
+      winston.getLogger().log(Level.SEVERE, "Could not get groups.");
     }
     return null;
   }
@@ -149,7 +148,7 @@ public class Channels {
 
       return channels;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get channels.", Util.getLineNumber(this, e));
+      winston.getLogger().log(Level.SEVERE, "Could not get channels.");
     }
     return null;
   }
@@ -222,8 +221,7 @@ public class Channels {
       rs.close();
       return codes;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get channel codes.",
-          Util.getLineNumber(this, e));
+      winston.getLogger().log(Level.SEVERE, "Could not get channel codes.");
     }
     return null;
   }
@@ -274,8 +272,7 @@ public class Channels {
       rs.close();
       return result;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get channel code.",
-          Util.getLineNumber(this, e));
+      winston.getLogger().log(Level.SEVERE, "Could not get channel code.");
     }
     return null;
   }
@@ -298,8 +295,7 @@ public class Channels {
       rs.close();
       return result;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not determine channel existence.",
-          Util.getLineNumber(this, e));
+      winston.getLogger().log(Level.SEVERE, "Could not determine channel existence.");
     }
     return false;
   }
@@ -331,7 +327,7 @@ public class Channels {
       winston.getStatement().execute("USE `" + winston.databasePrefix + "_" + code + "`");
     } catch (final Exception e) {
       winston.getLogger().log(Level.SEVERE,
-          "Could not create channel.  Are permissions set properly?", Util.getLineNumber(this, e));
+          "Could not create channel.  Are permissions set properly?");
     }
     return false;
   }
@@ -379,7 +375,7 @@ public class Channels {
       }
     } catch (final Exception e) {
       winston.getLogger().log(Level.SEVERE,
-          "Could not create channel.  Are permissions set properly?", Util.getLineNumber(this, e));
+          "Could not create channel.  Are permissions set properly?");
       winston.getLogger().log(Level.SEVERE, e.getMessage());
       System.exit(1);
     }
@@ -419,8 +415,7 @@ public class Channels {
       }
       return insts;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get instruments.",
-          Util.getLineNumber(this, e));
+      winston.getLogger().log(Level.SEVERE, "Could not get instruments.");
     }
     return null;
   }

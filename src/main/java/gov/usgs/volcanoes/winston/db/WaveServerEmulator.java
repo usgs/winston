@@ -13,7 +13,7 @@ import java.util.logging.Level;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.util.Util;
-import gov.usgs.util.UtilException;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 
 /**

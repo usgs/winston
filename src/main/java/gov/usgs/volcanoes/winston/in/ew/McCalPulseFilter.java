@@ -2,8 +2,9 @@ package gov.usgs.volcanoes.winston.in.ew;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.math.Goertzel;
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.StringUtils;
 
 /**
  * Filter to detect a McVCO calibration pulse
@@ -17,15 +18,16 @@ public class McCalPulseFilter extends TraceBufFilter {
   private double preambleFreq;
   private double threshold;
 
+  
   @Override
   public void configure(final ConfigFile cf) {
     super.configure(cf);
     if (cf == null)
       return;
 
-    preambleFreq = Util.stringToDouble(cf.getString("preambleFreq"), 21.25);
-    threshold = Util.stringToDouble(cf.getString("threshold"), 500);
-    terminal = Util.stringToBoolean(cf.getString("terminal"), false);
+    preambleFreq = StringUtils.stringToDouble(cf.getString("preambleFreq"), 21.25);
+    threshold = StringUtils.stringToDouble(cf.getString("threshold"), 500);
+    terminal = StringUtils.stringToBoolean(cf.getString("terminal"), false);
   }
 
   @Override
@@ -40,7 +42,7 @@ public class McCalPulseFilter extends TraceBufFilter {
 
     if (tb.channel().contains("EHZ") && (g / (g2 + g3 + g4)) > threshold) // TOMPTEMP
     {
-      addMetadata("calPulse", String.format("%.2f", Util.ewToJ2K(tb.firstSampleTime())));
+      addMetadata("calPulse", String.format("%.2f", J2kSec.asEpoch(tb.firstSampleTime())));
       return true;
     } else
       return false;
