@@ -134,8 +134,14 @@ abstract public class StaticImporter {
       // assume files really means files, not resource records --tjp
       final File f = new File(fn);
       if (f.isDirectory()) {
-        for (final File ff : f.listFiles())
-          it.add(fn + File.pathSeparatorChar + ff.getName());
+        File[] dFiles = f.listFiles();
+        if (dFiles == null)
+          continue;
+        for (final File ff : dFiles) {
+          
+          if (ff.getName() != null)
+            it.add(fn + File.pathSeparatorChar + ff.getName());
+        }
       } else {
         try {
           impt.importMap(impt.readFile(fn));

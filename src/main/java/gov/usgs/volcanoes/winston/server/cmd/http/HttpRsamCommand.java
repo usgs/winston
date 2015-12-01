@@ -76,12 +76,12 @@ public final class HttpRsamCommand extends AbstractHttpCommand implements HttpBa
     timeZone = TimeZone.getTimeZone(Util.stringToString(arguments.get("tz"), "UTC"));
 
     endTime = getEndTime(arguments.get("t2"));
-    if (endTime == Double.NaN)
+    if (endTime.isNaN())
       errorString +=
           "Error: could not parse end time (t2). Should be " + INPUT_DATE_FORMAT + ".<br>";
 
     startTime = getStartTime(arguments.get("t1"), endTime, ONE_DAY);
-    if (startTime == Double.NaN)
+    if (startTime.isNaN())
       errorString += "Error: could not parse start time (t1). Should be " + INPUT_DATE_FORMAT
           + " or -HH.M<br>";
 

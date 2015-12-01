@@ -77,13 +77,13 @@ public final class HttpGapsCommand extends AbstractHttpCommand implements HttpBa
 
     // End Time
     endTime = getEndTime(arguments.get("t2"));
-    if (endTime == Double.NaN) {
+    if (endTime.isNaN()) {
       error = error + "Error: could not parse end time (t2). Should be " + INPUT_DATE_FORMAT + ".";
     }
 
     // Start Time
     startTime = getStartTime(arguments.get("t1"), endTime, ONE_HOUR);
-    if (startTime == Double.NaN) {
+    if (startTime.isNaN()) {
       error = error + "Error: could not parse start time (t1). Should be " + INPUT_DATE_FORMAT
           + " or -HH.";
     }
