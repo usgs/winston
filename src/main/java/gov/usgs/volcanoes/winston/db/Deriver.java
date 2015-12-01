@@ -10,8 +10,8 @@ import gov.usgs.util.CodeTimer;
 import gov.usgs.util.ConfigFile;
 import gov.usgs.util.Log;
 import gov.usgs.util.Time;
-import gov.usgs.util.Util;
-import gov.usgs.util.UtilException;
+import gov.usgs.volcanoes.core.util.StringUtils;
+import gov.usgs.volcanoes.core.util.UtilException;
 
 /**
  * A class to recalculate stored RSAM values
@@ -66,7 +66,7 @@ public class Deriver {
     final String timeRange = config.getString("timeRange");
     double[] t;
     try {
-      t = Time.parseTimeRange(timeRange);
+      t = gov.usgs.util.Time.parseTimeRange(timeRange);
       startTime = t[0];
       endTime = t[1];
     } catch (final ParseException e) {
@@ -74,11 +74,11 @@ public class Deriver {
       System.exit(1);
     }
 
-    chunkSize = Util.stringToDouble(config.getString("chunkSize"), DEFAULT_CHUNK_SIZE);
+    chunkSize = StringUtils.stringToDouble(config.getString("chunkSize"), DEFAULT_CHUNK_SIZE);
 
-    rsamEnable = Util.stringToBoolean(config.getString("rsam.enable"), DEFAULT_RSAM_ENABLE);
-    rsamDelta = Util.stringToInt(config.getString("rsam.delta"), DEFAULT_RSAM_DELTA);
-    rsamDuration = Util.stringToInt(config.getString("rsam.duration"), DEFAULT_RSAM_DURATION);
+    rsamEnable = StringUtils.stringToBoolean(config.getString("rsam.enable"), DEFAULT_RSAM_ENABLE);
+    rsamDelta = StringUtils.stringToInt(config.getString("rsam.delta"), DEFAULT_RSAM_DELTA);
+    rsamDuration = StringUtils.stringToInt(config.getString("rsam.duration"), DEFAULT_RSAM_DURATION);
   }
 
   public void deriveAll() {

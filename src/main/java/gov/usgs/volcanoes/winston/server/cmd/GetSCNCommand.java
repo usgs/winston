@@ -6,7 +6,7 @@ import java.util.logging.Level;
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.util.Util;
-import gov.usgs.util.UtilException;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
 import gov.usgs.volcanoes.winston.server.WWSCommandString;

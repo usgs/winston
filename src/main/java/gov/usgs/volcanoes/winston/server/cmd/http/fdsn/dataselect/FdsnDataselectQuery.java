@@ -22,7 +22,7 @@ import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
 import gov.usgs.util.Util;
-import gov.usgs.util.UtilException;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;

@@ -15,7 +15,7 @@ import gov.usgs.plot.decorate.DefaultFrameDecorator;
 import gov.usgs.plot.decorate.DefaultFrameDecorator.Location;
 import gov.usgs.plot.render.MatrixRenderer;
 import gov.usgs.util.Util;
-import gov.usgs.util.UtilException;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
 
