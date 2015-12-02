@@ -2,6 +2,8 @@ package gov.usgs.volcanoes.winston.db;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.collections.set.MapBackedSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -21,14 +23,13 @@ import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.Deflater;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.CurrentTime;
-import gov.usgs.util.Time;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 
 /**
  * TraceBuf input functions for use by ImportEW.
@@ -38,6 +39,9 @@ import gov.usgs.util.Util;
  * @author Joshua Doubleday
  */
 public class InputEW {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(InputEW.class);
+
   public static class InputResult {
     public enum Code {
       NO_CODE, ERROR_INPUT, ERROR_NULL_TRACEBUF, ERROR_DUPLICATE, ERROR_UNKNOWN, ERROR_DATABASE, ERROR_NO_WINSTON, ERROR_CHANNEL, ERROR_TIME_SPAN, ERROR_HELICORDER, SUCCESS, SUCCESS_CREATED_TABLE, SUCCESS_HELICORDER, SUCCESS_TIME_SPAN
@@ -87,7 +91,7 @@ public class InputEW {
 
   /**
    * Constructs a new Input2.
-   * 
+   *
    * @param w
    */
   @SuppressWarnings("unchecked")
@@ -105,13 +109,12 @@ public class InputEW {
 
   /**
    * Set the winston database for this inputter.
-   * 
+   *
    * @param db
    *          the winston database;
    */
   public void setWinston(final WinstonDatabase db) {
     winston = db;
-    logger = winston.getLogger();
   }
 
   public void setRowParameters(final int mr, final int nd) {
@@ -138,7 +141,7 @@ public class InputEW {
       }
       return dayList;
     } catch (final Exception e) {
-      logger.log(Level.SEVERE, "Could not get list of tables for channel: " + code, e);
+      LOGGER.error("Could not get list of tables for channel: {}. ({})", code, e);
     }
     return null;
   }
@@ -157,7 +160,7 @@ public class InputEW {
     if (list == null)
       return;
 
-    final Date now = CurrentTime.getInstance().nowDate();
+    final Date now = new Date(CurrentTime.getInstance().now());
     final Date then = new Date(now.getTime() - (days * 86400000L));
     final String thenString = Time.format(WinstonDatabase.WINSTON_TABLE_DATE_FORMAT, then);
 
@@ -208,9 +211,9 @@ public class InputEW {
 
   /**
    * Creates a day table.
-   * 
+   *
    * TODO: fix view out of order data bug
-   * 
+   *
    * @param code
    *          the code of the new table
    * @param date
@@ -219,8 +222,8 @@ public class InputEW {
    */
   private boolean createDayTable(final String code, final String date) {
     try {
-      final double prevDayJ2k = Util.dateToJ2K(dateFormat.parse(date)) - (24 * 3600);
-      final String prevDate = dateFormat.format(Util.j2KToDate(prevDayJ2k));
+      final double prevDayJ2k = J2kSec.fromDate(dateFormat.parse(date)) - (24 * 3600);
+      final String prevDate = dateFormat.format(J2kSec.asDate(prevDayJ2k));
 
       final String waveTable = code + "$$" + date;
       final String heliTable = code + "$$H" + date;
@@ -245,7 +248,7 @@ public class InputEW {
         // if there is data from the previous day, we want to union it
         // into our
         // view, otherwise, setup views into current days data
-        winston.getLogger().log(Level.INFO, "Creating VIEWs for VAlarm: " + heliTableall);
+        LOGGER.info("Creating VIEWs for VAlarm: {}", heliTableall);
 
         String sql =
             "CREATE or REPLACE VIEW `" + waveTableall + "` AS SELECT * FROM `" + waveTable + "`";
@@ -261,15 +264,14 @@ public class InputEW {
 
       return true;
     } catch (final Exception ex) {
-      winston.getLogger().log(Level.SEVERE,
-          "Could not create day table: '" + code + "$" + date + "'.", ex);
+      LOGGER.error("Could not create day table: '{}${}'. ({})", code, date, ex);
     }
     return false;
   }
 
   /**
    * Checks if a table exists.
-   * 
+   *
    * @param code
    *          the code to check
    * @param date
@@ -282,11 +284,11 @@ public class InputEW {
 
   /*
    * Checks if a table exists.
-   * 
+   *
    * @param code the code to check
-   * 
+   *
    * @param date the date to check
-   * 
+   *
    * @return indicator of table existence
    */
   private boolean tableExists(final String table) {
@@ -309,9 +311,9 @@ public class InputEW {
 
   /**
    * Updates the time span of a channel to include a given start and end time.
-   * 
+   *
    * TODO: preparedStatements
-   * 
+   *
    * @param channel
    *          the channel
    * @param st
@@ -339,7 +341,7 @@ public class InputEW {
   /**
    * Gets the current time span of the channel. Supercedes the version in
    * Data.java for optimization reasons.
-   * 
+   *
    * @param channel
    * @return
    */
@@ -360,8 +362,7 @@ public class InputEW {
       channelTimeSpans.put(channel, d);
       return d;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get time span for channel: " + channel, e);// Util.getLineNumber(this,
-                                                                                                  // e));
+      LOGGER.error("Could not get time span for channel: {}. ({})", channel, e);
     }
     return null;
   }
@@ -370,7 +371,7 @@ public class InputEW {
    * Gets a helicorder row. This function MUST be called before
    * updateHelicorderRow because it is responsible for creating the blank row
    * if no existing data can be found.
-   * 
+   *
    * @param table
    * @param j2ksec
    * @return
@@ -386,7 +387,7 @@ public class InputEW {
     if (d != null)
       return d;
 
-    final String date = dateFormat.format(Util.j2KToDate(j2ksec));
+    final String date = dateFormat.format(J2kSec.asDate(j2ksec));
     final String table = channel + "$$H" + date;
 
     if (useDB) {
@@ -398,7 +399,7 @@ public class InputEW {
               rs.getDouble(5), 0, 0, 0};
         rs.close();
       } catch (final Exception e) {
-        logger.warning("Could not get helicorder row: " + e.getMessage());
+        LOGGER.warn("Could not get helicorder row: {}", e.getMessage());
       }
     }
 
@@ -437,14 +438,19 @@ public class InputEW {
   }
 
   private PreparedStatement getInputStatement(final String table, final TraceBuf tb) {
-    try {
-      final PreparedStatement insert =
-          winston.getPreparedStatement("INSERT INTO `" + table + "` VALUES (?,?,?,?,?);");
+    if (tb == null) {
+      LOGGER.error("null tb");
+      return null;
+    }
 
-      if (insert == null)
-        logger.severe("Just got a null ps");
-      else if (tb == null)
-        logger.severe("null tb");
+    final PreparedStatement insert =
+        winston.getPreparedStatement("INSERT INTO `" + table + "` VALUES (?,?,?,?,?);");
+    if (insert == null) {
+      LOGGER.error("Call to getPreparedStatement returned null.");
+      return null;
+    }
+
+    try {
       insert.setDouble(1, tb.getStartTimeJ2K());
       insert.setDouble(2, tb.getEndTimeJ2K());
       insert.setDouble(3, tb.samplingRate());
@@ -452,16 +458,16 @@ public class InputEW {
       final byte[] compressed =
           Util.compress(tb.bytes, Deflater.BEST_SPEED, 0, tb.bytes.length - 1);
       insert.setBytes(5, compressed);
-      return insert;
-    } catch (final Exception e) {
-      logger.log(Level.SEVERE, "Could not create prepared statement: " + tb, e);
+    } catch (final SQLException e) {
+      LOGGER.error("Could not create prepared statement: {}.({})", tb, e);
     }
-    return null;
+
+    return insert;
   }
 
   /**
    * Updates a helicorder row.
-   * 
+   *
    * @param channel
    * @param date
    * @param tb
@@ -513,7 +519,7 @@ public class InputEW {
   /**
    * Writes helicorder data to the database. In case of failure, returns the
    * j2k that failed. Returns NaN on success.
-   * 
+   *
    * @param channel
    * @param modifiedRows
    * @return
@@ -522,7 +528,7 @@ public class InputEW {
   // SQLException
   {
     for (final double j2k : modifiedRows) {
-      final String date = dateFormat.format(Util.j2KToDate(j2k));
+      final String date = dateFormat.format(J2kSec.asDate(j2k));
       final String table = channel + "$$H" + date;
 
       final double[] row = getHelicorderRow(channel, j2k, false);
@@ -535,8 +541,8 @@ public class InputEW {
       try {
         winston.getStatement().execute(sql);
       } catch (final SQLException ex) {
-        logger.warning("Could not write helicorder row: " + ex.getMessage());
-        logger.warning("SQL: " + sql);
+        LOGGER.warn("Could not write helicorder row: {}", ex.getMessage());
+        LOGGER.warn("SQL: {}", sql);
         return j2k;
       }
     }
@@ -568,7 +574,7 @@ public class InputEW {
         continue;
 
       final double ts = tb.getStartTimeJ2K();
-      final String date = dateFormat.format(Util.j2KToDate(ts));
+      final String date = dateFormat.format(J2kSec.asDate(ts));
 
       updateHelicorderData(modifiedHeliRows, channel, date, tb, computeRsam, delta, duration,
           false);
@@ -588,14 +594,14 @@ public class InputEW {
    * uses optimizations that require that all of the TraceBufs be from the
    * same channel. Using this function with different channels will produce
    * unstable results.
-   * 
+   *
    * This function returns either null if the input is null or of size 0, if
    * the Winston connection can not be established, if the station time span
    * can be calculated (bad database), or the channel's database can not be
    * used (again, bad database). Otherwise it returns a list of InputResults
    * for each TraceBuf and one that specifies the result of the time span
    * update.
-   * 
+   *
    * @param tbs
    *          the list of TraceBufs to insert
    * @return the result or null (see above)
@@ -627,18 +633,18 @@ public class InputEW {
       boolean tableCreated = false;
       final TraceBuf tb = it.next();
       final InputResult result = new InputResult(InputResult.Code.NO_CODE, tb);
-      if (tb == null)
+      if (tb == null) {
         result.code = InputResult.Code.ERROR_NULL_TRACEBUF;
-
-      if (!tb.toWinstonString().equals(channel))
+      } else if (!tb.toWinstonString().equals(channel)) {
         result.code = InputResult.Code.ERROR_CHANNEL;
+      }
 
       if (result.code != InputResult.Code.NO_CODE)
         continue;
 
       final double ts = tb.getStartTimeJ2K();
-      final String date = dateFormat.format(Util.j2KToDate(ts));
-      final String endDate = dateFormat.format(Util.j2KToDate(tb.getEndTimeJ2K() + 1));
+      final String date = dateFormat.format(J2kSec.asDate(ts));
+      final String endDate = dateFormat.format(J2kSec.asDate(tb.getEndTimeJ2K() + 1));
       final String table = channel + "$$" + date;
 
       try {
@@ -670,7 +676,7 @@ public class InputEW {
               true);
       } catch (final SQLException ex) {
         result.code = InputResult.Code.ERROR_DATABASE;
-        logger.log(Level.SEVERE, "Could not insert trace buf: ", ex);
+        LOGGER.error("Could not insert trace buf: {}", ex);
       }
 
       if (result.code == InputResult.Code.NO_CODE) {
@@ -701,7 +707,7 @@ public class InputEW {
         setTimeSpan(channel, span[0], span[1]);
       spanResult.code = InputResult.Code.SUCCESS_TIME_SPAN;
     } catch (final SQLException ex) {
-      logger.log(Level.SEVERE, "Could not set time span for channel: " + channel, ex);
+      LOGGER.error("Could not set time span for channel: {}. ({})", channel, ex);
     }
     results.add(spanResult);
 
@@ -724,12 +730,12 @@ public class InputEW {
 
   /**
    * Inserts multiple metadata updates
-   * 
+   *
    * This function returns either null if the input is null or of size 0, if
    * the Winston connection can not be established, or the channelmetadata
    * database can not be used (again, bad database). Otherwise it returns a
    * list of InputResults for each entry.
-   * 
+   *
    * @param channel
    * @param entries
    * @return the result or null (see above)
@@ -737,7 +743,7 @@ public class InputEW {
   public void inputMetadata(final String channel, final Map<String, String> m) {
 
     if (!winston.checkConnect() || !winston.useRootDatabase())
-      logger.severe("Can't update metadata: Can't connect to Winston");
+      LOGGER.error("Can't update metadata: Can't connect to Winston");
     else {
       try {
         final int sid = getSid(channel);
@@ -752,13 +758,12 @@ public class InputEW {
           ps.setString(3, m.get(name));
 
           ps.executeUpdate();
-          logger
-              .severe(String.format("Metadata updated for %s: %s=%s", channel, name, m.get(name)));
+          LOGGER.error("Metadata updated for {}: {}={}", channel, name, m.get(name));
         }
 
         m.clear();
       } catch (final Exception e) {
-        logger.severe("Can't update metadata: " + e.getMessage());
+        LOGGER.error("Can't update metadata: {}", e.getMessage());
         e.printStackTrace();
       }
     }

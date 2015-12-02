@@ -1,0 +1,140 @@
+<script>
+function getValue(name) {
+	var element = document.getElementById(name);
+	if (element.value != "") {
+		return "&" + name + "=" + element.value;
+	} else {
+		return "";
+	}
+}
+function buildUrl() {
+	var timeConstraint = document.getElementById("timeConstraint");
+    var simpleTimeDiv = document.getElementById("simpleTime");
+    var windowTimeDiv = document.getElementById("windowTime");
+    var urlDiv = document.getElementById("url");
+    
+    var linkUrl = "http://%%HOST%%/fdsnws/station/1/query?";
+    if (timeConstraint.checked) {
+    	simpleTimeDiv.style.display = "block"; 
+    	windowTimeDiv.style.display = "none";
+    	linkUrl += getValue("starttime");
+    	linkUrl += getValue("endtime");
+    } else { 
+    	simpleTimeDiv.style.display = "none"; 
+    	windowTimeDiv.style.display = "block";
+    	linkUrl += getValue("startbefore");
+    	linkUrl += getValue("startafter");
+    	linkUrl += getValue("endbefore");
+    	linkUrl += getValue("endafter");
+    }
+    
+    if (geographicConstraint.checked) {
+    	areaRectangle.style.display = "block"; 
+    	areaCircle.style.display = "none";
+    	linkUrl += getValue("minlatitude");
+    	linkUrl += getValue("maxlatitude");
+    	linkUrl += getValue("minlongitude");
+    	linkUrl += getValue("maxlongitude");
+    } else { 
+    	areaRectangle.style.display = "none"; 
+    	areaCircle.style.display = "block";
+    	linkUrl += getValue("latitude");
+    	linkUrl += getValue("longitude");
+    	linkUrl += getValue("minradius");
+    	linkUrl += getValue("maxradius");
+    }
+    linkUrl += getValue("network");
+    linkUrl += getValue("station");
+    linkUrl += getValue("location");
+    linkUrl += getValue("channel");
+    
+    var format = document.getElementById("format");
+    if (format.value != "xml") {
+    	linkUrl += "&format=text";
+    }
+    
+    var level = document.getElementById("level");
+    if (level.value != "station") {
+    	linkUrl += "&level=" + level.value;
+    }
+    
+	linkUrl = linkUrl.replace("?&", "?");
+ 	linkUrl = linkUrl.replace(/\?$/, "");
+
+    var a = document.createElement('a');
+    a.href = linkUrl;
+    a.text = linkUrl;
+    a.textContent = linkUrl;
+	while(urlDiv.hasChildNodes()) {
+		urlDiv.removeChild(urlDiv.lastChild);
+	}
+	urlDiv.appendChild(a); 
+}
+</script>
+
+	<b>URL:</b><BR>
+	<div id="url"></div>
+<hr>
+<form>
+		<fieldset>
+        	<legend>When</legend>
+        	<div class="left" style="margin-bottom: 3em;">
+				<label class="radioLabel"> Simple Time <input type="radio" onchange="buildUrl()" name="timeConstraint" value="simpleTime" id="timeConstraint" CHECKED></label><br>
+				<label class="radioLabel"> Window Time <input type="radio" onchange="buildUrl()" name="timeConstraint" value="windowTime"></label>
+			</div>
+			<div class="right" style="width: 70%;">
+				<div id="simpleTime" class="timeConstraint" style="margin-top: 2em;">
+					<label for=starttime>Start Time<span class="small">yyyy-mm-ddThh:mm:ss.ssssss</span></label><input onchange="buildUrl()" type=text name=starttime id=starttime />
+					<label for=endtime>End Time<span class="small">yyyy-mm-ddThh:mm:ss.ssssss</span></label><input onchange="buildUrl()" type=text name=endtime id=endtime />
+				</div>
+	      		<div id="windowTime" class="timeConstraint">
+					<label for=startbefore>Start Before<span class="small">yyyy-mm-ddThh:mm:ss.ssssss</span></label><input onchange="buildUrl()" type=text name=startbefore id=startbefore />
+					<label for=startafter>Start After<span class="small">yyyy-mm-ddThh:mm:ss.ssssss</span></label><input onchange="buildUrl()" type=text name=startafter id=startafter />
+					<label for=endbefore>End Before<span class="small">yyyy-mm-ddThh:mm:ss.ssssss</span></label><input onchange="buildUrl()" type=text name=endbefore id=endbefore />
+					<label for=endafter>End After<span class="small">yyyy-mm-ddThh:mm:ss.ssssss</span></label><input onchange="buildUrl()" type=text name=endafter id=endafter />
+				</div>
+			</div>
+		</fieldset>
+
+		<fieldset>
+			<legend>Where</legend>
+			<div class="left" style="margin-top: 2em;">
+				<label class="radioLabel">Rectangle<input type="radio" onchange="buildUrl()" name="geographicConstraint" value="areaRectangle" id="geographicConstraint" CHECKED></label><br>
+				<label class="radioLabel">Circle<input type="radio" onchange="buildUrl()" name="geographicConstraint" value="areaCircle"></label>
+			</div>
+			<div class="right" style="width: 70%;">
+				<div id="areaRectangle" class="areaConstraint">
+					<label for=minlatitude>Min Latitude<span class="small">decimal degrees</span></label><input onchange="buildUrl()" type=text name=minlatitude id=minlatitude />
+					<label for=maxlatitude>Max Latitude<span class="small">decimal degrees</span></label><input onchange="buildUrl()" type=text name=maxlatitude id=maxlatitude />
+					<label for=minlatitude>Min Longitude<span class="small">decimal degrees</span></label><input onchange="buildUrl()" type=text name=minlongitude id=minlongitude />
+					<label for=maxlatitude>Max Longitude<span class="small">decimal degrees</span></label><input onchange="buildUrl()" type=text name=maxlongitude id=maxlongitude />
+				</div>
+				<div id="areaCircle" class="areaConstraint">
+					<label for=latitude>Latitude<span class="small">decimal degrees</span></label><input onchange="buildUrl()" type=text name=latitude id=latitude />
+					<label for=longitude>Longitude<span class="small">decimal degrees</span></label><input onchange="buildUrl()" type=text name=longitude id=longitude />
+					<label for=minradius>Min Radius<span class="small">decimal degrees</span></label><input onchange="buildUrl()" type=text name=minradius id=minradius />
+					<label for=maxradius>Max Radius<span class="small">decimal degrees</span></label><input onchange="buildUrl()" type=text name=maxradius id=maxradius />
+				</div>
+			</div>			
+		</fieldset>
+		
+		<fieldset>
+			<legend>Which</legend>
+			<div class="right" style="width: 70%;">
+				<label for=network>Network Code</label><input onchange="buildUrl()" type=text name=network id=network />
+				<label for=station>Station Code</label><input onchange="buildUrl()" type=text name=station id=station />
+				<label for=location>Location Code</label><input onchange="buildUrl()" type=text name=location id=location />
+				<label for=channel>Channel Code</label><input onchange="buildUrl()" type=text name=channel id=channel />
+			</div>			
+		</fieldset>
+				
+		<fieldset>
+			<legend>How</legend>
+			<div class="right" style="width: 70%;">
+				<label for=format>Format</label><select onchange="buildUrl()" id=format><option SELECTED>xml</option><option>text</option></select><br>
+				<label for=level>Level</label><select onchange="buildUrl()" id=level><option>network</option><option SELECTED>station</option><option>channel</option></select>
+			</div>			
+		</fieldset>
+		
+</form>
+<div class="clear"></div>

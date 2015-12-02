@@ -14,7 +14,8 @@ import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.decorate.DefaultFrameDecorator;
 import gov.usgs.plot.decorate.DefaultFrameDecorator.Location;
 import gov.usgs.plot.render.MatrixRenderer;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
@@ -73,7 +74,7 @@ public final class HttpRsamCommand extends AbstractHttpCommand implements HttpBa
         errorString += "Error: illegal characters in channel (code).<br>";
     }
 
-    timeZone = TimeZone.getTimeZone(Util.stringToString(arguments.get("tz"), "UTC"));
+    timeZone = TimeZone.getTimeZone(StringUtils.stringToString(arguments.get("tz"), "UTC"));
 
     endTime = getEndTime(arguments.get("t2"));
     if (endTime.isNaN())
@@ -85,29 +86,29 @@ public final class HttpRsamCommand extends AbstractHttpCommand implements HttpBa
       errorString += "Error: could not parse start time (t1). Should be " + INPUT_DATE_FORMAT
           + " or -HH.M<br>";
 
-    timeZoneOffset = timeZone.getOffset((long) Util.j2KToEW(endTime) * 1000) / 1000;
+    timeZoneOffset = timeZone.getOffset(J2kSec.asEpochMs(endTime));
 
-    width = Util.stringToInt(arguments.get("w"), DEFAULT_W);
-    height = Util.stringToInt(arguments.get("h"), DEFAULT_H);
+    width = StringUtils.stringToInt(arguments.get("w"), DEFAULT_W);
+    height = StringUtils.stringToInt(arguments.get("h"), DEFAULT_H);
 
     if (height * width <= 0 || height * width > wws.httpMaxSize())
       errorString += "Error: product of width (w) and height (h) must be between 1 and "
           + wws.httpMaxSize() + ".<br>";
 
-    detrend = Util.stringToBoolean(arguments.get("dt"), DEFAULT_DT);
+    detrend = StringUtils.stringToBoolean(arguments.get("dt"), DEFAULT_DT);
 
-    rsamPeriod = Util.stringToInt(arguments.get("rsamP"), DEFAULT_RSAMP);
+    rsamPeriod = StringUtils.stringToInt(arguments.get("rsamP"), DEFAULT_RSAMP);
 
-    despike = Util.stringToBoolean(arguments.get("ds"), DEFAULT_DS);
-    despikePeriod = Util.stringToDouble(arguments.get("dsp"), 0);
+    despike = StringUtils.stringToBoolean(arguments.get("ds"), DEFAULT_DS);
+    despikePeriod = StringUtils.stringToDouble(arguments.get("dsp"), 0);
 
-    runningMedian = Util.stringToBoolean(arguments.get("rm"), false);
-    runningMedianPeriod = Util.stringToDouble(arguments.get("rmp"), 300);
+    runningMedian = StringUtils.stringToBoolean(arguments.get("rm"), false);
+    runningMedianPeriod = StringUtils.stringToDouble(arguments.get("rmp"), 300);
 
-    plotMax = Util.stringToDouble(arguments.get("max"), Double.MAX_VALUE);
-    plotMin = Util.stringToDouble(arguments.get("min"), Double.MIN_VALUE);
+    plotMax = StringUtils.stringToDouble(arguments.get("max"), Double.MAX_VALUE);
+    plotMin = StringUtils.stringToDouble(arguments.get("min"), Double.MIN_VALUE);
 
-    outputData = Util.stringToBoolean(arguments.get("csv"), DEFAULT_CSV);
+    outputData = StringUtils.stringToBoolean(arguments.get("csv"), DEFAULT_CSV);
 
     return errorString;
   }
@@ -167,10 +168,10 @@ public final class HttpRsamCommand extends AbstractHttpCommand implements HttpBa
     mr.setXAxisToTime(8, true, true);
 
     final String tzText =
-        timeZone.getDisplayName(timeZone.inDaylightTime(Util.j2KToDate(endTime)), TimeZone.SHORT);
-    final String bottomText = "("
-        + Util.j2KToDateString(startTime + timeZoneOffset, DISPLAY_DATE_FORMAT) + " to "
-        + Util.j2KToDateString(endTime + timeZoneOffset, DISPLAY_DATE_FORMAT) + " " + tzText + ")";
+        timeZone.getDisplayName(timeZone.inDaylightTime(J2kSec.asDate(endTime)), TimeZone.SHORT);
+    final String bottomText =
+        "(" + J2kSec.format(DISPLAY_DATE_FORMAT, startTime + timeZoneOffset) + " to "
+            + J2kSec.format(DISPLAY_DATE_FORMAT, endTime + timeZoneOffset) + " " + tzText + ")";
 
     mr.getAxis().setBottomLabelAsText(bottomText);
     mr.getAxis().setLeftLabelAsText("RSAM");

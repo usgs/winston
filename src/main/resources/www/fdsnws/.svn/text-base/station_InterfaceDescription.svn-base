@@ -1,0 +1,99 @@
+<div class="tabContentTitle">Description</div>
+
+<div class="tabContent">URL Builder
+</div> 
+<div class="tabContentTitle">Parameters</div>
+<div class="tabContent">
+  <table cellspacing=0>
+  <thead>
+  <tr class="head">
+    <th class="head">Parameter</th><th class="head">Default</th><th class="head">Description</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr class="subhead">
+    <th colspan=3 class="subhead">time constraints</th>
+  </tr>
+  <tr class="subsubhead">
+    <th colspan=3 class="subsubhead">simple time (cannot be combined with window time)</th>
+  </tr>
+  <tr>
+    <td>start[time]</td><td>[Any]</td><td>Limit to metadata epochs starting on or after the specified start time</td>
+  </tr>
+  <tr>
+    <td>end[time]</td><td>[Any]</td><td>Limit to metadata epochs ending on or after the specified end time</td>
+  </tr>
+  <tr class="subsubhead">
+    <th colspan=3" class="subsubhead">window time (cannot be combined with simple time)</th>
+  </tr>
+  <tr>
+    <td>startbefore</td><td>[Any]</td><td>Limit to metadata epochs starting before the specified time</td>
+  </tr>
+  <tr>
+    <td>startafter</td><td>[Any]</td><td>Limit to metadata epochs starting after the specified time</td>
+  </tr>
+  <tr>
+    <td>endbefore</td><td>[Any]</td><td>Limit to metadata epochs ending before the specified time</td>
+  </tr>
+  <tr>
+    <td>endafter</td><td>[Any]</td><td>Limit to metadata epochs ending after the specified time</td>
+  </tr>
+  <tr class="subhead">
+    <th colspan=3 class="subhead">channel constraints</th>
+  <tr>
+    <td>net[work]</td><td>[any]</td><td>Select one or more network codes. Multiple codes are comma-separated</td>
+  </tr>
+  <tr>
+    <td>sta[tion]</td><td>[any]</td><td>Select one or more station codes. Multiple codes are comma-separated</td>
+  </tr>
+  <tr>
+    <td>cha[nnel]</td><td>[any]</td><td>Select one or more channel codes. Multiple codes are comma-separated</td>
+  </tr>
+  <tr>
+    <td>loc[ation]</td><td>[any]</td><td>Select one or more location codes. Multiple codes are comma-separated</td>
+  </tr>
+  <tr class="subhead">
+    <th colspan=3 class="subhead">geographic constraint</th>
+  </tr>
+  <tr>
+    <th colspan=3 class="subsubhead">area-rectangle (cannot be used with area-circle)</th>
+  </tr>
+  <tr>
+    <td>minlatitude</td><td>-90.0</td><td>Limit to stations with a latitude larger than or equal to the specified minimum.
+  </tr>
+  <tr>
+    <td>maxlatitude</td><td>90.0</td><td>Limit to stations with a latitude smaller than or equal to the specified maximum.
+  </tr>
+  <tr>
+    <td>minlongitude</td><td>-180.0</td><td>Limit to stations with a longitude larger than or equal to the specified minimum.
+  </tr>
+  <tr>
+    <td>maxlongitude</td><td>180.0</td><td>Limit to stations with a longitude smaller than or equal to the specified maximum.
+  </tr>
+    <tr>
+    <th colspan=3 class="subsubhead">area-circle (cannot be used with area-rectangle)</th>
+  </tr>
+  <tr>
+    <td>latitude</td><td>0</td><td>Specify the latitude to be used for a radius search</td>
+  </tr>
+  <tr>
+    <td>longitude</td><td>0</td><td>Specify the longitude to be used for a radius search</td>
+  </tr>
+  <tr>
+    <td>minradius</td><td>0</td><td>Limit results to stations within the specified minimum numnber of degrees from the geographic point defined by the latitude and longitude parameters.</td>
+  </tr>
+  <tr>
+    <td>maxradius</td><td>0</td><td>Limit results to stations within the specified maximum numnber of degrees from the geographic point defined by the latitude and longitude parameters.</td>
+  </tr>
+  <tr>
+    <th colspan=3 class="subhead">output control</th>
+  </tr>
+  <tr>
+    <td>format</td><td>xml</td><td>Specify format of result, either `xml' of `text'.</td>
+  </tr>
+  <tr>
+    <td>level</td><td>station</td><td>Specify the level of details for the results</td>
+  </tr>
+  </tbody>
+  </table>
+</div>

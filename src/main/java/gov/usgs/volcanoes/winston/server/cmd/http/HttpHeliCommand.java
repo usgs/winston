@@ -11,7 +11,7 @@ import gov.usgs.plot.HelicorderSettings;
 import gov.usgs.plot.PlotException;
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.util.CodeTimer;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
@@ -58,15 +58,15 @@ public final class HttpHeliCommand extends AbstractHttpCommand implements HttpBa
         error = "Error: illegal characters in channel (code).";
     }
 
-    final String tz = Util.stringToString(arguments.get("tz"), DEFAULT_TZ);
+    final String tz = StringUtils.stringToString(arguments.get("tz"), DEFAULT_TZ);
     settings.timeZone = TimeZone.getTimeZone(tz);
 
     settings.endTime = getEndTime(arguments.get("t2"));
-    if (settings.endTime == Double.NaN)
+    if (Double.isNaN(settings.endTime))
       error = error + "Error: could not parse end time (t2). Should be " + INPUT_DATE_FORMAT + ".";
 
     settings.startTime = getStartTime(arguments.get("t1"), settings.endTime, ONE_HOUR);
-    if (settings.startTime == Double.NaN)
+    if (Double.isNaN(settings.startTime))
       error += "Error: cannot parse start time. Should be " + INPUT_DATE_FORMAT
           + " or -HH. I received " + arguments.get("t1");
 
@@ -75,12 +75,12 @@ public final class HttpHeliCommand extends AbstractHttpCommand implements HttpBa
     else if (settings.endTime - settings.startTime < MIN_HOURS * ONE_HOUR)
       error += "Error: Plot cannot be less than " + MIN_HOURS + " hour long";
 
-    settings.timeChunk = Util.stringToDouble(arguments.get("tc"), DEFAULT_TC) * ONE_MINUTE;
+    settings.timeChunk = StringUtils.stringToDouble(arguments.get("tc"), DEFAULT_TC) * ONE_MINUTE;
     if (settings.timeChunk <= 0 || settings.timeChunk > MAX_TC)
       error = error + "Error: time chunk (tc) must be greater than 0 and less than " + MAX_TC + ".";
 
-    final int width = Util.stringToInt(arguments.get("w"), DEFAULT_W);
-    final int height = Util.stringToInt(arguments.get("h"), DEFAULT_H);
+    final int width = StringUtils.stringToInt(arguments.get("w"), DEFAULT_W);
+    final int height = StringUtils.stringToInt(arguments.get("h"), DEFAULT_H);
     settings.setSizeFromPlotSize(width, height);
 
     if (settings.height * settings.width <= 0
@@ -88,14 +88,14 @@ public final class HttpHeliCommand extends AbstractHttpCommand implements HttpBa
       error = error + "Error: product of width (w) and height (h) must be between 1 and "
           + wws.httpMaxSize() + ".";
 
-    settings.showClip = Util.stringToBoolean(arguments.get("sc"), DEFAULT_SC);
-    settings.forceCenter = Util.stringToBoolean(arguments.get("fc"), DEFAULT_FC);
-    settings.barRange = Util.stringToInt(arguments.get("br"), -1);
-    settings.clipValue = Util.stringToInt(arguments.get("cv"), -1);
+    settings.showClip = StringUtils.stringToBoolean(arguments.get("sc"), DEFAULT_SC);
+    settings.forceCenter = StringUtils.stringToBoolean(arguments.get("fc"), DEFAULT_FC);
+    settings.barRange = StringUtils.stringToInt(arguments.get("br"), -1);
+    settings.clipValue = StringUtils.stringToInt(arguments.get("cv"), -1);
 
-    settings.largeChannelDisplay = Util.stringToBoolean(arguments.get("lb"));
+    settings.largeChannelDisplay = StringUtils.stringToBoolean(arguments.get("lb"));
 
-    settings.minimumAxis = Util.stringToBoolean(arguments.get("min"));
+    settings.minimumAxis = StringUtils.stringToBoolean(arguments.get("min"));
     if (settings.minimumAxis)
       settings.setMinimumSizes();
 
