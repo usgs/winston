@@ -1,0 +1,70 @@
+<script>
+function getValue(name) {
+	var element = document.getElementById(name);
+	if (element.value != "") {
+		return "&" + name + "=" + element.value;
+	} else {
+		return "";
+	}
+}
+function buildUrl() {
+    var linkUrl = "http://%%HOST%%/fdsnws/dataselect/1/query?";
+    var urlDiv = document.getElementById("url");
+
+	linkUrl += getValue("starttime");
+	linkUrl += getValue("endtime");
+    linkUrl += getValue("network");
+    linkUrl += getValue("station");
+    linkUrl += getValue("location");
+    linkUrl += getValue("channel");
+    
+    var minimumlength = document.getElementById("minimumlength");
+    if (minimumlength.value != 0) {
+    	linkUrl += "&minimumlength=" + minimumlength.value;
+    }
+    
+	linkUrl = linkUrl.replace("?&", "?");
+ 	linkUrl = linkUrl.replace(/\?$/, "");
+
+    var a = document.createElement('a');
+    a.href = linkUrl;
+    a.text = linkUrl;
+    a.textContent = linkUrl;
+	while(urlDiv.hasChildNodes()) {
+		urlDiv.removeChild(urlDiv.lastChild);
+	}
+	urlDiv.appendChild(a); 
+}
+</script>
+
+	<b>URL:</b><BR>
+	<div id="url"></div>
+<hr>
+<form>
+		<fieldset>
+        	<legend>When</legend>
+			<div class="right" style="width: 70%;">
+				<label for=starttime>Start Time<span class="small">yyyy-mm-ddThh:mm:ss.ssssss</span></label><input onchange="buildUrl()" type=text name=starttime id=starttime />
+				<label for=endtime>End Time<span class="small">yyyy-mm-ddThh:mm:ss.ssssss</span></label><input onchange="buildUrl()" type=text name=endtime id=endtime />
+			</div>
+		</fieldset>
+
+		<fieldset>
+			<legend>Which</legend>
+			<div class="right" style="width: 70%;">
+				<label for=network>Network Code</label><input onchange="buildUrl()" type=text name=network id=network />
+				<label for=station>Station Code</label><input onchange="buildUrl()" type=text name=station id=station />
+				<label for=location>Location Code</label><input onchange="buildUrl()" type=text name=location id=location />
+				<label for=channel>Channel Code</label><input onchange="buildUrl()" type=text name=channel id=channel />
+			</div>			
+		</fieldset>
+				
+		<fieldset>
+			<legend>How</legend>
+			<div class="right" style="width: 70%;">
+				<label for=minimumlength>Minimum Length</label><input onchange="buildUrl()" type=text name=minimumlength id=minimumlength /><br>
+			</div>			
+		</fieldset>
+		
+</form>
+<div class="clear"></div>

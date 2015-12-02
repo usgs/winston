@@ -1,0 +1,45 @@
+<div class="tabContentTitle">Description</div>
+
+<div class="tabContent">URL Builder
+</div> 
+<div class="tabContentTitle">Parameters</div>
+<div class="tabContent">
+  <table cellspacing=0>
+  <thead>
+  <tr class="head">
+    <th class="head">Parameter</th><th class="head">Default</th><th class="head">Description</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr class="subhead">
+    <th colspan=3 class="subhead">time constraints</th>
+  </tr>
+  <tr>
+    <td>start[time]</td><td>[Any]</td><td>Limit to metadata epochs starting on or after the specified start time</td>
+  </tr>
+  <tr>
+    <td>end[time]</td><td>[Any]</td><td>Limit to metadata epochs ending on or after the specified end time</td>
+  </tr>
+  <tr class="subhead">
+    <th colspan=3 class="subhead">channel constraints</th>
+  <tr>
+    <td>net[work]</td><td>[any]</td><td>Select one or more network codes. Multiple codes are comma-separated</td>
+  </tr>
+  <tr>
+    <td>sta[tion]</td><td>[any]</td><td>Select one or more station codes. Multiple codes are comma-separated</td>
+  </tr>
+  <tr>
+    <td>cha[nnel]</td><td>[any]</td><td>Select one or more channel codes. Multiple codes are comma-separated</td>
+  </tr>
+  <tr>
+    <td>loc[ation]</td><td>[any]</td><td>Select one or more location codes. Multiple codes are comma-separated</td>
+  </tr>
+  <tr>
+    <th colspan=3 class="subhead">output control</th>
+  </tr>
+  <tr>
+    <td>minimumlength</td><td>0.0</td><td>Limit results to continuous data segments of a minimum length specified in seconds.</td>
+  </tr>
+  </tbody>
+  </table>
+</div>

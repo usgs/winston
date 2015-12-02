@@ -199,10 +199,17 @@
 										<include>**</include>
 									</includes>
 								</filter>
+								<filter>
+									<artifact>mysql:mysql-connector-java</artifact>
+									<includes>
+										<include>**</include>
+									</includes>
+								</filter>
 							</filters>
 							<artifactSet>
 								<includes>
 									<include>gov.usgs.volcanoes:usgs</include>
+									<include>gov.usgs.volcanoes:volcano-core</include>
 									<include>com.jgoodies:*</include>
 									<include>com.martiansoftware:jsap</include>
 									<include>net.sourceforge.jtransforms:jtransforms</include>
@@ -212,6 +219,8 @@
 									<include>edu.sc.seis:*</include>
 									<include>colt:colt</include>
 									<include>edu.iris:JavaSeedLite</include>
+									<include>commons-collections:commons-collections</include>
+									<include>mysql:mysql-connector-java</include>
 								</includes>
 							</artifactSet>
 						</configuration>
@@ -457,6 +466,12 @@
 			<groupId>commons-collections</groupId>
 			<artifactId>commons-collections</artifactId>
 			<version>[3.2.2,)</version>
+		</dependency>
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.6</version>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 </project>
