@@ -35,7 +35,7 @@ public class Data {
 
   /**
    * Constructor
-   * 
+   *
    * @param w
    *          WinstonDatabase
    */
@@ -49,7 +49,7 @@ public class Data {
 
   /**
    * Get timespan for specific channel
-   * 
+   *
    * @param code
    *          channel code
    * @return Array of start and end times
@@ -73,7 +73,7 @@ public class Data {
 
   /**
    * Get timespan for specific channel
-   * 
+   *
    * @param sid
    *          channel id
    * @return Array of start and end times
@@ -85,7 +85,7 @@ public class Data {
 
   /**
    * Get days between times t1 & t2
-   * 
+   *
    * @param t1
    *          start of timespan
    * @param t2
@@ -106,7 +106,7 @@ public class Data {
    * Finds data gaps in a given channel between two times. Returns null
    * on a Winston error. Returns a single item list with the given time span
    * if the channel doesn't exist or if no data exist in the interval.
-   * 
+   *
    * @param code
    * @param t1
    * @param t2
@@ -200,7 +200,7 @@ public class Data {
   /**
    * Return wave data for timespan t1..t2 for channel w/ id sid; cap result at
    * maxrows size. Currently returns larger than asked for.
-   * 
+   *
    * @param sid
    *          id of channel
    * @param t1
@@ -232,7 +232,7 @@ public class Data {
    * Modified 2006-08-14 to not check for consistent sample rates. That duty
    * is passed to TraceBuf.traceBufsToWave(). This should fix the HVO bug
    * that trig2disk can not get tracebufs with varying sample rates.
-   * 
+   *
    * @param code
    * @param t1
    * @param t2
@@ -334,7 +334,7 @@ public class Data {
   /**
    * Return wave meta data for timespan t1..t2 for channel w/ code; cap result at
    * maxrows size.
-   * 
+   *
    * @param code
    *          channel
    * @param t1
@@ -372,7 +372,7 @@ public class Data {
   /**
    * Return wave data for timespan t1..t2 for channel w/ code; cap result at
    * maxrows size. Currently returns larger than asked for.
-   * 
+   *
    * @param code
    *          channel
    * @param t1
@@ -588,17 +588,18 @@ public class Data {
   }
 
   public static int getResultSetSize(final ResultSet rs) throws SQLException {
-    int size = 0;
+    if (rs == null) {
+      return 0;
+    }
+
     final int currentRow = rs.getRow();
-    if (rs != null) {
+    rs.beforeFirst();
+    rs.last();
+    final int size = rs.getRow();
+    if (currentRow == 0) {
       rs.beforeFirst();
-      rs.last();
-      size = rs.getRow();
-      if (currentRow == 0) {
-        rs.beforeFirst();
-      } else {
-        rs.absolute(currentRow);
-      }
+    } else {
+      rs.absolute(currentRow);
     }
     return size;
   }
