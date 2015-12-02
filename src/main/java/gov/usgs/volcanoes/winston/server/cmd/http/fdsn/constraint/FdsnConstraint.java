@@ -12,7 +12,7 @@ import gov.usgs.volcanoes.winston.server.cmd.http.fdsn.FdsnDateFormat;
  */
 public interface FdsnConstraint {
 
-  public static final DateFormat DATE_FORMAT = new FdsnDateFormat();
+//  public static final DateFormat DATE_FORMAT = new FdsnDateFormat();
 
   abstract boolean matches(Channel chan);
 }
