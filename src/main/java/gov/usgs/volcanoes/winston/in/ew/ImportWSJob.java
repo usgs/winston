@@ -1,17 +1,18 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Logger;
 
 import gov.usgs.earthworm.Menu;
 import gov.usgs.earthworm.WaveServer;
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.util.CodeTimer;
-import gov.usgs.util.Log;
-import gov.usgs.util.Time;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.winston.db.Channels;
 import gov.usgs.winston.db.InputEW;
 import gov.usgs.winston.db.WinstonDatabase;
@@ -24,13 +25,13 @@ import gov.usgs.winston.db.WinstonDatabase;
  * @author Dan Cervelli
  */
 public class ImportWSJob {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImportWSJob.class);
+
   private final WinstonDatabase winston;
   private final WaveServer waveServer;
 
   private String channel;
   private final List<double[]> spans;
-
-  private final Logger logger;
 
   private final Menu menu;
 
@@ -59,7 +60,6 @@ public class ImportWSJob {
     input = new InputEW(winston);
     menu = importWS.getMenu();
     requestSCNL = importWS.getRequestSCNL();
-    logger = Log.getLogger("gov.usgs.winston");
   }
 
   public void setRSAMParameters(final boolean en, final int rd, final int rl) {
@@ -105,9 +105,8 @@ public class ImportWSJob {
       final double t1 = span[0];
       final double t2 = span[1];
 
-      logger.info(
-          String.format("%s: downloading gap: [%s -> %s, %s]", channel, Time.toDateString(span[0]),
-              Time.toDateString(span[1]), Util.timeDifferenceToString(span[1] - span[0])));
+      LOGGER.info("{}: downloading gap: [{} -> {}, {}]", channel, J2kSec.toDateString(span[0]),
+          J2kSec.toDateString(span[1]), Util.timeDifferenceToString(span[1] - span[0]));
 
       input.setRowParameters((int) chunkSize + 65, 60);
 
@@ -123,8 +122,8 @@ public class ImportWSJob {
         ct += chunkSize;
         final double ret = Math.min(ct + chunkSize + 5, t2 + 5);
         final CodeTimer netTimer = new CodeTimer("net");
-        tbs = waveServer.getTraceBufs(ss[0], ss[1], ss[2], loc, Util.j2KToEW(ct - 5),
-            Util.j2KToEW(ret));
+        tbs = waveServer.getTraceBufs(ss[0], ss[1], ss[2], loc, J2kSec.asEpoch(ct - 5),
+            J2kSec.asEpoch(ret));
         netTimer.stop();
         totalDlTime += netTimer.getTotalTimeMillis();
         if (tbs != null && tbs.size() > 0) {
@@ -142,8 +141,8 @@ public class ImportWSJob {
             }
             if (tb.getStartTimeJ2K() - t1 < -0.0001 || tb.getEndTimeJ2K() - t2 > 0.0001) {
               it.remove();
-              logger.finest(String.format("Overlapping TraceBuf skipped.",
-                  tb.getStartTimeJ2K() - t1, tb.getEndTimeJ2K() - t2));
+              LOGGER.debug("Overlapping TraceBuf skipped. {} - {}", tb.getStartTimeJ2K() - t1,
+                  tb.getEndTimeJ2K() - t2);
               continue;
             }
             tb.createBytes();
@@ -152,7 +151,7 @@ public class ImportWSJob {
             continue;
           try {
             if (chunkDelay > 0) {
-              logger.finest(String.format("%s: delaying for %dms...", channel, chunkDelay));
+              LOGGER.debug("{}: delaying for {}ms...", channel, chunkDelay);
               Thread.sleep(chunkDelay);
             }
           } catch (final Exception e) {
@@ -163,46 +162,46 @@ public class ImportWSJob {
               input.inputTraceBufs(tbs, rsamEnable, rsamDelta, rsamDuration);
           inputTimer.stop();
           totalInsTime += inputTimer.getTotalTimeMillis();
-          logger.fine(String.format("%s: %d tb (%.0f/%.0fms), [%s -> %s, %s]", channel, tbs.size(),
+          LOGGER.debug("{}: {} tb ({}/{}ms), [{} -> {}, {}]", channel, tbs.size(),
               netTimer.getRunTimeMillis(), inputTimer.getRunTimeMillis(),
-              Time.toDateString(minTime), Time.toDateString(maxTime),
-              Util.timeDifferenceToString(maxTime - minTime)));
+              J2kSec.toDateString(minTime), J2kSec.toDateString(maxTime),
+              Util.timeDifferenceToString(maxTime - minTime));
 
           // TODO: clean this up, unify with ImportEW
           if (results.size() == 1) {
             // TODO: handle errors
             final InputEW.InputResult result = results.get(0);
-            logger.warning("Error: " + result.code);
+            LOGGER.warn("Error: {}", result.code);
           } else {
             for (int i = 0; i < results.size() - 2; i++) {
               final InputEW.InputResult result = results.get(i);
               final TraceBuf tb = result.traceBuf;
               switch (result.code) {
                 case SUCCESS_CREATED_TABLE:
-                  logger.fine(String.format("%s: day table created (%s)", channel,
-                      Time.format("yyyy-MM-dd", tb.getEndTimeJ2K() + 1)));
+                  LOGGER.info("{}: day table created ({})", channel,
+                      J2kSec.format("yyyy-MM-dd", tb.getEndTimeJ2K() + 1));
                 case SUCCESS:
                   total++;
-                  logger.finest("Insert: " + tb.toString());
+                  LOGGER.debug("Insert: {}", tb.toString());
                   break;
                 case ERROR_DATABASE:
                   // fixing
-                  logger.warning("Database error: " + tb.toString());
+                  LOGGER.debug("Database error: {}", tb.toString());
                   break;
                 case ERROR_UNKNOWN:
-                  logger.warning("Unknown insert error: " + tb.toString());
+                  LOGGER.warn("Unknown insert error: {}", tb.toString());
                   break;
                 case ERROR_CHANNEL:
                 case ERROR_NULL_TRACEBUF:
                   // these errors should never occur
-                  logger.warning("Bad channel/null TraceBuf.");
+                  LOGGER.warn("Bad channel/null TraceBuf.");
                   break;
                 case ERROR_DUPLICATE:
-                  logger.finer("Duplicate TraceBuf: " + tb.toString());
+                  LOGGER.info("Duplicate TraceBuf: {}", tb.toString());
                   break;
                 case NO_CODE:
                   // this should never occur
-                  logger.warning("No error/success code: " + tb.toString());
+                  LOGGER.warn("No error/success code: {}", tb.toString());
                   break;
                 case ERROR_HELICORDER:
                   break;
@@ -225,9 +224,9 @@ public class ImportWSJob {
       }
       timer.stop();
       importWS.addStats(total, totalDlTime, totalInsTime);
-      logger.info(String.format("%s: gap %s, %d tbs inserted in %.3fms (%.3fms/tb)", channel,
+      LOGGER.info("{}: gap {}, {} tbs inserted in {}ms ({}ms/tb)", channel,
           (quit ? "interrupted" : "finished"), total, timer.getTotalTimeMillis(),
-          (total == 0 ? 0 : timer.getTotalTimeMillis() / total)));
+          (total == 0 ? 0 : timer.getTotalTimeMillis() / total));
     } catch (final Throwable t) {
       t.printStackTrace();
     }
@@ -249,22 +248,22 @@ public class ImportWSJob {
 
   public void go() {
     for (final double[] span : spans) {
-      logger.fine(String.format("%s: gap: [%s -> %s, %s]", channel, Time.toDateString(span[0]),
-          Time.toDateString(span[1]), Util.timeDifferenceToString(span[1] - span[0])));
+      LOGGER.info(String.format("%s: gap: [%s -> %s, %s]", channel, J2kSec.toDateString(span[0]),
+          J2kSec.toDateString(span[1]), Util.timeDifferenceToString(span[1] - span[0])));
     }
 
-    logger.info(String.format(
-        "%s: starting job, total gaps: %d for a total duration of %s, Chunk: %.1fs, Delay: %dms",
+    LOGGER.info(
+        "{}: starting job, total gaps: {} for a total duration of {}, Chunk: {}s, Delay: {}ms",
         channel, spans.size(), Util.timeDifferenceToString(getSpansDuration()), chunkSize,
-        chunkDelay));
+        chunkDelay);
 
     if (!menu.channelExists(channel)) {
-      logger.severe("Channel does not exist on source WaveServer.");
+      LOGGER.error("Channel does not exist on source WaveServer.");
       return;
     }
 
     if (!channels.channelExists(channel)) {
-      logger.info("Creating new channel '" + channel + "' in Winston database.");
+      LOGGER.info("Creating new channel '{}' in Winston database.", channel);
       channels.createChannel(channel);
     }
 

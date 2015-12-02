@@ -75,7 +75,7 @@ public final class HttpMenuCommand extends AbstractHttpCommand implements HttpBa
     // display menu items
     for (final String[] line : menu) {
       if (line.length < 8) {
-        output.append("can't parse line, skipping. " + line);
+        output.append("can't parse line, skipping. " + Arrays.toString(line));
         continue;
       }
 

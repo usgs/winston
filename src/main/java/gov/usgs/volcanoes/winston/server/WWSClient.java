@@ -333,7 +333,7 @@ public class WWSClient extends WaveServer {
         try {
           System.out.printf("Waiting ... ");
           Thread.sleep((long) (gulpDelay * 1000));
-          System.out.printf("done.\n\n");
+          System.out.println("done.");
 
         } catch (final InterruptedException e) {
           // TODO Auto-generated catch block
@@ -344,7 +344,7 @@ public class WWSClient extends WaveServer {
     t2 = et;
     System.out.printf("Gulp #%d starting ... ", N + 1);
     wavelet = winston.getWave(sta, comp, net, loc, t1, t2, false);
-    System.out.printf("done.\n", N + 1);
+    System.out.printf("done.\n");
 
     if (wavelet != null)
       waves.add(wavelet);
@@ -421,7 +421,7 @@ public class WWSClient extends WaveServer {
 
     final Arguments args = new Arguments(as, flags, keys);
 
-    if (args.flagged("--help") | as.length == 0) {
+    if (args.flagged("--help") || as.length == 0) {
       System.err.println("java gov.usgs.winston.server.WWSClient [OPTIONS]\n");
       System.out.println("-s [server]\t\tWinston server");
       System.out.println("-p [port]\t\tport");

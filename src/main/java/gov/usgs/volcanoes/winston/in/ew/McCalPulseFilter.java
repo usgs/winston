@@ -32,8 +32,6 @@ public class McCalPulseFilter extends TraceBufFilter {
 
   @Override
   public boolean match(final TraceBuf tb, final Options options) {
-    if (tb.firstSampleTime() == Double.NaN)
-      return false;
 
     final double g = Goertzel.goertzel(preambleFreq, tb.samplingRate(), tb.samples(), false);
     final double g2 = Goertzel.goertzel(preambleFreq / 3, tb.samplingRate(), tb.samples(), false);

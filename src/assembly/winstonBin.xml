@@ -10,19 +10,28 @@
 	<fileSets>
 		<fileSet>
 			<directory>${project.basedir}</directory>
-			<outputDirectory>/</outputDirectory>
 			<includes>
 				<include>README.md</include>
 				<include>LICENSE.md</include>
 				<include>CHANGES.md</include>
+				<include>ImportEW.config</include>
+				<include>NTP.config</include>
+				<include>WWS.config</include>
+				<include>Winston.config</include>
+				<include>my.cnf</include>
 			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>${project.basedir}/bin</directory>
+			<outputDirectory>bin</outputDirectory>
+			<includes />
 		</fileSet>
 	</fileSets>
 	<files>
 		<file>
 			<outputDirectory>lib</outputDirectory>
 			<source>${project.build.directory}/${project.build.finalName}.jar</source>
-			<destName>swarm.jar</destName>
+			<destName>winston.jar</destName>
 		</file>
 	</files>
 </assembly>

@@ -1,15 +1,17 @@
 package gov.usgs.volcanoes.winston.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gov.usgs.util.CodeTimer;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.winston.in.ew.ImportWSJob;
 
 /**
  * A class for merging a table from a source Winston to a destination Winston.
@@ -19,18 +21,18 @@ import gov.usgs.util.Util;
  * @author Dan Cervelli
  */
 public class Merge {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImportWSJob.class);
+
   private static final double EPSILON = 0.0001;
   private WinstonDatabase source;
   private WinstonDatabase dest;
-  private final Logger logger;
 
   public Merge(final String srcURL, final String destURL) {
     final String driver = "org.gjt.mm.mysql.Driver";
-    logger = source.getLogger();
     source = new WinstonDatabase(driver, srcURL, null);
-    logger.finer("Connected to source.");
+    LOGGER.info("Connected to source.");
     dest = new WinstonDatabase(driver, destURL, null);
-    logger.finer("Connected to destination.");
+    LOGGER.info("Connected to destination.");
   }
 
   public void flip() {
@@ -41,10 +43,10 @@ public class Merge {
 
   public void mergeHelicorders(final String code, final String date) {
     try {
-      logger.finer("Begin merging helicorders.");
+      LOGGER.info("Begin merging helicorders.");
       final Set<Integer> sourceTimes = new HashSet<Integer>();
       int total = 0;
-      logger.finer("Getting source times.");
+      LOGGER.info("Getting source times.");
       source.useDatabase(code);
       ResultSet srs =
           source.getStatement().executeQuery("SELECT j2ksec FROM `" + code + "$$H" + date + "`");
@@ -53,7 +55,7 @@ public class Merge {
         sourceTimes.add((int) Math.round(srs.getDouble(1)));
       }
 
-      logger.finer("Getting destination times.");
+      LOGGER.info("Getting destination times.");
       dest.useDatabase(code);
       final ResultSet drs =
           dest.getStatement().executeQuery("SELECT j2ksec FROM `" + code + "$$H" + date + "`");
@@ -66,7 +68,7 @@ public class Merge {
       total = 0;
       double read = 0;
       double write = 0;
-      logger.finer("Begin merging.");
+      LOGGER.info("Begin merging.");
       final PreparedStatement insert = dest.getConnection()
           .prepareStatement("INSERT IGNORE INTO `" + code + "$$H" + date + "` VALUES (?,?,?,?,?)");
       final CodeTimer readTimer = new CodeTimer();
@@ -89,19 +91,19 @@ public class Merge {
       }
       readTimer.stop();
       read = readTimer.getRunTimeMillis() - write;
-      logger.finer("Done merging, " + read + "ms reading, " + write + "ms writing.");
-      logger.info("Merged " + total + " helicorder rows.");
+      LOGGER.info("Done merging, " + read + "ms reading, " + write + "ms writing.");
+      LOGGER.info("Merged " + total + " helicorder rows.");
     } catch (final Exception e) {
-      logger.log(Level.SEVERE, "Could not merge waves.", e);
+      LOGGER.error("Could not merge waves. {}", e);
     }
   }
 
   public void mergeWaves(final String code, final String date) {
     try {
-      logger.finer("Begin merging waves.");
+      LOGGER.info("Begin merging waves.");
       final Set<Double> sourceTimes = new HashSet<Double>();
       int total = 0;
-      logger.finer("Getting source times.");
+      LOGGER.info("Getting source times.");
       source.useDatabase(code);
       ResultSet srs =
           source.getStatement().executeQuery("SELECT st FROM `" + code + "$$" + date + "`");
@@ -110,7 +112,7 @@ public class Merge {
         sourceTimes.add(Util.register(srs.getDouble(1), EPSILON));
       }
 
-      logger.finer("Getting destination times.");
+      LOGGER.info("Getting destination times.");
       dest.useDatabase(code);
       final ResultSet drs =
           dest.getStatement().executeQuery("SELECT st FROM `" + code + "$$" + date + "`");
@@ -121,7 +123,7 @@ public class Merge {
       }
 
       total = 0;
-      logger.finer("Begin merging.");
+      LOGGER.info("Begin merging.");
       double read = 0;
       double write = 0;
       final PreparedStatement insert = dest.getConnection()
@@ -146,10 +148,10 @@ public class Merge {
       }
       readTimer.stop();
       read = readTimer.getRunTimeMillis() - write;
-      logger.finer("Done merging, " + read + "ms reading, " + write + "ms writing.");
-      logger.info("Merged " + total + " wave rows.");
+      LOGGER.info("Done merging, " + read + "ms reading, " + write + "ms writing.");
+      LOGGER.info("Merged " + total + " wave rows.");
     } catch (final Exception e) {
-      logger.log(Level.SEVERE, "Could not merge waves.", e);
+      LOGGER.error("Could not merge waves. {}", e);
     }
   }
 
