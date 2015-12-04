@@ -19,6 +19,7 @@ import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
 import gov.usgs.util.Util;
 import gov.usgs.volcanoes.winston.Channel;
+import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
@@ -269,7 +270,7 @@ public class FdsnStationQuery extends FdsnQueryCommand implements FdsnStationSer
     rootElement.appendChild(source);
 
     final Element module = doc.createElement("module");
-    module.appendChild(doc.createTextNode("Winston " + WWS.getVersion()));
+    module.appendChild(doc.createTextNode("Winston " + Version.VERSION_STRING));
     rootElement.appendChild(module);
 
     final Element created = doc.createElement("Created");

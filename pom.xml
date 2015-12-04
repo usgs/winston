@@ -23,7 +23,7 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-    
+
 	<developers>
 		<developer>
 			<id>tparker</id>
@@ -69,10 +69,10 @@
 		<developerConnection>scm:git:git@github.com:usgs/winston.git</developerConnection>
 		<url>git@github.com:usgs/winston.git</url>
 	</scm>
-    <issueManagement>
-        <url>https://github.com/usgs/winston/issues</url>
-        <system>GitHub</system>
-    </issueManagement>
+	<issueManagement>
+		<url>https://github.com/usgs/winston/issues</url>
+		<system>GitHub</system>
+	</issueManagement>
 	<ciManagement>
 		<system>Travis</system>
 		<url>https://travis-ci.org/usgs/winston/</url>
@@ -108,7 +108,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.0.3</version>
 				<configuration>
 					<!-- Enables analysis which takes more memory but finds more bugs. If 
 						you run out of memory, changes the value of the effort element to 'low'. -->
@@ -315,25 +315,25 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.6</version>
-        <configuration>
-          <descriptors>
-            <descriptor>src/assembly/winstonBin.xml</descriptor>
-          </descriptors>
-        </configuration>
-        <executions>
-          <execution>
-            <id>make-assembly</id> <!-- this is used for inheritance merges -->
-            <phase>package</phase> <!-- bind to the packaging phase -->
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-	</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<descriptors>
+						<descriptor>src/assembly/winstonBin.xml</descriptor>
+					</descriptors>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 
 		<pluginManagement>

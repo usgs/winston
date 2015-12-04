@@ -18,6 +18,7 @@ import gov.usgs.net.Server;
 import gov.usgs.util.ConfigFile;
 import gov.usgs.util.Log;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.winston.Version;
 
 /**
  * The Winston Wave Server. This program mimics the network protocol of the
@@ -69,18 +70,6 @@ public class WWS extends Server {
       System.exit(1);
     }
     return config;
-  }
-
-  public static String getVersion() {
-    final String[] v = Util.getVersion("gov.usgs.winston");
-    String version;
-    if (v != null) {
-      version = "Version: " + v[0] + " Built: " + v[1];
-    } else {
-      version = "No version information available.";
-    }
-
-    return version;
   }
 
   /**
@@ -142,7 +131,7 @@ public class WWS extends Server {
 
   public static void printKeys() {
     final StringBuffer sb = new StringBuffer();
-    sb.append(getVersion() + "\n");
+    sb.append(Version.VERSION_STRING + "\n");
     sb.append("Keys:\n");
     sb.append(" 0-3: logging level\n");
     sb.append("        d: drop idle connections\n");
@@ -196,7 +185,7 @@ public class WWS extends Server {
     name = "WWS";
     logger = Log.getLogger("gov.usgs.winston");
 
-    logger.info(WWS.getVersion());
+    logger.info(Version.VERSION_STRING);
     if (cf != null) {
       configFilename = cf;
     }

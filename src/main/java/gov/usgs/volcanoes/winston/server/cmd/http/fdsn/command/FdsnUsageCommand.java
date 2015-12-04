@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import gov.usgs.net.HttpRequest;
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
+import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
 
@@ -69,7 +70,7 @@ public abstract class FdsnUsageCommand extends FdsnCommand {
 
     output.append("</div>\n");
     output.append("</div>\n");
-    output.append("<p><br><p><b>" + WWS.getVersion() + "</b>\n");
+    output.append("<p><br><p><b>" + Version.VERSION_STRING + "</b>\n");
     output.append("</div><script src=\"/tabs.js\"></script>\n");
     output.append("</body></html>\n");
 
