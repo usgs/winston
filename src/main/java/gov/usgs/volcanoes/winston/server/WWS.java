@@ -1,14 +1,6 @@
 package gov.usgs.volcanoes.winston.server;
 
-import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.JSAPResult;
-import com.martiansoftware.jsap.Parameter;
-import com.martiansoftware.jsap.SimpleJSAP;
-import com.martiansoftware.jsap.Switch;
-import com.martiansoftware.jsap.UnflaggedOption;
-
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -31,59 +23,18 @@ import gov.usgs.volcanoes.winston.Version;
  * @author Dan Cervelli
  */
 public class WWS extends Server {
-  private static final String DEFAULT_CONFIG_FILENAME = "WWS.config";
-  private static final String DEFAULT_JSAP_EXPLANATION = "All output goes to standard error.\n"
-      + "The command line takes precedence over the config file.\n";
-  private static final Parameter[] DEFAULT_JSAP_PARAMETERS =
-      new Parameter[] {new Switch("noInput", 'i', "noinput", "Do not poll keyboard for input."),
-          new Switch("verbose", 'v', "verbose", "Verbose logging."),
-          new UnflaggedOption("configFilename", JSAP.STRING_PARSER, DEFAULT_CONFIG_FILENAME,
-              JSAP.REQUIRED, JSAP.NOT_GREEDY, "The config file name.")};
-  private static final String DEFAULT_LOG_FILE = "WWS.log";
-
-  private static final int DEFAULT_LOG_FILE_SIZE = 1024 * 1024;
-  private static final int DEFAULT_LOG_NUM_FILES = 9;
-  public static String JSAP_EXPLANATION_PREFACE =
-      "Winston WWS\n" + "\n" + "I am the Winston wave server" + "\n";
-  // JSAP related stuff.
-  public static String JSAP_PROGRAM_NAME = "java gov.usgs.winston.in.ew.ImportWS";
-
-  public static JSAPResult getArguments(final String[] args) {
-    JSAPResult config = null;
-    try {
-      final SimpleJSAP jsap = new SimpleJSAP(JSAP_PROGRAM_NAME,
-          JSAP_EXPLANATION_PREFACE + DEFAULT_JSAP_EXPLANATION, DEFAULT_JSAP_PARAMETERS);
-
-      config = jsap.parse(args);
-
-      if (jsap.messagePrinted()) {
-        // The following error message is useful for catching the case
-        // when args are missing, but help isn't printed.
-        if (!config.getBoolean("help")) {
-          System.err.println("Try using the --help flag.");
-        }
-
-        System.exit(1);
-      }
-    } catch (final Exception ex) {
-      ex.printStackTrace();
-      System.exit(1);
-    }
-    return config;
-  }
-
   /**
    * Launch the WWS.
    *
    * @param args
    *          command line arguments
+   * @throws Exception when command line cannot be parsed
    */
-  public static void main(final String[] args) throws IOException {
-    final JSAPResult config = getArguments(args);
+  public static void main(final String[] args) throws Exception {
+    final WWSArgs config = new WWSArgs(args);
+    final WWS wws = new WWS(config.configFileName);
 
-    final WWS wws = new WWS(config.getString("configFilename"));
-
-    if (config.getBoolean("verbose")) {
+    if (config.isVerbose) {
       wws.setLogLevel(Level.ALL);
     } else {
       wws.setLogLevel(Level.FINE);
@@ -92,7 +43,7 @@ public class WWS extends Server {
     wws.launch();
 
     final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-    boolean acceptCommands = !(config.getBoolean("noInput"));
+    boolean acceptCommands = !(config.isNoInput);
     if (acceptCommands) {
       wws.logger.info("Enter ? for console commands.");
     }
@@ -153,7 +104,7 @@ public class WWS extends Server {
 
   protected boolean allowHttp;
 
-  protected String configFilename = DEFAULT_CONFIG_FILENAME;
+  protected String configFilename;
   protected int embargo = 0;
 
   protected int handlers;
@@ -186,9 +137,7 @@ public class WWS extends Server {
     logger = Log.getLogger("gov.usgs.winston");
 
     logger.info(Version.VERSION_STRING);
-    if (cf != null) {
-      configFilename = cf;
-    }
+    configFilename = cf;
     processConfigFile();
     for (int i = 0; i < handlers; i++) {
       addCommandHandler(new ServerHandler(this));
@@ -317,13 +266,7 @@ public class WWS extends Server {
     idleTime = i;
     logger.info("config: wws.idleTime=" + idleTime / 1000 + ".");
 
-    // int em = Util.stringToInt(cf.getString("wws.embargo"), -1);
-    // if (em < 0)
-    // fatalError(configFilename + ": bad or missing 'wws.embargo' setting.");
-    // embargo = em;
-    // logger.info("config: wws.embargo=" + embargo + ".");
     embargo = 0; // TODO: implement
-    // embargo *= 60;
 
     maxDays = Util.stringToInt(cf.getString("wws.maxDays"), 0);
     logger.info("config: wws.maxDays=" + maxDays + ".");
@@ -348,14 +291,6 @@ public class WWS extends Server {
     winstonURL = cf.getString("winston.url");
     winstonPrefix = cf.getString("winston.prefix");
     winstonStatementCacheCap = Util.stringToInt(cf.getString("winston.statementCacheCap"), 100);
-
-    logFile = Util.stringToString(cf.getString("log.name"), DEFAULT_LOG_FILE);
-    logNumFiles = Util.stringToInt(cf.getString("log.numFiles"), DEFAULT_LOG_NUM_FILES);
-    logSize = Util.stringToInt(cf.getString("log.maxSize"), DEFAULT_LOG_FILE_SIZE);
-
-    if (logNumFiles > 0) {
-      Log.attachFileLogger(logger, logFile, logSize, logNumFiles, true);
-    }
   }
 
   public void setLogLevel(final Level level) {
