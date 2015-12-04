@@ -3,7 +3,7 @@ package gov.usgs.volcanoes.winston.server.cmd.http.fdsn.constraint;
 import java.awt.geom.Point2D;
 
 import gov.usgs.proj.Projection;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.Instrument;
 
@@ -25,13 +25,13 @@ public class FdsnGeographicCircleConstraint implements FdsnConstraint {
 
   public FdsnGeographicCircleConstraint(final String latitude, final String longitude,
       final String minRadius, final String maxRadius) {
-    final double lat = Util.stringToDouble(latitude, DEFAULT_LATITUDE);
-    final double lon = Util.stringToDouble(longitude, DEFAULT_LONGITUDE);
+    final double lat = StringUtils.stringToDouble(latitude, DEFAULT_LATITUDE);
+    final double lon = StringUtils.stringToDouble(longitude, DEFAULT_LONGITUDE);
 
     point = new Point2D.Double(lat, lon);
 
-    this.minRadius = Util.stringToDouble(minRadius, DEFAULT_MINRADIUS);
-    this.maxRadius = Util.stringToDouble(maxRadius, DEFAULT_MAXRADIUS);
+    this.minRadius = StringUtils.stringToDouble(minRadius, DEFAULT_MINRADIUS);
+    this.maxRadius = StringUtils.stringToDouble(maxRadius, DEFAULT_MAXRADIUS);
   }
 
   public boolean matches(final Channel chan) {
@@ -39,13 +39,14 @@ public class FdsnGeographicCircleConstraint implements FdsnConstraint {
     final double lat = i.getLatitude();
     final double lon = i.getLongitude();
 
-    if (lat != Double.NaN && lon != Double.NaN) {
-      final Point2D.Double p = new Point2D.Double(lat, lon);
-      final double radius = Projection.distanceBetweenDegree(point, p);
-
-      return (radius >= minRadius && radius <= maxRadius);
-    } else
+    if (Double.isNaN(lat) || Double.isNaN(lon)) {
       return false;
+    }
+
+    final Point2D.Double p = new Point2D.Double(lat, lon);
+    final double radius = Projection.distanceBetweenDegree(point, p);
+
+    return (radius >= minRadius && radius <= maxRadius);
   }
 
   @Override

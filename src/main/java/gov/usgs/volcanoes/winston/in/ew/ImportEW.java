@@ -43,6 +43,7 @@ import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
+import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.winston.db.Admin;
 import gov.usgs.winston.db.Channels;
 import gov.usgs.winston.db.InputEW;
@@ -255,12 +256,7 @@ public class ImportEW extends Thread {
         StringUtils.stringToInt(config.getString("import.log.maxSize"), DEFAULT_LOG_FILE_SIZE);
 
 
-    final String[] version = Util.getVersion("gov.usgs.winston");
-    if (version != null)
-      LOGGER.info("Version: " + version[0] + " Built: " + version[1]);
-    else
-      LOGGER.info("No version information available.");
-
+    LOGGER.info(Version.VERSION_STRING);
     LOGGER.info("config: import.log.name=" + logFile);
     LOGGER.info("config: import.log.numFiles=" + logNumFiles);
     LOGGER.info("config: import.log.maxSize=" + logSize);

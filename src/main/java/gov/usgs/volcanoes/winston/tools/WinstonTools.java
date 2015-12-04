@@ -15,6 +15,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 import gov.usgs.util.ConfigFile;
 import gov.usgs.util.Log;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.volcanoes.winston.tools.pannel.ExportSACPanel;
 import gov.usgs.volcanoes.winston.tools.pannel.ImportInstrumentLocations;
 import gov.usgs.volcanoes.winston.tools.pannel.ImportSACPanel;
@@ -30,17 +31,16 @@ public class WinstonTools extends JFrame {
   private JTabbedPane tabbedPane;
   private WinstonToolsMenu menuBar;
   private static final String TITLE = "Winston Tools";
-  private static final String VERSION = "1.0.0.20120313";
   private final Logger logger;
   private static WinstonTools application;
   private static final int HEIGHT = 650;
   private static final int WIDTH = 550;
 
   public WinstonTools(final String[] args) {
-    super(TITLE + " [" + VERSION + "]");
+    super(TITLE + " [" + Version.VERSION_STRING + "]");
 
     logger = Log.getLogger("gov.usgs.winston");
-    logger.fine("WinstonTools version: " + VERSION);
+    logger.fine("WinstonTools version: " + Version.VERSION_STRING);
     final String[] ss = Util.getVersion("gov.usgs.winston.winstonTools");
     if (ss == null)
       logger.fine("no build version information available");

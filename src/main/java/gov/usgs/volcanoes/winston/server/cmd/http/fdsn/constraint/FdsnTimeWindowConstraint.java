@@ -20,6 +20,7 @@ public class FdsnTimeWindowConstraint extends FdsnTimeConstraint {
 
   public FdsnTimeWindowConstraint(final String startBefore, final String startAfter,
       final String endBefore, final String endAfter) throws FdsnException {
+    super();
     try {
       this.startBefore = dateStringToDouble(startBefore, FAR_IN_FUTURE);
       this.startAfter = dateStringToDouble(startAfter, FAR_IN_PAST);

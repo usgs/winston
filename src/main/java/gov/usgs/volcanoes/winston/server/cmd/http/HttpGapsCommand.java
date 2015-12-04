@@ -25,6 +25,8 @@ public final class HttpGapsCommand extends AbstractHttpCommand implements HttpBa
   private static final boolean DEFAULT_WC = false;
   private static final int DEFAULT_MGD = 5;
 
+  private static final double EPSILON = 1e-6
+      ;
   DecimalFormat formatter = new DecimalFormat("#.###");
   double now = Util.ewToJ2K(System.currentTimeMillis() / 1000);
 
@@ -234,7 +236,7 @@ public final class HttpGapsCommand extends AbstractHttpCommand implements HttpBa
     // All or No Data
     if (gapCount == 0) {
       writeSimpleHTML("No Gaps for selected time frame.");
-    } else if (totalGapLength == totalTime) {
+    } else if (Math.abs(totalGapLength - totalTime) < EPSILON) {
       writeSimpleHTML("No Data for selected time frame.");
     }
 
