@@ -2,7 +2,8 @@ package gov.usgs.volcanoes.winston.tools;
 
 import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
@@ -12,10 +13,9 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.Log;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.winston.Version;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.tools.pannel.ExportSACPanel;
 import gov.usgs.volcanoes.winston.tools.pannel.ImportInstrumentLocations;
 import gov.usgs.volcanoes.winston.tools.pannel.ImportSACPanel;
@@ -24,14 +24,14 @@ import gov.usgs.volcanoes.winston.tools.pannel.ImportWSPanel;
 import gov.usgs.volcanoes.winston.tools.pannel.PlotHelicorderPanel;
 import gov.usgs.volcanoes.winston.tools.pannel.TimePanel;
 import gov.usgs.volcanoes.winston.tools.pannel.WinstonUpgradePanel;
-import gov.usgs.winston.db.WinstonDatabase;
 
 public class WinstonTools extends JFrame {
+  private static final Logger LOGGER = LoggerFactory.getLogger(WinstonTools.class);
+
   private static final long serialVersionUID = -1;
   private JTabbedPane tabbedPane;
   private WinstonToolsMenu menuBar;
   private static final String TITLE = "Winston Tools";
-  private final Logger logger;
   private static WinstonTools application;
   private static final int HEIGHT = 650;
   private static final int WIDTH = 550;
@@ -39,14 +39,7 @@ public class WinstonTools extends JFrame {
   public WinstonTools(final String[] args) {
     super(TITLE + " [" + Version.VERSION_STRING + "]");
 
-    logger = Log.getLogger("gov.usgs.winston");
-    logger.fine("WinstonTools version: " + Version.VERSION_STRING);
-    final String[] ss = Util.getVersion("gov.usgs.winston.winstonTools");
-    if (ss == null)
-      logger.fine("no build version information available");
-    else
-      logger.fine("build version/date: " + ss[0] + "/" + ss[1]);
-
+    LOGGER.info("WinstonTools version: " + Version.VERSION_STRING);
     application = this;
   }
 

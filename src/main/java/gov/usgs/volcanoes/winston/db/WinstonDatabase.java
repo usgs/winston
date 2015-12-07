@@ -1,5 +1,8 @@
 package gov.usgs.volcanoes.winston.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -7,14 +10,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.Log;
-import gov.usgs.util.Retriable;
-import gov.usgs.util.Util;
-import gov.usgs.util.UtilException;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.util.Retriable;
+import gov.usgs.volcanoes.core.util.StringUtils;
+import gov.usgs.volcanoes.core.util.UtilException;
 
 /**
  * A class that manages a connection to a Winston database.
@@ -24,6 +24,8 @@ import gov.usgs.util.UtilException;
  * @author Dan Cervelli
  */
 public class WinstonDatabase {
+  private static final Logger LOGGER = LoggerFactory.getLogger(WinstonDatabase.class);
+
   public static final String WINSTON_TABLE_DATE_FORMAT = "yyyy_MM_dd";
   public static final String CURRENT_SCHEMA_VERSION = "1.1.1";
   private static final String DEFAULT_DATABASE_PREFIX = "W";
@@ -45,8 +47,6 @@ public class WinstonDatabase {
   public final String databasePrefix;
   public final String tableEngine;
 
-  private final Logger logger;
-
   private final PreparedStatementCache preparedStatements;
 
   public WinstonDatabase(final String dbDriver, final String dbURL, final String databasePrefix) {
@@ -60,7 +60,6 @@ public class WinstonDatabase {
 
   public WinstonDatabase(final String dbDriver, final String dbURL, final String databasePrefix,
       final String tableEngine, final int cacheCap) {
-    logger = Log.getLogger("gov.usgs.winston");
 
     // Set default Locale to US. This ensures that decimals play well with the SQL standard. ie. no
     // decimal comma
@@ -69,15 +68,11 @@ public class WinstonDatabase {
     this.dbDriver = dbDriver;
     this.dbURL = dbURL;
     this.cacheCap = cacheCap;
-    this.databasePrefix = Util.stringToString(databasePrefix, DEFAULT_DATABASE_PREFIX);
+    this.databasePrefix = StringUtils.stringToString(databasePrefix, DEFAULT_DATABASE_PREFIX);
     this.tableEngine = (tableEngine == null) ? "" : (" ENGINE = " + tableEngine);
 
     preparedStatements = new PreparedStatementCache(this.cacheCap, true);
     connect();
-  }
-
-  public Logger getLogger() {
-    return logger;
   }
 
   private void connect() {
@@ -89,15 +84,14 @@ public class WinstonDatabase {
       winstonStatement = winstonConnection.createStatement();
       winstonConnected = true;
       preparedStatements.clear();
-      logger.log(Level.INFO, "Connected to database.");
+      LOGGER.info("Connected to database.");
     } catch (final ClassNotFoundException e) {
-      logger.log(Level.SEVERE, "Could not load the database driver, check your CLASSPATH.",
-          Util.getLineNumber(this, e));
+      LOGGER.error("Could not load the database driver, check your CLASSPATH. ({})", e);
       System.exit(-1);
     } catch (final Exception e) {
       winstonConnection = null;
       winstonStatement = null;
-      logger.log(Level.SEVERE, "Could not connect to Winston.", e);
+      LOGGER.error("Could not connect to Winston.", e);
       winstonConnected = false;
     }
   }
@@ -111,7 +105,7 @@ public class WinstonDatabase {
       winstonConnection.close();
       winstonConnected = false;
     } catch (final Exception e) {
-      logger.warning("Error closing database.  This is unusual, but not critical.");
+      LOGGER.warn("Error closing database.  This is unusual, but not critical.");
     }
   }
 
@@ -181,7 +175,7 @@ public class WinstonDatabase {
             result = new Boolean(true);
             return true;
           } catch (final SQLException e) {
-            logger.log(Level.SEVERE, "execute() failed, SQL: " + sql, e);
+            LOGGER.error("execute() failed, SQL: {}. ({})", sql, e);
           }
           result = new Boolean(false);
           return false;
@@ -209,7 +203,7 @@ public class WinstonDatabase {
             result = winstonStatement.executeQuery(sql);
             return true;
           } catch (final SQLException e) {
-            logger.log(Level.SEVERE, "executeQuery() failed, SQL: " + sql, e);
+            LOGGER.error("executeQuery() failed, SQL: {}. ({})", sql, e);
           }
           return false;
         }
@@ -262,8 +256,7 @@ public class WinstonDatabase {
       getStatement().execute("CREATE TABLE supp_data_xref ( sdid INT NOT NULL, cid INT NOT NULL, "
           + "UNIQUE KEY (sdid,cid) ) " + tableEngine);
     } catch (final Exception e) {
-      logger.log(Level.SEVERE,
-          "Could not create tables in WWS database.  Are permissions set properly?", e);
+      LOGGER.error("Could not create tables in WWS database.  Are permissions set properly? ({})", e);
     }
   }
 
@@ -286,9 +279,9 @@ public class WinstonDatabase {
       return true;
     } catch (final SQLException e) {
       if (e.getMessage().indexOf("Unknown database") != -1)
-        logger.log(Level.INFO, "Attempt to use nonexistent database: " + db);
+        LOGGER.info("Attempt to use nonexistent database: {}", db);
       else
-        logger.log(Level.SEVERE, "Could not use database: " + db, e);
+        LOGGER.error("Could not use database: {}. ({})", db, e);
     }
     return false;
   }
@@ -307,12 +300,12 @@ public class WinstonDatabase {
       if (failed) {
         getStatement().execute("CREATE DATABASE `" + databasePrefix + "_ROOT`");
         getStatement().execute("USE `" + databasePrefix + "_ROOT`");
-        logger.info("Created new Winston database: " + databasePrefix);
+        LOGGER.info("Created new Winston database: {}", databasePrefix);
         createTables();
       }
       return true;
     } catch (final Exception e) {
-      logger.severe("Could not locate or create WWS database.  Are permissions set properly?");
+      LOGGER.error("Could not locate or create WWS database.  Are permissions set properly?");
     }
     return false;
   }
@@ -335,12 +328,12 @@ public class WinstonDatabase {
       if (ps == null) {
         ps = winstonConnection.prepareStatement(sql);
         preparedStatements.put(sql, ps);
-        logger.finest(String.format("Adding statement to cache(%d/%d): %s",
-            preparedStatements.size(), preparedStatements.maxSize(), sql));
+        LOGGER.debug("Adding statement to cache({}/{}): {}",
+            preparedStatements.size(), preparedStatements.maxSize(), sql);
       }
       return ps;
     } catch (final Exception e) {
-      logger.log(Level.SEVERE, "Could not prepare statement.", e);
+      LOGGER.error("Could not prepare statement. ({})", e.getLocalizedMessage());
     }
     return null;
   }
@@ -355,7 +348,7 @@ public class WinstonDatabase {
     final String databasePrefix = cf.getString("winston.prefix");
     final String tableEngine = cf.getString("winston.tableEngine");
     final int cacheCap =
-        Util.stringToInt(cf.getString("winston.statementCacheCap"), DEFAULT_CACHE_CAPACITY);
+        StringUtils.stringToInt(cf.getString("winston.statementCacheCap"), DEFAULT_CACHE_CAPACITY);
 
     return new WinstonDatabase(dbDriver, dbURL, databasePrefix, tableEngine, cacheCap);
   }

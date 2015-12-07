@@ -1,5 +1,8 @@
 package gov.usgs.volcanoes.winston.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -8,7 +11,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.GroupNode;
@@ -23,6 +25,8 @@ import gov.usgs.volcanoes.winston.Instrument;
  * @author Dan Cervelli
  */
 public class Channels {
+  private static final Logger LOGGER = LoggerFactory.getLogger(InputEW.class);
+
   private final WinstonDatabase winston;
 
   /**
@@ -57,7 +61,7 @@ public class Channels {
 
       return result;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get groups.");
+      LOGGER.error("Could not get groups.");
     }
     return null;
   }
@@ -148,7 +152,7 @@ public class Channels {
 
       return channels;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get channels.");
+      LOGGER.error("Could not get channels.");
     }
     return null;
   }
@@ -194,7 +198,7 @@ public class Channels {
       rs.close();
       return result;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get channel ID.", e);
+      LOGGER.error("Could not get channel ID. ({})", e.getLocalizedMessage());
     }
     return -1;
   }
@@ -221,7 +225,7 @@ public class Channels {
       rs.close();
       return codes;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get channel codes.");
+      LOGGER.error("Could not get channel codes.");
     }
     return null;
   }
@@ -246,7 +250,7 @@ public class Channels {
       rs.close();
       return result;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get instrument ID.", e);
+      LOGGER.error("Could not get instrument ID. ({})", e.getLocalizedMessage());
     }
     return -1;
   }
@@ -272,7 +276,7 @@ public class Channels {
       rs.close();
       return result;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get channel code.");
+      LOGGER.error("Could not get channel code.");
     }
     return null;
   }
@@ -295,7 +299,7 @@ public class Channels {
       rs.close();
       return result;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not determine channel existence.");
+      LOGGER.error("Could not determine channel existence.");
     }
     return false;
   }
@@ -326,8 +330,7 @@ public class Channels {
           .execute("CREATE DATABASE `" + winston.databasePrefix + "_" + code + "`");
       winston.getStatement().execute("USE `" + winston.databasePrefix + "_" + code + "`");
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE,
-          "Could not create channel.  Are permissions set properly?");
+      LOGGER.error("Could not create channel.  Are permissions set properly?");
     }
     return false;
   }
@@ -361,7 +364,7 @@ public class Channels {
       ps.setDouble(3, inst.getLongitude());
       ps.setDouble(4, inst.getLatitude());
       ps.setDouble(5, inst.getHeight());
-      winston.getLogger().log(Level.FINEST, ps.toString());
+      LOGGER.debug(ps.toString());
       ps.execute();
 
       if (!instrumentExists) {
@@ -369,14 +372,12 @@ public class Channels {
         ps = winston.getPreparedStatement("UPDATE channels set iid=? WHERE code LIKE ?;");
         ps.setInt(1, iid);
         ps.setString(2, inst.getName() + "$%");
-        winston.getLogger().log(Level.FINEST, ps.toString());
+        LOGGER.debug(ps.toString());
 
         ps.execute();
       }
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE,
-          "Could not create channel.  Are permissions set properly?");
-      winston.getLogger().log(Level.SEVERE, e.getMessage());
+      LOGGER.error("Could not create channel.  Are permissions set properly? ({})", e.getMessage());
       System.exit(1);
     }
   }
@@ -415,7 +416,7 @@ public class Channels {
       }
       return insts;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get instruments.");
+      LOGGER.error("Could not get instruments.");
     }
     return null;
   }

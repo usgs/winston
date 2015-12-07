@@ -1,5 +1,8 @@
 package gov.usgs.volcanoes.winston.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.ResultSet;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -9,10 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.TimeZone;
-import java.util.logging.Level;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.Ew;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 
@@ -26,14 +29,16 @@ import gov.usgs.volcanoes.winston.Channel;
  * @author Dan Cervelli
  */
 public class WaveServerEmulator {
+  private static final Logger LOGGER = LoggerFactory.getLogger(WaveServerEmulator.class);
+
   protected final static int ONE_HOUR = 60 * 60;
   protected final static int ONE_DAY = 24 * ONE_HOUR;
 
-  private final WinstonDatabase winston;
   private final Channels channels;
   private final Data data;
   private final DateFormat dateFormat;
   private final DecimalFormat decimalFormat;
+  private final WinstonDatabase winston;
 
   public WaveServerEmulator(final WinstonDatabase w) {
     winston = w;
@@ -46,17 +51,18 @@ public class WaveServerEmulator {
     decimalFormat.setGroupingUsed(false);
   }
 
+  public int getChannelID(final String s, final String c, final String n) {
+    return getChannelID(s, c, n, null);
+  }
+
   public int getChannelID(final String s, final String c, final String n, final String l) {
     String loc = "";
-    if (l != null && !l.equals("--"))
+    if (l != null && !l.equals("--")) {
       loc = "$" + l;
+    }
     final String trueCode = s + "$" + c + "$" + n + loc;
     final int id = channels.getChannelID(trueCode);
     return id;
-  }
-
-  public int getChannelID(final String s, final String c, final String n) {
-    return getChannelID(s, c, n, null);
   }
 
 
@@ -65,7 +71,7 @@ public class WaveServerEmulator {
    * TODO: implement span
    * TODO: make more efficient
    * TODO: return correct dataType
-   * 
+   *
    * @param embargo
    * @param span
    * @return menu
@@ -77,12 +83,14 @@ public class WaveServerEmulator {
 
   public List<String> getWaveServerMenu(final boolean scnl, final double embargo, final double span,
       final double maxDays) {
-    if (!winston.checkConnect())
+    if (!winston.checkConnect()) {
       return null;
+    }
 
     final List<Channel> sts = channels.getChannels();
-    if (sts == null)
+    if (sts == null) {
       return null;
+    }
 
     final List<String> list = new ArrayList<String>(sts.size());
     for (final Channel st : sts) {
@@ -90,20 +98,21 @@ public class WaveServerEmulator {
       final double[] ts = {st.getMinTime(), st.getMaxTime()};
 
 
-      if (maxDays > 0)
-        ts[0] = Math.max(ts[0], Util.nowJ2K() - (maxDays * ONE_DAY));
+      if (maxDays > 0) {
+        ts[0] = Math.max(ts[0], J2kSec.now() - (maxDays * ONE_DAY));
+      }
 
       if (ts != null && ts[0] < ts[1]) {
 
-        if (!scnl && ss.length == 3)
+        if (!scnl && ss.length == 3) {
           list.add(" " + st.getSID() + " " + ss[0] + " " + ss[1] + " " + ss[2] + " "
-              + decimalFormat.format(Util.j2KToEW(ts[0])) + " "
-              + decimalFormat.format(Util.j2KToEW(ts[1])) + " s4 ");
-        else if (scnl) {
+              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
+              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ");
+        } else if (scnl) {
           final String loc = (ss.length == 4 ? ss[3] : "--");
           final String line = " " + st.getSID() + " " + ss[0] + " " + ss[1] + " " + ss[2] + " "
-              + loc + " " + decimalFormat.format(Util.j2KToEW(ts[0])) + " "
-              + decimalFormat.format(Util.j2KToEW(ts[1])) + " s4 ";
+              + loc + " " + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
+              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ";
           list.add(line);
         }
       }
@@ -112,8 +121,9 @@ public class WaveServerEmulator {
   }
 
   public String getWaveServerMenuItem(final int p, final double embargo, final double span) {
-    if (!winston.checkConnect())
+    if (!winston.checkConnect()) {
       return null;
+    }
 
     try {
       String result = null;
@@ -140,14 +150,13 @@ public class WaveServerEmulator {
         final String nw = st.nextToken();
 
         result = " " + p + " " + sta + " " + ch + " " + nw + " "
-            + decimalFormat.format(Util.j2KToEW(ts[0])) + " "
-            + decimalFormat.format(Util.j2KToEW(ts[1])) + " s4 ";
+            + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
+            + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ";
       }
       rs.close();
       return result;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get wave server menu item.",
-          Util.getLineNumber(this, e));
+      LOGGER.error("Could not get wave server menu item. ({})", e.getLocalizedMessage());
     }
     return null;
   }
@@ -155,14 +164,16 @@ public class WaveServerEmulator {
   public String getWaveServerMenuItem(final String s, final String c, final String n,
       final String l, final double embargo, final double span) {
     String loc = "";
-    if (l != null && !l.equals("--"))
+    if (l != null && !l.equals("--")) {
       loc = "$" + l;
+    }
     final String trueCode = s + "$" + c + "$" + n + loc;
     final int id = channels.getChannelID(trueCode);
-    if (id == -1)
+    if (id == -1) {
       return null;
-    else
+    } else {
       return getWaveServerMenuItem(id, embargo, span);
+    }
   }
 
   public Object[] getWaveServerRaw(final String s, final String c, final String n, final double t1,
@@ -174,35 +185,40 @@ public class WaveServerEmulator {
   public Object[] getWaveServerRaw(final String s, final String c, final String n, final String l,
       final double t1, final double t2) {
     String lc = "";
-    if (l != null && !l.equals("--"))
+    if (l != null && !l.equals("--")) {
       lc = "$" + l;
+    }
     final String code = s + "$" + c + "$" + n + lc;
-    if (!winston.checkConnect() || !winston.useDatabase(code))
+    if (!winston.checkConnect() || !winston.useDatabase(code)) {
       return null;
+    }
     List<byte[]> bufs = null;
     try {
       bufs = data.getTraceBufBytes(code, t1, t2, 0);
     } catch (final UtilException e) {
     }
-    if (bufs == null || bufs.size() == 0)
+    if (bufs == null || bufs.size() == 0) {
       return null;
+    }
 
     try {
       final int sid = channels.getChannelID(code);
       final TraceBuf tb0 = new TraceBuf(bufs.get(0));
       final TraceBuf tbN = new TraceBuf(bufs.get(bufs.size() - 1));
       int total = 0;
-      for (final byte[] buf : bufs)
+      for (final byte[] buf : bufs) {
         total += buf.length;
+      }
 
       String lr = "";
-      if (l != null)
+      if (l != null) {
         lr = " " + l;
+      }
       final String hdr = sid + " " + s + " " + c + " " + n + lr + " F " + tb0.dataType() + " "
           + tb0.getStartTime() + " " + tbN.getEndTime() + " " + total;
       return new Object[] {hdr, new Integer(total), bufs};
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get raw wave.", e);
+      LOGGER.error("Could not get raw wave.", e.getLocalizedMessage());
     }
     return null;
   }
