@@ -22,370 +22,390 @@
 <a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> gov.usgs.plot.decorate.DefaultFrameDecorator;
 <a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> gov.usgs.plot.decorate.DefaultFrameDecorator.Location;
 <a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> gov.usgs.plot.render.MatrixRenderer;
-<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> gov.usgs.util.Util;
-<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> gov.usgs.util.UtilException;
-<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.WinstonDatabase;
-<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.server.WWS;
-<a class="jxr_linenumber" name="L21" href="#L21">21</a>  
-<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <em class="jxr_javadoccomment"> * Return a rsam plot.</em>
-<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <em class="jxr_javadoccomment"> * </em>
-<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <em class="jxr_javadoccomment"> * @author Tom Parker</em>
-<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <em class="jxr_javadoccomment"> * </em>
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/server/cmd/http/HttpRsamCommand.html">HttpRsamCommand</a> <strong class="jxr_keyword">extends</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/server/cmd/http/AbstractHttpCommand.html">AbstractHttpCommand</a> <strong class="jxr_keyword">implements</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/server/cmd/http/HttpBaseCommand.html">HttpBaseCommand</a> {
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_H = 300;
-<a class="jxr_linenumber" name="L30" href="#L30">30</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_W = 900;
-<a class="jxr_linenumber" name="L31" href="#L31">31</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> DEFAULT_DS = false;
-<a class="jxr_linenumber" name="L32" href="#L32">32</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_DSP = 0;
-<a class="jxr_linenumber" name="L33" href="#L33">33</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_RSAMP = 60;
-<a class="jxr_linenumber" name="L34" href="#L34">34</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> DEFAULT_DT = false;
-<a class="jxr_linenumber" name="L35" href="#L35">35</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String DEFAULT_T1 = <span class="jxr_string">"-12"</span>;
-<a class="jxr_linenumber" name="L36" href="#L36">36</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String DEFAULT_T2 = <span class="jxr_string">"now"</span>;
-<a class="jxr_linenumber" name="L37" href="#L37">37</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String DEFAULT_MAX = <span class="jxr_string">"auto"</span>;
-<a class="jxr_linenumber" name="L38" href="#L38">38</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String DEFAULT_MIN = <span class="jxr_string">"auto"</span>;
-<a class="jxr_linenumber" name="L39" href="#L39">39</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> DEFAULT_RM = false;
-<a class="jxr_linenumber" name="L40" href="#L40">40</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> DEFAULT_CSV = false;
-<a class="jxr_linenumber" name="L41" href="#L41">41</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_RMP = 300;
-<a class="jxr_linenumber" name="L42" href="#L42">42</a>  
-<a class="jxr_linenumber" name="L43" href="#L43">43</a>      <strong class="jxr_keyword">private</strong> TimeZone timeZone;
-<a class="jxr_linenumber" name="L44" href="#L44">44</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> timeZoneOffset;
-<a class="jxr_linenumber" name="L45" href="#L45">45</a>      <strong class="jxr_keyword">private</strong> Double endTime;
-<a class="jxr_linenumber" name="L46" href="#L46">46</a>      <strong class="jxr_keyword">private</strong> Double startTime;
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> width;
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> height;
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> detrend;
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> rsamPeriod;
-<a class="jxr_linenumber" name="L51" href="#L51">51</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> despike;
-<a class="jxr_linenumber" name="L52" href="#L52">52</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">double</strong> despikePeriod;
-<a class="jxr_linenumber" name="L53" href="#L53">53</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> runningMedian;
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">double</strong> runningMedianPeriod;
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">double</strong> plotMax;
-<a class="jxr_linenumber" name="L56" href="#L56">56</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">double</strong> plotMin;
-<a class="jxr_linenumber" name="L57" href="#L57">57</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> outputData;
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>      <strong class="jxr_keyword">private</strong> String errorString = <span class="jxr_string">""</span>;
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>      <strong class="jxr_keyword">private</strong> String code;
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>      <strong class="jxr_keyword">private</strong> RSAMData rsamData;
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>  
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/server/cmd/http/HttpRsamCommand.html">HttpRsamCommand</a>(NetTools nt, <a href="../../../../../../../gov/usgs/volcanoes/winston/db/WinstonDatabase.html">WinstonDatabase</a> db, <a href="../../../../../../../gov/usgs/volcanoes/winston/server/WWS.html">WWS</a> wws) {
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>          <strong class="jxr_keyword">super</strong>(nt, db, wws);
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>      }
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>  
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>      <strong class="jxr_keyword">private</strong> String parseArguments() {
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>          code = arguments.get(<span class="jxr_string">"code"</span>);
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>          <strong class="jxr_keyword">if</strong> (code == <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>              errorString += <span class="jxr_string">"Error: you must specify a channel (code).&lt;br&gt;"</span>;
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>          <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>              code = code.replace('_', '$');
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>              <strong class="jxr_keyword">if</strong> (code.indexOf(<span class="jxr_string">";"</span>) != -1)
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>                  errorString += <span class="jxr_string">"Error: illegal characters in channel (code).&lt;br&gt;"</span>;
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>          }
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>  
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>          timeZone = TimeZone.getTimeZone(Util.stringToString(arguments.get(<span class="jxr_string">"tz"</span>), <span class="jxr_string">"UTC"</span>));
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>  
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>          endTime = getEndTime(arguments.get(<span class="jxr_string">"t2"</span>));
-<a class="jxr_linenumber" name="L79" href="#L79">79</a>          <strong class="jxr_keyword">if</strong> (endTime == Double.NaN)
-<a class="jxr_linenumber" name="L80" href="#L80">80</a>              errorString += <span class="jxr_string">"Error: could not parse end time (t2). Should be "</span> + INPUT_DATE_FORMAT + <span class="jxr_string">".&lt;br&gt;"</span>;
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>  
-<a class="jxr_linenumber" name="L82" href="#L82">82</a>          startTime = getStartTime(arguments.get(<span class="jxr_string">"t1"</span>), endTime, ONE_DAY);
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>          <strong class="jxr_keyword">if</strong> (startTime == Double.NaN)
-<a class="jxr_linenumber" name="L84" href="#L84">84</a>              errorString += <span class="jxr_string">"Error: could not parse start time (t1). Should be "</span> + INPUT_DATE_FORMAT + <span class="jxr_string">" or -HH.M&lt;br&gt;"</span>;
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>  
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>          timeZoneOffset = timeZone.getOffset((<strong class="jxr_keyword">long</strong>) Util.j2KToEW(endTime) * 1000) / 1000;
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>  
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>          width = Util.stringToInt(arguments.get(<span class="jxr_string">"w"</span>), DEFAULT_W);
-<a class="jxr_linenumber" name="L89" href="#L89">89</a>          height = Util.stringToInt(arguments.get(<span class="jxr_string">"h"</span>), DEFAULT_H);
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.J2kSec;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.util.StringUtils;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.util.UtilException;
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.WinstonDatabase;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.server.WWS;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <em class="jxr_javadoccomment"> * Return a rsam plot.</em>
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <em class="jxr_javadoccomment"> * @author Tom Parker</em>
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/server/cmd/http/HttpRsamCommand.html">HttpRsamCommand</a> <strong class="jxr_keyword">extends</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/server/cmd/http/AbstractHttpCommand.html">AbstractHttpCommand</a> <strong class="jxr_keyword">implements</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/server/cmd/http/HttpBaseCommand.html">HttpBaseCommand</a> {
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_H = 300;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_W = 900;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> DEFAULT_DS = false;
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_DSP = 0;
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_RSAMP = 60;
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> DEFAULT_DT = false;
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String DEFAULT_T1 = <span class="jxr_string">"-12"</span>;
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String DEFAULT_T2 = <span class="jxr_string">"now"</span>;
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String DEFAULT_MAX = <span class="jxr_string">"auto"</span>;
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String DEFAULT_MIN = <span class="jxr_string">"auto"</span>;
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> DEFAULT_RM = false;
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> DEFAULT_CSV = false;
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_RMP = 300;
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>    <strong class="jxr_keyword">private</strong> TimeZone timeZone;
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> timeZoneOffset;
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>    <strong class="jxr_keyword">private</strong> Double endTime;
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>    <strong class="jxr_keyword">private</strong> Double startTime;
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> width;
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> height;
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> detrend;
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> rsamPeriod;
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> despike;
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">double</strong> despikePeriod;
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> runningMedian;
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">double</strong> runningMedianPeriod;
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">double</strong> plotMax;
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">double</strong> plotMin;
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> outputData;
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>    <strong class="jxr_keyword">private</strong> String errorString = <span class="jxr_string">""</span>;
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>    <strong class="jxr_keyword">private</strong> String code;
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>    <strong class="jxr_keyword">private</strong> RSAMData rsamData;
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>    <strong class="jxr_keyword">public</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/server/cmd/http/HttpRsamCommand.html">HttpRsamCommand</a>(<strong class="jxr_keyword">final</strong> NetTools nt, <strong class="jxr_keyword">final</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/db/WinstonDatabase.html">WinstonDatabase</a> db, <strong class="jxr_keyword">final</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/server/WWS.html">WWS</a> wws) {
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>      <strong class="jxr_keyword">super</strong>(nt, db, wws);
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>    }
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>    <strong class="jxr_keyword">private</strong> String parseArguments() {
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>      code = arguments.get(<span class="jxr_string">"code"</span>);
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>      <strong class="jxr_keyword">if</strong> (code == <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>        errorString += <span class="jxr_string">"Error: you must specify a channel (code).&lt;br&gt;"</span>;
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>      <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>        code = code.replace('_', '$');
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>        <strong class="jxr_keyword">if</strong> (code.indexOf(<span class="jxr_string">";"</span>) != -1)
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>          errorString += <span class="jxr_string">"Error: illegal characters in channel (code).&lt;br&gt;"</span>;
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>      }
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>  
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>      timeZone = TimeZone.getTimeZone(StringUtils.stringToString(arguments.get(<span class="jxr_string">"tz"</span>), <span class="jxr_string">"UTC"</span>));
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>  
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>      endTime = getEndTime(arguments.get(<span class="jxr_string">"t2"</span>));
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>      <strong class="jxr_keyword">if</strong> (endTime.isNaN())
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>        errorString +=
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>            <span class="jxr_string">"Error: could not parse end time (t2). Should be "</span> + INPUT_DATE_FORMAT + <span class="jxr_string">".&lt;br&gt;"</span>;
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>  
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>      startTime = getStartTime(arguments.get(<span class="jxr_string">"t1"</span>), endTime, ONE_DAY);
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>      <strong class="jxr_keyword">if</strong> (startTime.isNaN())
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>        errorString += <span class="jxr_string">"Error: could not parse start time (t1). Should be "</span> + INPUT_DATE_FORMAT
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>            + <span class="jxr_string">" or -HH.M&lt;br&gt;"</span>;
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>      timeZoneOffset = timeZone.getOffset(J2kSec.asEpoch(endTime));
 <a class="jxr_linenumber" name="L90" href="#L90">90</a>  
-<a class="jxr_linenumber" name="L91" href="#L91">91</a>          <strong class="jxr_keyword">if</strong> (height * width &lt;= 0 || height * width &gt; wws.httpMaxSize())
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>              errorString += <span class="jxr_string">"Error: product of width (w) and height (h) must be between 1 and "</span> + wws.httpMaxSize()
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>                      + <span class="jxr_string">".&lt;br&gt;"</span>;
-<a class="jxr_linenumber" name="L94" href="#L94">94</a>  
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>          detrend = Util.stringToBoolean(arguments.get(<span class="jxr_string">"dt"</span>), DEFAULT_DT);
-<a class="jxr_linenumber" name="L96" href="#L96">96</a>  
-<a class="jxr_linenumber" name="L97" href="#L97">97</a>          rsamPeriod = Util.stringToInt(arguments.get(<span class="jxr_string">"rsamP"</span>), DEFAULT_RSAMP);
-<a class="jxr_linenumber" name="L98" href="#L98">98</a>          
-<a class="jxr_linenumber" name="L99" href="#L99">99</a>          despike = Util.stringToBoolean(arguments.get(<span class="jxr_string">"ds"</span>), DEFAULT_DS);
-<a class="jxr_linenumber" name="L100" href="#L100">100</a>         despikePeriod = Util.stringToDouble(arguments.get(<span class="jxr_string">"dsp"</span>), 0);
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>      width = StringUtils.stringToInt(arguments.get(<span class="jxr_string">"w"</span>), DEFAULT_W);
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>      height = StringUtils.stringToInt(arguments.get(<span class="jxr_string">"h"</span>), DEFAULT_H);
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>  
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>      <strong class="jxr_keyword">if</strong> (height * width &lt;= 0 || height * width &gt; wws.httpMaxSize())
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>        errorString += <span class="jxr_string">"Error: product of width (w) and height (h) must be between 1 and "</span>
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>            + wws.httpMaxSize() + <span class="jxr_string">".&lt;br&gt;"</span>;
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>  
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>      detrend = StringUtils.stringToBoolean(arguments.get(<span class="jxr_string">"dt"</span>), DEFAULT_DT);
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>  
+<a class="jxr_linenumber" name="L100" href="#L100">100</a>     rsamPeriod = StringUtils.stringToInt(arguments.get(<span class="jxr_string">"rsamP"</span>), DEFAULT_RSAMP);
 <a class="jxr_linenumber" name="L101" href="#L101">101</a> 
-<a class="jxr_linenumber" name="L102" href="#L102">102</a>         runningMedian = Util.stringToBoolean(arguments.get(<span class="jxr_string">"rm"</span>), false);
-<a class="jxr_linenumber" name="L103" href="#L103">103</a>         runningMedianPeriod = Util.stringToDouble(arguments.get(<span class="jxr_string">"rmp"</span>), 300);
+<a class="jxr_linenumber" name="L102" href="#L102">102</a>     despike = StringUtils.stringToBoolean(arguments.get(<span class="jxr_string">"ds"</span>), DEFAULT_DS);
+<a class="jxr_linenumber" name="L103" href="#L103">103</a>     despikePeriod = StringUtils.stringToDouble(arguments.get(<span class="jxr_string">"dsp"</span>), 0);
 <a class="jxr_linenumber" name="L104" href="#L104">104</a> 
-<a class="jxr_linenumber" name="L105" href="#L105">105</a>         plotMax = Util.stringToDouble(arguments.get(<span class="jxr_string">"max"</span>), Double.MAX_VALUE);
-<a class="jxr_linenumber" name="L106" href="#L106">106</a>         plotMin = Util.stringToDouble(arguments.get(<span class="jxr_string">"min"</span>), Double.MIN_VALUE);
+<a class="jxr_linenumber" name="L105" href="#L105">105</a>     runningMedian = StringUtils.stringToBoolean(arguments.get(<span class="jxr_string">"rm"</span>), false);
+<a class="jxr_linenumber" name="L106" href="#L106">106</a>     runningMedianPeriod = StringUtils.stringToDouble(arguments.get(<span class="jxr_string">"rmp"</span>), 300);
 <a class="jxr_linenumber" name="L107" href="#L107">107</a> 
-<a class="jxr_linenumber" name="L108" href="#L108">108</a>         outputData = Util.stringToBoolean(arguments.get(<span class="jxr_string">"csv"</span>), DEFAULT_CSV);
-<a class="jxr_linenumber" name="L109" href="#L109">109</a>         
-<a class="jxr_linenumber" name="L110" href="#L110">110</a>         <strong class="jxr_keyword">return</strong> errorString;
-<a class="jxr_linenumber" name="L111" href="#L111">111</a>     }
+<a class="jxr_linenumber" name="L108" href="#L108">108</a>     plotMax = StringUtils.stringToDouble(arguments.get(<span class="jxr_string">"max"</span>), Double.MAX_VALUE);
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>     plotMin = StringUtils.stringToDouble(arguments.get(<span class="jxr_string">"min"</span>), Double.MIN_VALUE);
+<a class="jxr_linenumber" name="L110" href="#L110">110</a> 
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>     outputData = StringUtils.stringToBoolean(arguments.get(<span class="jxr_string">"csv"</span>), DEFAULT_CSV);
 <a class="jxr_linenumber" name="L112" href="#L112">112</a> 
-<a class="jxr_linenumber" name="L113" href="#L113">113</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> getData() {
-<a class="jxr_linenumber" name="L114" href="#L114">114</a>         rsamData = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L115" href="#L115">115</a>         <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L116" href="#L116">116</a>             
-<a class="jxr_linenumber" name="L117" href="#L117">117</a>             DownsamplingType dst;
-<a class="jxr_linenumber" name="L118" href="#L118">118</a>             <strong class="jxr_keyword">int</strong> dsInt;
-<a class="jxr_linenumber" name="L119" href="#L119">119</a>             <strong class="jxr_keyword">if</strong> (rsamPeriod &lt; 2) {
-<a class="jxr_linenumber" name="L120" href="#L120">120</a>                 dst = DownsamplingType.NONE;
-<a class="jxr_linenumber" name="L121" href="#L121">121</a>                 dsInt = 0;
-<a class="jxr_linenumber" name="L122" href="#L122">122</a>             } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L123" href="#L123">123</a>                 dst = DownsamplingType.MEAN;
-<a class="jxr_linenumber" name="L124" href="#L124">124</a>                dsInt = rsamPeriod;
-<a class="jxr_linenumber" name="L125" href="#L125">125</a>             }
-<a class="jxr_linenumber" name="L126" href="#L126">126</a>             rsamData = data.getRSAMData(code, startTime, endTime, 0, dst, dsInt);
-<a class="jxr_linenumber" name="L127" href="#L127">127</a>             rsamData.adjustTime(timeZoneOffset);
-<a class="jxr_linenumber" name="L128" href="#L128">128</a>             
-<a class="jxr_linenumber" name="L129" href="#L129">129</a>             <strong class="jxr_keyword">if</strong> (despike)
-<a class="jxr_linenumber" name="L130" href="#L130">130</a>                 rsamData.despike(1, despikePeriod);
+<a class="jxr_linenumber" name="L113" href="#L113">113</a>     <strong class="jxr_keyword">return</strong> errorString;
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>   }
+<a class="jxr_linenumber" name="L115" href="#L115">115</a> 
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> getData() {
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>     rsamData = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L119" href="#L119">119</a> 
+<a class="jxr_linenumber" name="L120" href="#L120">120</a>       DownsamplingType dst;
+<a class="jxr_linenumber" name="L121" href="#L121">121</a>       <strong class="jxr_keyword">int</strong> dsInt;
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>       <strong class="jxr_keyword">if</strong> (rsamPeriod &lt; 2) {
+<a class="jxr_linenumber" name="L123" href="#L123">123</a>         dst = DownsamplingType.NONE;
+<a class="jxr_linenumber" name="L124" href="#L124">124</a>         dsInt = 0;
+<a class="jxr_linenumber" name="L125" href="#L125">125</a>       } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L126" href="#L126">126</a>         dst = DownsamplingType.MEAN;
+<a class="jxr_linenumber" name="L127" href="#L127">127</a>         dsInt = rsamPeriod;
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>       }
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>       rsamData = data.getRSAMData(code, startTime, endTime, 0, dst, dsInt);
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>       rsamData.adjustTime(timeZoneOffset);
 <a class="jxr_linenumber" name="L131" href="#L131">131</a> 
-<a class="jxr_linenumber" name="L132" href="#L132">132</a>             <strong class="jxr_keyword">if</strong> (detrend)
-<a class="jxr_linenumber" name="L133" href="#L133">133</a>                 rsamData.detrend(1);
+<a class="jxr_linenumber" name="L132" href="#L132">132</a>       <strong class="jxr_keyword">if</strong> (despike)
+<a class="jxr_linenumber" name="L133" href="#L133">133</a>         rsamData.despike(1, despikePeriod);
 <a class="jxr_linenumber" name="L134" href="#L134">134</a> 
-<a class="jxr_linenumber" name="L135" href="#L135">135</a>             <strong class="jxr_keyword">if</strong> (runningMedian)
-<a class="jxr_linenumber" name="L136" href="#L136">136</a>                 rsamData.set2median(1, runningMedianPeriod);
+<a class="jxr_linenumber" name="L135" href="#L135">135</a>       <strong class="jxr_keyword">if</strong> (detrend)
+<a class="jxr_linenumber" name="L136" href="#L136">136</a>         rsamData.detrend(1);
 <a class="jxr_linenumber" name="L137" href="#L137">137</a> 
-<a class="jxr_linenumber" name="L138" href="#L138">138</a> 
-<a class="jxr_linenumber" name="L139" href="#L139">139</a>         } <strong class="jxr_keyword">catch</strong> (UtilException e) {
-<a class="jxr_linenumber" name="L140" href="#L140">140</a>             writeSimpleHTML(<span class="jxr_string">"Error: could not get RSAM data, check channel (code). e = "</span> + e.toString());
-<a class="jxr_linenumber" name="L141" href="#L141">141</a>         }
-<a class="jxr_linenumber" name="L142" href="#L142">142</a>         <strong class="jxr_keyword">if</strong> (rsamData == <strong class="jxr_keyword">null</strong> || rsamData.rows() &lt;= 0)
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>             writeSimpleHTML(<span class="jxr_string">"Error: could not get RSAM data, check channel (code). Empty result."</span>);
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>       <strong class="jxr_keyword">if</strong> (runningMedian)
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>         rsamData.set2median(1, runningMedianPeriod);
+<a class="jxr_linenumber" name="L140" href="#L140">140</a> 
+<a class="jxr_linenumber" name="L141" href="#L141">141</a> 
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> UtilException e) {
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>       writeSimpleHTML(<span class="jxr_string">"Error: could not get RSAM data, check channel (code). e = "</span> + e.toString());
 <a class="jxr_linenumber" name="L144" href="#L144">144</a>     }
-<a class="jxr_linenumber" name="L145" href="#L145">145</a> 
-<a class="jxr_linenumber" name="L146" href="#L146">146</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> sendPlot() {
-<a class="jxr_linenumber" name="L147" href="#L147">147</a>         HttpResponse response = <strong class="jxr_keyword">new</strong> HttpResponse(<span class="jxr_string">"image/png"</span>);
-<a class="jxr_linenumber" name="L148" href="#L148">148</a>         response.setVersion(request.getVersion());
-<a class="jxr_linenumber" name="L149" href="#L149">149</a>         <strong class="jxr_keyword">if</strong> (wws.httpRefreshInterval() &gt; 0)
-<a class="jxr_linenumber" name="L150" href="#L150">150</a>             response.setHeader(<span class="jxr_string">"Refresh:"</span>, wws.httpRefreshInterval() + <span class="jxr_string">"; url="</span> + request.getResource());
-<a class="jxr_linenumber" name="L151" href="#L151">151</a> 
-<a class="jxr_linenumber" name="L152" href="#L152">152</a>         byte[] png;
-<a class="jxr_linenumber" name="L153" href="#L153">153</a> 
-<a class="jxr_linenumber" name="L154" href="#L154">154</a>         Plot plot = <strong class="jxr_keyword">new</strong> Plot();
-<a class="jxr_linenumber" name="L155" href="#L155">155</a>         plot.setSize(width, height);
-<a class="jxr_linenumber" name="L156" href="#L156">156</a>         plot.setBackgroundColor(<strong class="jxr_keyword">new</strong> Color(0.97f, 0.97f, 0.97f));
-<a class="jxr_linenumber" name="L157" href="#L157">157</a> 
-<a class="jxr_linenumber" name="L158" href="#L158">158</a>         MatrixRenderer mr = <strong class="jxr_keyword">new</strong> MatrixRenderer(rsamData.getData(), false);
-<a class="jxr_linenumber" name="L159" href="#L159">159</a>         <strong class="jxr_keyword">double</strong> max = Math.min(plotMax, rsamData.max(1) + rsamData.max(1) * .1);
-<a class="jxr_linenumber" name="L160" href="#L160">160</a>         <strong class="jxr_keyword">double</strong> min = Math.max(plotMin, rsamData.min(1) - rsamData.max(1) * .1);
-<a class="jxr_linenumber" name="L161" href="#L161">161</a> 
-<a class="jxr_linenumber" name="L162" href="#L162">162</a>         mr.setExtents(startTime + timeZoneOffset, endTime + timeZoneOffset, min, max);
-<a class="jxr_linenumber" name="L163" href="#L163">163</a>         mr.setLocation(70, 35, width - 140, height - 70);
-<a class="jxr_linenumber" name="L164" href="#L164">164</a>         mr.createDefaultAxis();
-<a class="jxr_linenumber" name="L165" href="#L165">165</a>         mr.setXAxisToTime(8, <strong class="jxr_keyword">true</strong>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L166" href="#L166">166</a> 
-<a class="jxr_linenumber" name="L167" href="#L167">167</a>         String tzText = timeZone.getDisplayName(timeZone.inDaylightTime(Util.j2KToDate(endTime)), TimeZone.SHORT);
-<a class="jxr_linenumber" name="L168" href="#L168">168</a>         String bottomText = <span class="jxr_string">"("</span> + Util.j2KToDateString(startTime + timeZoneOffset, DISPLAY_DATE_FORMAT) + <span class="jxr_string">" to "</span>
-<a class="jxr_linenumber" name="L169" href="#L169">169</a>                 + Util.j2KToDateString(endTime + timeZoneOffset, DISPLAY_DATE_FORMAT) + <span class="jxr_string">" "</span> + tzText + <span class="jxr_string">")"</span>;
-<a class="jxr_linenumber" name="L170" href="#L170">170</a> 
-<a class="jxr_linenumber" name="L171" href="#L171">171</a>         mr.getAxis().setBottomLabelAsText(bottomText);
-<a class="jxr_linenumber" name="L172" href="#L172">172</a>         mr.getAxis().setLeftLabelAsText(<span class="jxr_string">"RSAM"</span>);
-<a class="jxr_linenumber" name="L173" href="#L173">173</a>         DefaultFrameDecorator.addLabel(mr, code.replace('$', ' '), Location.LEFT);
-<a class="jxr_linenumber" name="L174" href="#L174">174</a>         mr.createDefaultLineRenderers(Color.blue);
-<a class="jxr_linenumber" name="L175" href="#L175">175</a>         <em class="jxr_comment">// mr.setExtents(startTime, endTime, gdm.min(1), gdm.max(1));</em>
-<a class="jxr_linenumber" name="L176" href="#L176">176</a>         plot.addRenderer(mr);
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>         <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L178" href="#L178">178</a>             png = plot.getPNGBytes();
-<a class="jxr_linenumber" name="L179" href="#L179">179</a>             response.setLength(png.length);
-<a class="jxr_linenumber" name="L180" href="#L180">180</a>             netTools.writeString(response.getHeaderString(), socketChannel);
-<a class="jxr_linenumber" name="L181" href="#L181">181</a>             netTools.writeByteBuffer(ByteBuffer.wrap(png), socketChannel);
-<a class="jxr_linenumber" name="L182" href="#L182">182</a>         } <strong class="jxr_keyword">catch</strong> (PlotException e) {
-<a class="jxr_linenumber" name="L183" href="#L183">183</a>             e.printStackTrace();
-<a class="jxr_linenumber" name="L184" href="#L184">184</a>             errorString = errorString + <span class="jxr_string">"Error: Can not create plot."</span>;
-<a class="jxr_linenumber" name="L185" href="#L185">185</a>         }
-<a class="jxr_linenumber" name="L186" href="#L186">186</a> 
-<a class="jxr_linenumber" name="L187" href="#L187">187</a>     }
-<a class="jxr_linenumber" name="L188" href="#L188">188</a> 
-<a class="jxr_linenumber" name="L189" href="#L189">189</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> sendData() {
-<a class="jxr_linenumber" name="L190" href="#L190">190</a>         String html = rsamData.toCSV();
-<a class="jxr_linenumber" name="L191" href="#L191">191</a>         HttpResponse response = <strong class="jxr_keyword">new</strong> HttpResponse(<span class="jxr_string">"text/csv; charset=utf-8"</span>);
-<a class="jxr_linenumber" name="L192" href="#L192">192</a>         String fileName = code + <span class="jxr_string">"-RSAM.csv"</span>;
-<a class="jxr_linenumber" name="L193" href="#L193">193</a>         response.setHeader(<span class="jxr_string">"content-Disposition:"</span>, <span class="jxr_string">"attachment; filename='"</span> + fileName + <span class="jxr_string">"'"</span>);
-<a class="jxr_linenumber" name="L194" href="#L194">194</a>         response.setLength(html.length());
-<a class="jxr_linenumber" name="L195" href="#L195">195</a>         response.setCode(<span class="jxr_string">"200"</span>);
-<a class="jxr_linenumber" name="L196" href="#L196">196</a>         netTools.writeString(response.getHeaderString(), socketChannel);
-<a class="jxr_linenumber" name="L197" href="#L197">197</a>         netTools.writeString(html, socketChannel);
-<a class="jxr_linenumber" name="L198" href="#L198">198</a>     }
-<a class="jxr_linenumber" name="L199" href="#L199">199</a> 
-<a class="jxr_linenumber" name="L200" href="#L200">200</a>     <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> sendResponse() {
-<a class="jxr_linenumber" name="L201" href="#L201">201</a>         errorString = parseArguments();
-<a class="jxr_linenumber" name="L202" href="#L202">202</a> 
-<a class="jxr_linenumber" name="L203" href="#L203">203</a>         <strong class="jxr_keyword">if</strong> (errorString.length() &gt; 0) {
-<a class="jxr_linenumber" name="L204" href="#L204">204</a>             writeSimpleHTML(errorString);
-<a class="jxr_linenumber" name="L205" href="#L205">205</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L206" href="#L206">206</a>             getData();
-<a class="jxr_linenumber" name="L207" href="#L207">207</a>             <strong class="jxr_keyword">if</strong> (outputData)
-<a class="jxr_linenumber" name="L208" href="#L208">208</a>                 sendData();
-<a class="jxr_linenumber" name="L209" href="#L209">209</a>             <strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="L210" href="#L210">210</a>                 sendPlot();
-<a class="jxr_linenumber" name="L211" href="#L211">211</a>         }
-<a class="jxr_linenumber" name="L212" href="#L212">212</a>     }
-<a class="jxr_linenumber" name="L213" href="#L213">213</a> 
-<a class="jxr_linenumber" name="L214" href="#L214">214</a>     <strong class="jxr_keyword">public</strong> String getUsage(HttpRequest req) {
-<a class="jxr_linenumber" name="L215" href="#L215">215</a>         StringBuilder output = <strong class="jxr_keyword">new</strong> StringBuilder();
-<a class="jxr_linenumber" name="L216" href="#L216">216</a> 
-<a class="jxr_linenumber" name="L217" href="#L217">217</a>         output.append(<span class="jxr_string">"&lt;script&gt;function buildRsamUrl() {"</span> + <span class="jxr_string">"var urlDiv = document.getElementById(\&quot;rsamUrl\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L218" href="#L218">218</a>                 + <span class="jxr_string">"var rsamW = document.getElementById(\&quot;rsamW\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L219" href="#L219">219</a>                 + <span class="jxr_string">"var rsamH = document.getElementById(\&quot;rsamH\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L220" href="#L220">220</a>                 + <span class="jxr_string">"var rsamP = document.getElementById(\&quot;rsamP\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L221" href="#L221">221</a>                 + <span class="jxr_string">"var rsamDT = document.getElementById(\&quot;rsamDT\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L222" href="#L222">222</a>                 + <span class="jxr_string">"var rsamDS = document.getElementById(\&quot;rsamDS\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L223" href="#L223">223</a>                 + <span class="jxr_string">"var rsamDSP = document.getElementById(\&quot;rsamDSP\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L224" href="#L224">224</a>                 + <span class="jxr_string">"var rsamRM = document.getElementById(\&quot;rsamRM\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L225" href="#L225">225</a>                 + <span class="jxr_string">"var rsamRMP = document.getElementById(\&quot;rsamRMP\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L226" href="#L226">226</a>                 + <span class="jxr_string">"var rsamMIN = document.getElementById(\&quot;rsamMIN\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L227" href="#L227">227</a>                 + <span class="jxr_string">"var rsamMAX = document.getElementById(\&quot;rsamMAX\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L228" href="#L228">228</a>                 + <span class="jxr_string">"var rsamTZ = document.getElementById(\&quot;rsamTZ\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L229" href="#L229">229</a>                 + <span class="jxr_string">"var rsamT1 = document.getElementById(\&quot;rsamT1\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L230" href="#L230">230</a>                 + <span class="jxr_string">"var rsamT2 = document.getElementById(\&quot;rsamT2\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L231" href="#L231">231</a>                 + <span class="jxr_string">"var rsamP = document.getElementById(\&quot;rsamP\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L232" href="#L232">232</a>                 + <span class="jxr_string">"var csv = document.getElementById(\&quot;rsamCSV\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L233" href="#L233">233</a>                 + <span class="jxr_string">"var rsamCODE = document.getElementById(\&quot;rsamCODE\&quot;);\n"</span> + <span class="jxr_string">"var a = document.createElement('a');\n"</span>
-<a class="jxr_linenumber" name="L234" href="#L234">234</a>                 + <span class="jxr_string">"var linkUrl = \&quot;http://"</span> + req.getHeader(<span class="jxr_string">"Host"</span>) + <span class="jxr_string">"/rsam?\&quot;;\n"</span>);
-<a class="jxr_linenumber" name="L235" href="#L235">235</a> 
-<a class="jxr_linenumber" name="L236" href="#L236">236</a>         output.append(<span class="jxr_string">"linkUrl += \&quot;code=\&quot; + rsamCODE.value;"</span>);
-<a class="jxr_linenumber" name="L237" href="#L237">237</a>         output.append(<span class="jxr_string">"if (rsamT1.value != \&quot;"</span> + DEFAULT_T1
-<a class="jxr_linenumber" name="L238" href="#L238">238</a>                 + <span class="jxr_string">"\&quot; &amp;&amp; rsamT1.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;t1=\&quot; + rsamT1.value;}\n"</span>);
-<a class="jxr_linenumber" name="L239" href="#L239">239</a>         output.append(<span class="jxr_string">"if (rsamT2.value != \&quot;"</span> + DEFAULT_T2
-<a class="jxr_linenumber" name="L240" href="#L240">240</a>                 + <span class="jxr_string">"\&quot; &amp;&amp; rsamT2.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;t2=\&quot; + rsamT2.value;}\n"</span>);
-<a class="jxr_linenumber" name="L241" href="#L241">241</a>         output.append(<span class="jxr_string">"if (rsamP.value != \&quot;"</span> + DEFAULT_RSAMP
-<a class="jxr_linenumber" name="L242" href="#L242">242</a>                 + <span class="jxr_string">"\&quot; &amp;&amp; rsamP.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;rsamP=\&quot; + rsamP.value;}\n"</span>);
-<a class="jxr_linenumber" name="L243" href="#L243">243</a>        output.append(<span class="jxr_string">"if (rsamW.value != \&quot;"</span> + DEFAULT_W
-<a class="jxr_linenumber" name="L244" href="#L244">244</a>                 + <span class="jxr_string">"\&quot; &amp;&amp; rsamW.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;w=\&quot; + rsamW.value;}\n"</span>);
-<a class="jxr_linenumber" name="L245" href="#L245">245</a>         output.append(<span class="jxr_string">"if (rsamH.value != \&quot;"</span> + DEFAULT_H
-<a class="jxr_linenumber" name="L246" href="#L246">246</a>                 + <span class="jxr_string">"\&quot; &amp;&amp; rsamH.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;h=\&quot; + rsamH.value;}\n"</span>);
-<a class="jxr_linenumber" name="L247" href="#L247">247</a>         output.append(<span class="jxr_string">"if (rsamMIN.value != \&quot;"</span> + DEFAULT_MIN
-<a class="jxr_linenumber" name="L248" href="#L248">248</a>                 + <span class="jxr_string">"\&quot; &amp;&amp; rsamMIN.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;min=\&quot; + rsamMIN.value;}\n"</span>);
-<a class="jxr_linenumber" name="L249" href="#L249">249</a>         output.append(<span class="jxr_string">"if (rsamMAX.value != \&quot;"</span> + DEFAULT_MAX
-<a class="jxr_linenumber" name="L250" href="#L250">250</a>                 + <span class="jxr_string">"\&quot; &amp;&amp; rsamMAX.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;max=\&quot; + rsamMAX.value;}\n"</span>);
-<a class="jxr_linenumber" name="L251" href="#L251">251</a> 
-<a class="jxr_linenumber" name="L252" href="#L252">252</a>         <strong class="jxr_keyword">if</strong> (DEFAULT_DT) {
-<a class="jxr_linenumber" name="L253" href="#L253">253</a>             output.append(<span class="jxr_string">"if (rsamDT.checked == \&quot;\&quot;) { linkUrl += \&quot;&amp;dt=0\&quot;;}\n"</span>);
-<a class="jxr_linenumber" name="L254" href="#L254">254</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L255" href="#L255">255</a>             output.append(<span class="jxr_string">"if (rsamDT.checked != \&quot;\&quot;) { linkUrl += \&quot;&amp;dt=1\&quot;;}\n"</span>);
-<a class="jxr_linenumber" name="L256" href="#L256">256</a>         }
-<a class="jxr_linenumber" name="L257" href="#L257">257</a> 
-<a class="jxr_linenumber" name="L258" href="#L258">258</a> 
-<a class="jxr_linenumber" name="L259" href="#L259">259</a>         <strong class="jxr_keyword">if</strong> (DEFAULT_CSV) {
-<a class="jxr_linenumber" name="L260" href="#L260">260</a>             output.append(<span class="jxr_string">"if (rsamCSV.checked == \&quot;\&quot;) { linkUrl += \&quot;&amp;csv=0\&quot;;}\n"</span>);
-<a class="jxr_linenumber" name="L261" href="#L261">261</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L262" href="#L262">262</a>             output.append(<span class="jxr_string">"if (rsamCSV.checked != \&quot;\&quot;) { linkUrl += \&quot;&amp;csv=1\&quot;;}\n"</span>);
-<a class="jxr_linenumber" name="L263" href="#L263">263</a>         }
-<a class="jxr_linenumber" name="L264" href="#L264">264</a> 
-<a class="jxr_linenumber" name="L265" href="#L265">265</a>         <strong class="jxr_keyword">if</strong> (DEFAULT_DS) {
-<a class="jxr_linenumber" name="L266" href="#L266">266</a>             output.append(<span class="jxr_string">"if (rsamDS.checked == \&quot;\&quot;) { linkUrl += \&quot;&amp;ds=0\&quot;; } else if (rsamDSP.value != \&quot;"</span>
-<a class="jxr_linenumber" name="L267" href="#L267">267</a>                     + DEFAULT_DSP + <span class="jxr_string">"\&quot; &amp;&amp; rsamDSP.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;dsp=\&quot; + rsamDSP.value;}\n"</span>);
-<a class="jxr_linenumber" name="L268" href="#L268">268</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L269" href="#L269">269</a>             output.append(<span class="jxr_string">"if (rsamDS.checked != \&quot;\&quot;) { linkUrl += \&quot;&amp;ds=1\&quot;; if (rsamDSP.value != \&quot;"</span> + DEFAULT_DSP
-<a class="jxr_linenumber" name="L270" href="#L270">270</a>                     + <span class="jxr_string">"\&quot; &amp;&amp; rsamDSP.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;dsp=\&quot; + rsamDSP.value;}}\n"</span>);
-<a class="jxr_linenumber" name="L271" href="#L271">271</a>         }
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>     <strong class="jxr_keyword">if</strong> (rsamData == <strong class="jxr_keyword">null</strong> || rsamData.rows() &lt;= 0)
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>       writeSimpleHTML(<span class="jxr_string">"Error: could not get RSAM data, check channel (code). Empty result."</span>);
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>   }
+<a class="jxr_linenumber" name="L148" href="#L148">148</a> 
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> sendPlot() {
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>     <strong class="jxr_keyword">final</strong> HttpResponse response = <strong class="jxr_keyword">new</strong> HttpResponse(<span class="jxr_string">"image/png"</span>);
+<a class="jxr_linenumber" name="L151" href="#L151">151</a>     response.setVersion(request.getVersion());
+<a class="jxr_linenumber" name="L152" href="#L152">152</a>     <strong class="jxr_keyword">if</strong> (wws.httpRefreshInterval() &gt; 0)
+<a class="jxr_linenumber" name="L153" href="#L153">153</a>       response.setHeader(<span class="jxr_string">"Refresh:"</span>, wws.httpRefreshInterval() + <span class="jxr_string">"; url="</span> + request.getResource());
+<a class="jxr_linenumber" name="L154" href="#L154">154</a> 
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>     byte[] png;
+<a class="jxr_linenumber" name="L156" href="#L156">156</a> 
+<a class="jxr_linenumber" name="L157" href="#L157">157</a>     <strong class="jxr_keyword">final</strong> Plot plot = <strong class="jxr_keyword">new</strong> Plot();
+<a class="jxr_linenumber" name="L158" href="#L158">158</a>     plot.setSize(width, height);
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>     plot.setBackgroundColor(<strong class="jxr_keyword">new</strong> Color(0.97f, 0.97f, 0.97f));
+<a class="jxr_linenumber" name="L160" href="#L160">160</a> 
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>     <strong class="jxr_keyword">final</strong> MatrixRenderer mr = <strong class="jxr_keyword">new</strong> MatrixRenderer(rsamData.getData(), false);
+<a class="jxr_linenumber" name="L162" href="#L162">162</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> max = Math.min(plotMax, rsamData.max(1) + rsamData.max(1) * .1);
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> min = Math.max(plotMin, rsamData.min(1) - rsamData.max(1) * .1);
+<a class="jxr_linenumber" name="L164" href="#L164">164</a> 
+<a class="jxr_linenumber" name="L165" href="#L165">165</a>     mr.setExtents(startTime + timeZoneOffset, endTime + timeZoneOffset, min, max);
+<a class="jxr_linenumber" name="L166" href="#L166">166</a>     mr.setLocation(70, 35, width - 140, height - 70);
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>     mr.createDefaultAxis();
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>     mr.setXAxisToTime(8, <strong class="jxr_keyword">true</strong>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L169" href="#L169">169</a> 
+<a class="jxr_linenumber" name="L170" href="#L170">170</a>     <strong class="jxr_keyword">final</strong> String tzText =
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>         timeZone.getDisplayName(timeZone.inDaylightTime(J2kSec.asDate(endTime)), TimeZone.SHORT);
+<a class="jxr_linenumber" name="L172" href="#L172">172</a>     <strong class="jxr_keyword">final</strong> String bottomText =
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>         <span class="jxr_string">"("</span> + J2kSec.format(DISPLAY_DATE_FORMAT, startTime + timeZoneOffset) + <span class="jxr_string">" to "</span>
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>             + J2kSec.format(DISPLAY_DATE_FORMAT, endTime + timeZoneOffset) + <span class="jxr_string">" "</span> + tzText + <span class="jxr_string">")"</span>;
+<a class="jxr_linenumber" name="L175" href="#L175">175</a> 
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>     mr.getAxis().setBottomLabelAsText(bottomText);
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>     mr.getAxis().setLeftLabelAsText(<span class="jxr_string">"RSAM"</span>);
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>     DefaultFrameDecorator.addLabel(mr, code.replace('$', ' '), Location.LEFT);
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>     mr.createDefaultLineRenderers(Color.blue);
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>     <em class="jxr_comment">// mr.setExtents(startTime, endTime, gdm.min(1), gdm.max(1));</em>
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>     plot.addRenderer(mr);
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>     <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>       png = plot.getPNGBytes();
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>       response.setLength(png.length);
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>       netTools.writeString(response.getHeaderString(), socketChannel);
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>       netTools.writeByteBuffer(ByteBuffer.wrap(png), socketChannel);
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> PlotException e) {
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>       e.printStackTrace();
+<a class="jxr_linenumber" name="L189" href="#L189">189</a>       errorString = errorString + <span class="jxr_string">"Error: Can not create plot."</span>;
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>     }
+<a class="jxr_linenumber" name="L191" href="#L191">191</a> 
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>   }
+<a class="jxr_linenumber" name="L193" href="#L193">193</a> 
+<a class="jxr_linenumber" name="L194" href="#L194">194</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> sendData() {
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>     <strong class="jxr_keyword">final</strong> String html = rsamData.toCSV();
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>     <strong class="jxr_keyword">final</strong> HttpResponse response = <strong class="jxr_keyword">new</strong> HttpResponse(<span class="jxr_string">"text/csv; charset=utf-8"</span>);
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>     <strong class="jxr_keyword">final</strong> String fileName = code + <span class="jxr_string">"-RSAM.csv"</span>;
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>     response.setHeader(<span class="jxr_string">"content-Disposition:"</span>, <span class="jxr_string">"attachment; filename='"</span> + fileName + <span class="jxr_string">"'"</span>);
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>     response.setLength(html.length());
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>     response.setCode(<span class="jxr_string">"200"</span>);
+<a class="jxr_linenumber" name="L201" href="#L201">201</a>     netTools.writeString(response.getHeaderString(), socketChannel);
+<a class="jxr_linenumber" name="L202" href="#L202">202</a>     netTools.writeString(html, socketChannel);
+<a class="jxr_linenumber" name="L203" href="#L203">203</a>   }
+<a class="jxr_linenumber" name="L204" href="#L204">204</a> 
+<a class="jxr_linenumber" name="L205" href="#L205">205</a>   @Override
+<a class="jxr_linenumber" name="L206" href="#L206">206</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> sendResponse() {
+<a class="jxr_linenumber" name="L207" href="#L207">207</a>     errorString = parseArguments();
+<a class="jxr_linenumber" name="L208" href="#L208">208</a> 
+<a class="jxr_linenumber" name="L209" href="#L209">209</a>     <strong class="jxr_keyword">if</strong> (errorString.length() &gt; 0) {
+<a class="jxr_linenumber" name="L210" href="#L210">210</a>       writeSimpleHTML(errorString);
+<a class="jxr_linenumber" name="L211" href="#L211">211</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L212" href="#L212">212</a>       getData();
+<a class="jxr_linenumber" name="L213" href="#L213">213</a>       <strong class="jxr_keyword">if</strong> (outputData)
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>         sendData();
+<a class="jxr_linenumber" name="L215" href="#L215">215</a>       <strong class="jxr_keyword">else</strong>
+<a class="jxr_linenumber" name="L216" href="#L216">216</a>         sendPlot();
+<a class="jxr_linenumber" name="L217" href="#L217">217</a>     }
+<a class="jxr_linenumber" name="L218" href="#L218">218</a>   }
+<a class="jxr_linenumber" name="L219" href="#L219">219</a> 
+<a class="jxr_linenumber" name="L220" href="#L220">220</a>   <strong class="jxr_keyword">public</strong> String getUsage(<strong class="jxr_keyword">final</strong> HttpRequest req) {
+<a class="jxr_linenumber" name="L221" href="#L221">221</a>     <strong class="jxr_keyword">final</strong> StringBuilder output = <strong class="jxr_keyword">new</strong> StringBuilder();
+<a class="jxr_linenumber" name="L222" href="#L222">222</a> 
+<a class="jxr_linenumber" name="L223" href="#L223">223</a>     output.append(
+<a class="jxr_linenumber" name="L224" href="#L224">224</a>         <span class="jxr_string">"&lt;script&gt;function buildRsamUrl() {"</span> + <span class="jxr_string">"var urlDiv = document.getElementById(\&quot;rsamUrl\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L225" href="#L225">225</a>             + <span class="jxr_string">"var rsamW = document.getElementById(\&quot;rsamW\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L226" href="#L226">226</a>             + <span class="jxr_string">"var rsamH = document.getElementById(\&quot;rsamH\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L227" href="#L227">227</a>             + <span class="jxr_string">"var rsamP = document.getElementById(\&quot;rsamP\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L228" href="#L228">228</a>             + <span class="jxr_string">"var rsamDT = document.getElementById(\&quot;rsamDT\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L229" href="#L229">229</a>             + <span class="jxr_string">"var rsamDS = document.getElementById(\&quot;rsamDS\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L230" href="#L230">230</a>             + <span class="jxr_string">"var rsamDSP = document.getElementById(\&quot;rsamDSP\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L231" href="#L231">231</a>             + <span class="jxr_string">"var rsamRM = document.getElementById(\&quot;rsamRM\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L232" href="#L232">232</a>             + <span class="jxr_string">"var rsamRMP = document.getElementById(\&quot;rsamRMP\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L233" href="#L233">233</a>             + <span class="jxr_string">"var rsamMIN = document.getElementById(\&quot;rsamMIN\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L234" href="#L234">234</a>             + <span class="jxr_string">"var rsamMAX = document.getElementById(\&quot;rsamMAX\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L235" href="#L235">235</a>             + <span class="jxr_string">"var rsamTZ = document.getElementById(\&quot;rsamTZ\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L236" href="#L236">236</a>             + <span class="jxr_string">"var rsamT1 = document.getElementById(\&quot;rsamT1\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L237" href="#L237">237</a>             + <span class="jxr_string">"var rsamT2 = document.getElementById(\&quot;rsamT2\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L238" href="#L238">238</a>             + <span class="jxr_string">"var rsamP = document.getElementById(\&quot;rsamP\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L239" href="#L239">239</a>             + <span class="jxr_string">"var csv = document.getElementById(\&quot;rsamCSV\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L240" href="#L240">240</a>             + <span class="jxr_string">"var rsamCODE = document.getElementById(\&quot;rsamCODE\&quot;);\n"</span>
+<a class="jxr_linenumber" name="L241" href="#L241">241</a>             + <span class="jxr_string">"var a = document.createElement('a');\n"</span> + <span class="jxr_string">"var linkUrl = \&quot;http://"</span>
+<a class="jxr_linenumber" name="L242" href="#L242">242</a>             + req.getHeader(<span class="jxr_string">"Host"</span>) + <span class="jxr_string">"/rsam?\&quot;;\n"</span>);
+<a class="jxr_linenumber" name="L243" href="#L243">243</a> 
+<a class="jxr_linenumber" name="L244" href="#L244">244</a>     output.append(<span class="jxr_string">"linkUrl += \&quot;code=\&quot; + rsamCODE.value;"</span>);
+<a class="jxr_linenumber" name="L245" href="#L245">245</a>     output.append(<span class="jxr_string">"if (rsamT1.value != \&quot;"</span> + DEFAULT_T1
+<a class="jxr_linenumber" name="L246" href="#L246">246</a>         + <span class="jxr_string">"\&quot; &amp;&amp; rsamT1.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;t1=\&quot; + rsamT1.value;}\n"</span>);
+<a class="jxr_linenumber" name="L247" href="#L247">247</a>     output.append(<span class="jxr_string">"if (rsamT2.value != \&quot;"</span> + DEFAULT_T2
+<a class="jxr_linenumber" name="L248" href="#L248">248</a>         + <span class="jxr_string">"\&quot; &amp;&amp; rsamT2.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;t2=\&quot; + rsamT2.value;}\n"</span>);
+<a class="jxr_linenumber" name="L249" href="#L249">249</a>     output.append(<span class="jxr_string">"if (rsamP.value != \&quot;"</span> + DEFAULT_RSAMP
+<a class="jxr_linenumber" name="L250" href="#L250">250</a>         + <span class="jxr_string">"\&quot; &amp;&amp; rsamP.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;rsamP=\&quot; + rsamP.value;}\n"</span>);
+<a class="jxr_linenumber" name="L251" href="#L251">251</a>     output.append(<span class="jxr_string">"if (rsamW.value != \&quot;"</span> + DEFAULT_W
+<a class="jxr_linenumber" name="L252" href="#L252">252</a>         + <span class="jxr_string">"\&quot; &amp;&amp; rsamW.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;w=\&quot; + rsamW.value;}\n"</span>);
+<a class="jxr_linenumber" name="L253" href="#L253">253</a>     output.append(<span class="jxr_string">"if (rsamH.value != \&quot;"</span> + DEFAULT_H
+<a class="jxr_linenumber" name="L254" href="#L254">254</a>         + <span class="jxr_string">"\&quot; &amp;&amp; rsamH.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;h=\&quot; + rsamH.value;}\n"</span>);
+<a class="jxr_linenumber" name="L255" href="#L255">255</a>     output.append(<span class="jxr_string">"if (rsamMIN.value != \&quot;"</span> + DEFAULT_MIN
+<a class="jxr_linenumber" name="L256" href="#L256">256</a>         + <span class="jxr_string">"\&quot; &amp;&amp; rsamMIN.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;min=\&quot; + rsamMIN.value;}\n"</span>);
+<a class="jxr_linenumber" name="L257" href="#L257">257</a>     output.append(<span class="jxr_string">"if (rsamMAX.value != \&quot;"</span> + DEFAULT_MAX
+<a class="jxr_linenumber" name="L258" href="#L258">258</a>         + <span class="jxr_string">"\&quot; &amp;&amp; rsamMAX.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;max=\&quot; + rsamMAX.value;}\n"</span>);
+<a class="jxr_linenumber" name="L259" href="#L259">259</a> 
+<a class="jxr_linenumber" name="L260" href="#L260">260</a>     <strong class="jxr_keyword">if</strong> (DEFAULT_DT) {
+<a class="jxr_linenumber" name="L261" href="#L261">261</a>       output.append(<span class="jxr_string">"if (rsamDT.checked == \&quot;\&quot;) { linkUrl += \&quot;&amp;dt=0\&quot;;}\n"</span>);
+<a class="jxr_linenumber" name="L262" href="#L262">262</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L263" href="#L263">263</a>       output.append(<span class="jxr_string">"if (rsamDT.checked != \&quot;\&quot;) { linkUrl += \&quot;&amp;dt=1\&quot;;}\n"</span>);
+<a class="jxr_linenumber" name="L264" href="#L264">264</a>     }
+<a class="jxr_linenumber" name="L265" href="#L265">265</a> 
+<a class="jxr_linenumber" name="L266" href="#L266">266</a> 
+<a class="jxr_linenumber" name="L267" href="#L267">267</a>     <strong class="jxr_keyword">if</strong> (DEFAULT_CSV) {
+<a class="jxr_linenumber" name="L268" href="#L268">268</a>       output.append(<span class="jxr_string">"if (rsamCSV.checked == \&quot;\&quot;) { linkUrl += \&quot;&amp;csv=0\&quot;;}\n"</span>);
+<a class="jxr_linenumber" name="L269" href="#L269">269</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L270" href="#L270">270</a>       output.append(<span class="jxr_string">"if (rsamCSV.checked != \&quot;\&quot;) { linkUrl += \&quot;&amp;csv=1\&quot;;}\n"</span>);
+<a class="jxr_linenumber" name="L271" href="#L271">271</a>     }
 <a class="jxr_linenumber" name="L272" href="#L272">272</a> 
-<a class="jxr_linenumber" name="L273" href="#L273">273</a>         <strong class="jxr_keyword">if</strong> (DEFAULT_RM) {
-<a class="jxr_linenumber" name="L274" href="#L274">274</a>             output.append(<span class="jxr_string">"if (rsamRM.checked == \&quot;\&quot;) { linkUrl += \&quot;&amp;rm=0\&quot;;} else if (rsamRMP.value != \&quot;"</span>
-<a class="jxr_linenumber" name="L275" href="#L275">275</a>                     + DEFAULT_RMP + <span class="jxr_string">"\&quot; &amp;&amp; rsamRMP.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;rmp=\&quot; + rsamRMP.value;}\n"</span>);
-<a class="jxr_linenumber" name="L276" href="#L276">276</a>         } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L277" href="#L277">277</a>             output.append(<span class="jxr_string">"if (rsamRM.checked != \&quot;\&quot;) { linkUrl += \&quot;&amp;rm=1\&quot;; if (rsamRMP.value != \&quot;"</span> + DEFAULT_RMP
-<a class="jxr_linenumber" name="L278" href="#L278">278</a>                     + <span class="jxr_string">"\&quot; &amp;&amp; rsamRMP.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;rmp=\&quot; + rsamRMP.value;}}\n"</span>);
-<a class="jxr_linenumber" name="L279" href="#L279">279</a>         }
-<a class="jxr_linenumber" name="L280" href="#L280">280</a> 
-<a class="jxr_linenumber" name="L281" href="#L281">281</a>         output.append(<span class="jxr_string">"if (rsamTZ.value != \&quot;"</span> + DEFAULT_TZ + <span class="jxr_string">"\&quot;) { linkUrl += \&quot;&amp;tz=\&quot; + rsamTZ.value;}\n"</span>);
-<a class="jxr_linenumber" name="L282" href="#L282">282</a>         output.append(<span class="jxr_string">"linkUrl = linkUrl.replace(\&quot;?&amp;\&quot;, \&quot;?\&quot;);\n"</span>);
-<a class="jxr_linenumber" name="L283" href="#L283">283</a>         output.append(<span class="jxr_string">"linkUrl = linkUrl.replace(/&#92;&#92;?$/, \&quot;\&quot;);\n"</span>);
-<a class="jxr_linenumber" name="L284" href="#L284">284</a>         output.append(<span class="jxr_string">"a.href = linkUrl;\n"</span> + <span class="jxr_string">"a.text = linkUrl;\n"</span> + <span class="jxr_string">"a.textContent = linkUrl; \n"</span>
-<a class="jxr_linenumber" name="L285" href="#L285">285</a>                 + <span class="jxr_string">"while(urlDiv.hasChildNodes()) {urlDiv.removeChild(urlDiv.lastChild);}"</span> + <span class="jxr_string">"urlDiv.appendChild(a);\n"</span>
-<a class="jxr_linenumber" name="L286" href="#L286">286</a>                 + <span class="jxr_string">"rsamDSP.disabled = !rsamDS.checked; rsamRMP.disabled = !rsamRM.checked;"</span> + <span class="jxr_string">"}&lt;/script&gt;\n"</span>);
-<a class="jxr_linenumber" name="L287" href="#L287">287</a> 
-<a class="jxr_linenumber" name="L288" href="#L288">288</a>         output.append(<span class="jxr_string">"Plots precomputed RSAM values. \n"</span>);
-<a class="jxr_linenumber" name="L289" href="#L289">289</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContentTitle\&quot;&gt;URL Builder&lt;/div&gt;\n"</span>);
-<a class="jxr_linenumber" name="L290" href="#L290">290</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContent\&quot;&gt;\n"</span>);
-<a class="jxr_linenumber" name="L291" href="#L291">291</a>         output.append(<span class="jxr_string">"&lt;FORM&gt;\n"</span>);
-<a class="jxr_linenumber" name="L292" href="#L292">292</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;left\&quot;&gt;\n"</span>);
-<a class="jxr_linenumber" name="L293" href="#L293">293</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;left\&quot;&gt;Channel&lt;BR&gt;"</span>);
-<a class="jxr_linenumber" name="L294" href="#L294">294</a>         output.append(<span class="jxr_string">"&lt;select id=\&quot;rsamCODE\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;code\&quot; class=\&quot;channel\&quot; size=8&gt;&lt;/select&gt;&lt;/div&gt;\n"</span>);
-<a class="jxr_linenumber" name="L295" href="#L295">295</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;right\&quot;&gt;Time zone&lt;br&gt;"</span>);
-<a class="jxr_linenumber" name="L296" href="#L296">296</a>         output.append(<span class="jxr_string">"&lt;select onchange=\&quot;buildRsamUrl()\&quot; class=\&quot;timeZone\&quot; id=\&quot;rsamTZ\&quot; name=\&quot;tz\&quot; size=8&gt;"</span>
-<a class="jxr_linenumber" name="L297" href="#L297">297</a>                 + <span class="jxr_string">"&lt;/select&gt;&lt;/div&gt;\n"</span>);
-<a class="jxr_linenumber" name="L298" href="#L298">298</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;clear\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L299" href="#L299">299</a>         output.append(<span class="jxr_string">"&lt;P&gt;&lt;br&gt;&lt;p&gt;&lt;div class=\&quot;left\&quot;&gt;&lt;div class=\&quot;timeInput\&quot;&gt;&lt;label for=\&quot;t1\&quot;&gt;Start Time&lt;/label&gt;&lt;/div&gt;&lt;input type=text id=\&quot;rsamT1\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;t1\&quot; size=10 value=\&quot;"</span>
-<a class="jxr_linenumber" name="L300" href="#L300">300</a>                 + DEFAULT_T1 + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;&lt;br&gt;"</span>);
-<a class="jxr_linenumber" name="L301" href="#L301">301</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;left\&quot;&gt;&lt;div class=\&quot;timeInput\&quot;&gt;&lt;label for=\&quot;t2\&quot;&gt;End Time&lt;/label&gt;&lt;/div&gt;&lt;input type=text id=\&quot;rsamT2\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;t2\&quot; size=10 value=\&quot;"</span>
-<a class="jxr_linenumber" name="L302" href="#L302">302</a>                 + DEFAULT_T2 + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;&lt;br&gt;"</span>);
-<a class="jxr_linenumber" name="L303" href="#L303">303</a>         output.append(<span class="jxr_string">"&lt;/div&gt;\n"</span>);
-<a class="jxr_linenumber" name="L304" href="#L304">304</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;right\&quot; style=\&quot;padding-right:15px;\&quot;&gt;\n"</span>);
-<a class="jxr_linenumber" name="L305" href="#L305">305</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;rsamP\&quot;&gt;RSAM period&lt;/label&gt;&lt;input type=text id=\&quot;rsamP\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;rsamP\&quot; size=3 value=\&quot;"</span>
-<a class="jxr_linenumber" name="L306" href="#L306">306</a>                 + DEFAULT_RSAMP + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L307" href="#L307">307</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;w\&quot;&gt;Width&lt;/label&gt;&lt;input type=text id=\&quot;rsamW\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;w\&quot; size=3 value=\&quot;"</span>
-<a class="jxr_linenumber" name="L308" href="#L308">308</a>                 + DEFAULT_W + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L309" href="#L309">309</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;h\&quot;&gt;Height&lt;/label&gt;&lt;input type=text id=\&quot;rsamH\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;h\&quot; size=3 value=\&quot;"</span>
-<a class="jxr_linenumber" name="L310" href="#L310">310</a>                 + DEFAULT_H + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L311" href="#L311">311</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;max\&quot;&gt;Plot Max&lt;/label&gt;&lt;input type=text id=\&quot;rsamMAX\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;max\&quot; size=3 value=\&quot;"</span>
-<a class="jxr_linenumber" name="L312" href="#L312">312</a>                 + DEFAULT_MAX + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L313" href="#L313">313</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;min\&quot;&gt;Plot Min&lt;/label&gt;&lt;input type=text id=\&quot;rsamMIN\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;min\&quot; size=3 value=\&quot;"</span>
-<a class="jxr_linenumber" name="L314" href="#L314">314</a>                 + DEFAULT_MIN + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L315" href="#L315">315</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;dt\&quot;&gt;Detrend?&lt;/label&gt;&lt;input class=\&quot;checkbox\&quot; type=checkbox id=\&quot;rsamDT\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;dt\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L316" href="#L316">316</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;ds\&quot;&gt;Filter Spikes?&lt;/label&gt;&lt;input class=\&quot;checkbox\&quot; type=checkbox id=\&quot;rsamDS\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;ds\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L317" href="#L317">317</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;dsp\&quot;&gt;Period&lt;/label&gt;&lt;input type=text id=\&quot;rsamDSP\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;pds\&quot; size=3 value=\&quot;"</span>
-<a class="jxr_linenumber" name="L318" href="#L318">318</a>                 + DEFAULT_DSP + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L319" href="#L319">319</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;rm\&quot;&gt;Remove Median?&lt;/label&gt;&lt;input class=\&quot;checkbox\&quot; type=checkbox id=\&quot;rsamRM\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;rm\&quot; checked&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L320" href="#L320">320</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;rmp\&quot;&gt;Period&lt;/label&gt;&lt;input type=text id=\&quot;rsamRMP\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;rmp\&quot; size=3 value=\&quot;600\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L321" href="#L321">321</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;csv\&quot;&gt;Return CSV?&lt;/label&gt;&lt;input class=\&quot;checkbox\&quot; type=checkbox id=\&quot;rsamCSV\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;csv\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L322" href="#L322">322</a>        output.append(<span class="jxr_string">"&lt;/div&gt;&lt;br&gt;&lt;/FORM&gt;&lt;div class=\&quot;clear\&quot;&gt;&lt;/div&gt;\n"</span>);
-<a class="jxr_linenumber" name="L323" href="#L323">323</a> 
-<a class="jxr_linenumber" name="L324" href="#L324">324</a>         output.append(<span class="jxr_string">"&lt;HR class=\&quot;urlBuilder\&quot;&gt;&lt;b&gt;URL:&lt;/b&gt;&lt;BR&gt;&lt;div id=\&quot;rsamUrl\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L325" href="#L325">325</a>         output.append(<span class="jxr_string">"&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L326" href="#L326">326</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContentTitle\&quot;&gt;Arguments&lt;/div&gt;\n"</span>);
-<a class="jxr_linenumber" name="L327" href="#L327">327</a>         output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContent\&quot;&gt;\n"</span>);
-<a class="jxr_linenumber" name="L328" href="#L328">328</a>         output.append(<span class="jxr_string">"The options (separated by the &amp; character, all optional except for &lt;code&gt;code&lt;/code&gt; ) are defined as follows:&lt;br&gt;&lt;br&gt;"</span>
-<a class="jxr_linenumber" name="L329" href="#L329">329</a>                 + <span class="jxr_string">"&lt;code&gt;w&lt;/code&gt;: &lt;b&gt;Width&lt;/b&gt; in pixels of the returned image (default = "</span>
-<a class="jxr_linenumber" name="L330" href="#L330">330</a>                 + DEFAULT_W
-<a class="jxr_linenumber" name="L331" href="#L331">331</a>                 + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
-<a class="jxr_linenumber" name="L332" href="#L332">332</a>                 + <span class="jxr_string">"&lt;code&gt;h&lt;/code&gt;: &lt;b&gt;Height&lt;/b&gt; in pixels of the returned image (default = "</span>
-<a class="jxr_linenumber" name="L333" href="#L333">333</a>                 + DEFAULT_H
-<a class="jxr_linenumber" name="L334" href="#L334">334</a>                 + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
-<a class="jxr_linenumber" name="L335" href="#L335">335</a>                 + <span class="jxr_string">""</span>
-<a class="jxr_linenumber" name="L336" href="#L336">336</a>                 + <span class="jxr_string">"&lt;code&gt;t1&lt;/code&gt;: &lt;b&gt;Start Time&lt;/b&gt; The start time (local) of the rsam plot as given by the number of days before present or a specific time in the format YYYYMMDDHHMM.  Note that, in the first case, this is a negative number (default = "</span>
-<a class="jxr_linenumber" name="L337" href="#L337">337</a>                 + DEFAULT_T1
-<a class="jxr_linenumber" name="L338" href="#L338">338</a>                 + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
-<a class="jxr_linenumber" name="L339" href="#L339">339</a>                 + <span class="jxr_string">""</span>
-<a class="jxr_linenumber" name="L340" href="#L340">340</a>                 + <span class="jxr_string">"&lt;code&gt;t2&lt;/code&gt;: &lt;b&gt;End Time&lt;/b&gt; The end time (local) of the rsam plot as given by the format YYYYMMDDHHMM or 'now' (default = "</span>
-<a class="jxr_linenumber" name="L341" href="#L341">341</a>                 + DEFAULT_T2
-<a class="jxr_linenumber" name="L342" href="#L342">342</a>                 + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
-<a class="jxr_linenumber" name="L343" href="#L343">343</a>                 + <span class="jxr_string">""</span>
-<a class="jxr_linenumber" name="L344" href="#L344">344</a>                 + <span class="jxr_string">"&lt;code&gt;dt&lt;/code&gt;: &lt;b&gt;Detrend&lt;/b&gt; Whether to detrend (linear) the plot, 1 is yes, 0 is no (default = "</span>
-<a class="jxr_linenumber" name="L345" href="#L345">345</a>                 + DEFAULT_DT
-<a class="jxr_linenumber" name="L346" href="#L346">346</a>                 + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
-<a class="jxr_linenumber" name="L347" href="#L347">347</a>                 + <span class="jxr_string">"&lt;code&gt;ds&lt;/code&gt;: &lt;b&gt;Despike&lt;/b&gt; Whether to despike (mean) the plot, 1 is yes, 0 is no (default = "</span>
-<a class="jxr_linenumber" name="L348" href="#L348">348</a>                 + DEFAULT_DS
-<a class="jxr_linenumber" name="L349" href="#L349">349</a>                 + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
-<a class="jxr_linenumber" name="L350" href="#L350">350</a>                 + <span class="jxr_string">"&lt;code&gt;dsp&lt;/code&gt;: &lt;b&gt;Despike Period&lt;/b&gt; Period to use for despike (default = "</span>
-<a class="jxr_linenumber" name="L351" href="#L351">351</a>                 + DEFAULT_DSP
-<a class="jxr_linenumber" name="L352" href="#L352">352</a>                 + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
-<a class="jxr_linenumber" name="L353" href="#L353">353</a>                 + <span class="jxr_string">"&lt;code&gt;max&lt;/code&gt;: &lt;b&gt;Plot Max&lt;/b&gt; Largest value to plot&lt;BR&gt;&lt;BR&gt;"</span>
-<a class="jxr_linenumber" name="L354" href="#L354">354</a>                 + <span class="jxr_string">"&lt;code&gt;min&lt;/code&gt;: &lt;b&gt;Plot Min&lt;/b&gt; Smallest value to plot&lt;BR&gt;&lt;BR&gt;"</span>
-<a class="jxr_linenumber" name="L355" href="#L355">355</a>                 + <span class="jxr_string">"&lt;code&gt;csv&lt;/code&gt;: &lt;b&gt;CSV&lt;/b&gt; Whether to return a CSV file rather than a plot, 1 is yes, 0 is no (default = "</span>
-<a class="jxr_linenumber" name="L356" href="#L356">356</a>                 + DEFAULT_CSV
-<a class="jxr_linenumber" name="L357" href="#L357">357</a>                 + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
-<a class="jxr_linenumber" name="L358" href="#L358">358</a>                 + <span class="jxr_string">""</span>
-<a class="jxr_linenumber" name="L359" href="#L359">359</a>                 + <span class="jxr_string">"&lt;code&gt;rm&lt;/code&gt;: &lt;b&gt;Running Median&lt;/b&gt;Whether to apply a running median filter&lt;br&gt;&lt;br&gt;"</span>
-<a class="jxr_linenumber" name="L360" href="#L360">360</a>                 + <span class="jxr_string">"&lt;code&gt;rmp&lt;/code&gt;: &lt;b&gt;Running Median Period&lt;/b&gt; Period to use for running medial, in seconds (defualt = "</span>
-<a class="jxr_linenumber" name="L361" href="#L361">361</a>                 + DEFAULT_RMP
-<a class="jxr_linenumber" name="L362" href="#L362">362</a>                 + <span class="jxr_string">")&lt;br&gt;&lt;br&gt;"</span>
-<a class="jxr_linenumber" name="L363" href="#L363">363</a>                 + <span class="jxr_string">""</span>
-<a class="jxr_linenumber" name="L364" href="#L364">364</a>                 + <span class="jxr_string">"&lt;code&gt;tz&lt;/code&gt;: &lt;b&gt;Time Zone&lt;/b&gt; The time zone, a complete list of time zones that WWS understands is shown below.&lt;br&gt;&lt;br&gt;"</span>);
-<a class="jxr_linenumber" name="L365" href="#L365">365</a>         output.append(<span class="jxr_string">"&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L366" href="#L366">366</a>         <strong class="jxr_keyword">return</strong> output.toString();
-<a class="jxr_linenumber" name="L367" href="#L367">367</a>     }
-<a class="jxr_linenumber" name="L368" href="#L368">368</a> 
-<a class="jxr_linenumber" name="L369" href="#L369">369</a>     <strong class="jxr_keyword">public</strong> String getAnchor() {
-<a class="jxr_linenumber" name="L370" href="#L370">370</a>         <strong class="jxr_keyword">return</strong> <span class="jxr_string">"rsam"</span>;
-<a class="jxr_linenumber" name="L371" href="#L371">371</a>     }
-<a class="jxr_linenumber" name="L372" href="#L372">372</a> 
-<a class="jxr_linenumber" name="L373" href="#L373">373</a>     <strong class="jxr_keyword">public</strong> String getTitle() {
-<a class="jxr_linenumber" name="L374" href="#L374">374</a>         <strong class="jxr_keyword">return</strong> <span class="jxr_string">"RSAM"</span>;
-<a class="jxr_linenumber" name="L375" href="#L375">375</a>     }
-<a class="jxr_linenumber" name="L376" href="#L376">376</a> 
-<a class="jxr_linenumber" name="L377" href="#L377">377</a>     <strong class="jxr_keyword">public</strong> String getCommand() {
-<a class="jxr_linenumber" name="L378" href="#L378">378</a>         <strong class="jxr_keyword">return</strong> <span class="jxr_string">"/rsam"</span>;
-<a class="jxr_linenumber" name="L379" href="#L379">379</a>     }
-<a class="jxr_linenumber" name="L380" href="#L380">380</a> }
+<a class="jxr_linenumber" name="L273" href="#L273">273</a>     <strong class="jxr_keyword">if</strong> (DEFAULT_DS) {
+<a class="jxr_linenumber" name="L274" href="#L274">274</a>       output.append(
+<a class="jxr_linenumber" name="L275" href="#L275">275</a>           <span class="jxr_string">"if (rsamDS.checked == \&quot;\&quot;) { linkUrl += \&quot;&amp;ds=0\&quot;; } else if (rsamDSP.value != \&quot;"</span>
+<a class="jxr_linenumber" name="L276" href="#L276">276</a>               + DEFAULT_DSP
+<a class="jxr_linenumber" name="L277" href="#L277">277</a>               + <span class="jxr_string">"\&quot; &amp;&amp; rsamDSP.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;dsp=\&quot; + rsamDSP.value;}\n"</span>);
+<a class="jxr_linenumber" name="L278" href="#L278">278</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L279" href="#L279">279</a>       output.append(<span class="jxr_string">"if (rsamDS.checked != \&quot;\&quot;) { linkUrl += \&quot;&amp;ds=1\&quot;; if (rsamDSP.value != \&quot;"</span>
+<a class="jxr_linenumber" name="L280" href="#L280">280</a>           + DEFAULT_DSP
+<a class="jxr_linenumber" name="L281" href="#L281">281</a>           + <span class="jxr_string">"\&quot; &amp;&amp; rsamDSP.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;dsp=\&quot; + rsamDSP.value;}}\n"</span>);
+<a class="jxr_linenumber" name="L282" href="#L282">282</a>     }
+<a class="jxr_linenumber" name="L283" href="#L283">283</a> 
+<a class="jxr_linenumber" name="L284" href="#L284">284</a>     <strong class="jxr_keyword">if</strong> (DEFAULT_RM) {
+<a class="jxr_linenumber" name="L285" href="#L285">285</a>       output.append(
+<a class="jxr_linenumber" name="L286" href="#L286">286</a>           <span class="jxr_string">"if (rsamRM.checked == \&quot;\&quot;) { linkUrl += \&quot;&amp;rm=0\&quot;;} else if (rsamRMP.value != \&quot;"</span>
+<a class="jxr_linenumber" name="L287" href="#L287">287</a>               + DEFAULT_RMP
+<a class="jxr_linenumber" name="L288" href="#L288">288</a>               + <span class="jxr_string">"\&quot; &amp;&amp; rsamRMP.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;rmp=\&quot; + rsamRMP.value;}\n"</span>);
+<a class="jxr_linenumber" name="L289" href="#L289">289</a>     } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L290" href="#L290">290</a>       output.append(<span class="jxr_string">"if (rsamRM.checked != \&quot;\&quot;) { linkUrl += \&quot;&amp;rm=1\&quot;; if (rsamRMP.value != \&quot;"</span>
+<a class="jxr_linenumber" name="L291" href="#L291">291</a>           + DEFAULT_RMP
+<a class="jxr_linenumber" name="L292" href="#L292">292</a>           + <span class="jxr_string">"\&quot; &amp;&amp; rsamRMP.value != \&quot;\&quot;) { linkUrl += \&quot;&amp;rmp=\&quot; + rsamRMP.value;}}\n"</span>);
+<a class="jxr_linenumber" name="L293" href="#L293">293</a>     }
+<a class="jxr_linenumber" name="L294" href="#L294">294</a> 
+<a class="jxr_linenumber" name="L295" href="#L295">295</a>     output.append(
+<a class="jxr_linenumber" name="L296" href="#L296">296</a>         <span class="jxr_string">"if (rsamTZ.value != \&quot;"</span> + DEFAULT_TZ + <span class="jxr_string">"\&quot;) { linkUrl += \&quot;&amp;tz=\&quot; + rsamTZ.value;}\n"</span>);
+<a class="jxr_linenumber" name="L297" href="#L297">297</a>     output.append(<span class="jxr_string">"linkUrl = linkUrl.replace(\&quot;?&amp;\&quot;, \&quot;?\&quot;);\n"</span>);
+<a class="jxr_linenumber" name="L298" href="#L298">298</a>     output.append(<span class="jxr_string">"linkUrl = linkUrl.replace(/&#92;&#92;?$/, \&quot;\&quot;);\n"</span>);
+<a class="jxr_linenumber" name="L299" href="#L299">299</a>     output.append(<span class="jxr_string">"a.href = linkUrl;\n"</span> + <span class="jxr_string">"a.text = linkUrl;\n"</span> + <span class="jxr_string">"a.textContent = linkUrl; \n"</span>
+<a class="jxr_linenumber" name="L300" href="#L300">300</a>         + <span class="jxr_string">"while(urlDiv.hasChildNodes()) {urlDiv.removeChild(urlDiv.lastChild);}"</span>
+<a class="jxr_linenumber" name="L301" href="#L301">301</a>         + <span class="jxr_string">"urlDiv.appendChild(a);\n"</span>
+<a class="jxr_linenumber" name="L302" href="#L302">302</a>         + <span class="jxr_string">"rsamDSP.disabled = !rsamDS.checked; rsamRMP.disabled = !rsamRM.checked;"</span>
+<a class="jxr_linenumber" name="L303" href="#L303">303</a>         + <span class="jxr_string">"}&lt;/script&gt;\n"</span>);
+<a class="jxr_linenumber" name="L304" href="#L304">304</a> 
+<a class="jxr_linenumber" name="L305" href="#L305">305</a>     output.append(<span class="jxr_string">"Plots precomputed RSAM values. \n"</span>);
+<a class="jxr_linenumber" name="L306" href="#L306">306</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContentTitle\&quot;&gt;URL Builder&lt;/div&gt;\n"</span>);
+<a class="jxr_linenumber" name="L307" href="#L307">307</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContent\&quot;&gt;\n"</span>);
+<a class="jxr_linenumber" name="L308" href="#L308">308</a>     output.append(<span class="jxr_string">"&lt;FORM&gt;\n"</span>);
+<a class="jxr_linenumber" name="L309" href="#L309">309</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;left\&quot;&gt;\n"</span>);
+<a class="jxr_linenumber" name="L310" href="#L310">310</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;left\&quot;&gt;Channel&lt;BR&gt;"</span>);
+<a class="jxr_linenumber" name="L311" href="#L311">311</a>     output.append(
+<a class="jxr_linenumber" name="L312" href="#L312">312</a>         <span class="jxr_string">"&lt;select id=\&quot;rsamCODE\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;code\&quot; class=\&quot;channel\&quot; size=8&gt;&lt;/select&gt;&lt;/div&gt;\n"</span>);
+<a class="jxr_linenumber" name="L313" href="#L313">313</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;right\&quot;&gt;Time zone&lt;br&gt;"</span>);
+<a class="jxr_linenumber" name="L314" href="#L314">314</a>     output.append(
+<a class="jxr_linenumber" name="L315" href="#L315">315</a>         <span class="jxr_string">"&lt;select onchange=\&quot;buildRsamUrl()\&quot; class=\&quot;timeZone\&quot; id=\&quot;rsamTZ\&quot; name=\&quot;tz\&quot; size=8&gt;"</span>
+<a class="jxr_linenumber" name="L316" href="#L316">316</a>             + <span class="jxr_string">"&lt;/select&gt;&lt;/div&gt;\n"</span>);
+<a class="jxr_linenumber" name="L317" href="#L317">317</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;clear\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L318" href="#L318">318</a>     output.append(
+<a class="jxr_linenumber" name="L319" href="#L319">319</a>         <span class="jxr_string">"&lt;P&gt;&lt;br&gt;&lt;p&gt;&lt;div class=\&quot;left\&quot;&gt;&lt;div class=\&quot;timeInput\&quot;&gt;&lt;label for=\&quot;t1\&quot;&gt;Start Time&lt;/label&gt;&lt;/div&gt;&lt;input type=text id=\&quot;rsamT1\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;t1\&quot; size=10 value=\&quot;"</span>
+<a class="jxr_linenumber" name="L320" href="#L320">320</a>             + DEFAULT_T1 + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;&lt;br&gt;"</span>);
+<a class="jxr_linenumber" name="L321" href="#L321">321</a>     output.append(
+<a class="jxr_linenumber" name="L322" href="#L322">322</a>         <span class="jxr_string">"&lt;div class=\&quot;left\&quot;&gt;&lt;div class=\&quot;timeInput\&quot;&gt;&lt;label for=\&quot;t2\&quot;&gt;End Time&lt;/label&gt;&lt;/div&gt;&lt;input type=text id=\&quot;rsamT2\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;t2\&quot; size=10 value=\&quot;"</span>
+<a class="jxr_linenumber" name="L323" href="#L323">323</a>             + DEFAULT_T2 + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;&lt;br&gt;"</span>);
+<a class="jxr_linenumber" name="L324" href="#L324">324</a>     output.append(<span class="jxr_string">"&lt;/div&gt;\n"</span>);
+<a class="jxr_linenumber" name="L325" href="#L325">325</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;right\&quot; style=\&quot;padding-right:15px;\&quot;&gt;\n"</span>);
+<a class="jxr_linenumber" name="L326" href="#L326">326</a>     output.append(
+<a class="jxr_linenumber" name="L327" href="#L327">327</a>         <span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;rsamP\&quot;&gt;RSAM period&lt;/label&gt;&lt;input type=text id=\&quot;rsamP\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;rsamP\&quot; size=3 value=\&quot;"</span>
+<a class="jxr_linenumber" name="L328" href="#L328">328</a>             + DEFAULT_RSAMP + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L329" href="#L329">329</a>     output.append(
+<a class="jxr_linenumber" name="L330" href="#L330">330</a>         <span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;w\&quot;&gt;Width&lt;/label&gt;&lt;input type=text id=\&quot;rsamW\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;w\&quot; size=3 value=\&quot;"</span>
+<a class="jxr_linenumber" name="L331" href="#L331">331</a>             + DEFAULT_W + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L332" href="#L332">332</a>     output.append(
+<a class="jxr_linenumber" name="L333" href="#L333">333</a>         <span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;h\&quot;&gt;Height&lt;/label&gt;&lt;input type=text id=\&quot;rsamH\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;h\&quot; size=3 value=\&quot;"</span>
+<a class="jxr_linenumber" name="L334" href="#L334">334</a>             + DEFAULT_H + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L335" href="#L335">335</a>     output.append(
+<a class="jxr_linenumber" name="L336" href="#L336">336</a>         <span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;max\&quot;&gt;Plot Max&lt;/label&gt;&lt;input type=text id=\&quot;rsamMAX\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;max\&quot; size=3 value=\&quot;"</span>
+<a class="jxr_linenumber" name="L337" href="#L337">337</a>             + DEFAULT_MAX + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L338" href="#L338">338</a>     output.append(
+<a class="jxr_linenumber" name="L339" href="#L339">339</a>         <span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;min\&quot;&gt;Plot Min&lt;/label&gt;&lt;input type=text id=\&quot;rsamMIN\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;min\&quot; size=3 value=\&quot;"</span>
+<a class="jxr_linenumber" name="L340" href="#L340">340</a>             + DEFAULT_MIN + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L341" href="#L341">341</a>     output.append(
+<a class="jxr_linenumber" name="L342" href="#L342">342</a>         <span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;dt\&quot;&gt;Detrend?&lt;/label&gt;&lt;input class=\&quot;checkbox\&quot; type=checkbox id=\&quot;rsamDT\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;dt\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L343" href="#L343">343</a>     output.append(
+<a class="jxr_linenumber" name="L344" href="#L344">344</a>         <span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;ds\&quot;&gt;Filter Spikes?&lt;/label&gt;&lt;input class=\&quot;checkbox\&quot; type=checkbox id=\&quot;rsamDS\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;ds\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L345" href="#L345">345</a>     output.append(
+<a class="jxr_linenumber" name="L346" href="#L346">346</a>         <span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;dsp\&quot;&gt;Period&lt;/label&gt;&lt;input type=text id=\&quot;rsamDSP\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;pds\&quot; size=3 value=\&quot;"</span>
+<a class="jxr_linenumber" name="L347" href="#L347">347</a>             + DEFAULT_DSP + <span class="jxr_string">"\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L348" href="#L348">348</a>     output.append(
+<a class="jxr_linenumber" name="L349" href="#L349">349</a>         <span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;rm\&quot;&gt;Remove Median?&lt;/label&gt;&lt;input class=\&quot;checkbox\&quot; type=checkbox id=\&quot;rsamRM\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;rm\&quot; checked&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L350" href="#L350">350</a>     output.append(
+<a class="jxr_linenumber" name="L351" href="#L351">351</a>         <span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;rmp\&quot;&gt;Period&lt;/label&gt;&lt;input type=text id=\&quot;rsamRMP\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;rmp\&quot; size=3 value=\&quot;600\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L352" href="#L352">352</a>     output.append(
+<a class="jxr_linenumber" name="L353" href="#L353">353</a>         <span class="jxr_string">"&lt;div class=\&quot;input\&quot;&gt;&lt;label for=\&quot;csv\&quot;&gt;Return CSV?&lt;/label&gt;&lt;input class=\&quot;checkbox\&quot; type=checkbox id=\&quot;rsamCSV\&quot; onchange=\&quot;buildRsamUrl()\&quot; name=\&quot;csv\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L354" href="#L354">354</a>     output.append(<span class="jxr_string">"&lt;/div&gt;&lt;br&gt;&lt;/FORM&gt;&lt;div class=\&quot;clear\&quot;&gt;&lt;/div&gt;\n"</span>);
+<a class="jxr_linenumber" name="L355" href="#L355">355</a> 
+<a class="jxr_linenumber" name="L356" href="#L356">356</a>     output.append(<span class="jxr_string">"&lt;HR class=\&quot;urlBuilder\&quot;&gt;&lt;b&gt;URL:&lt;/b&gt;&lt;BR&gt;&lt;div id=\&quot;rsamUrl\&quot;&gt;&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L357" href="#L357">357</a>     output.append(<span class="jxr_string">"&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L358" href="#L358">358</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContentTitle\&quot;&gt;Arguments&lt;/div&gt;\n"</span>);
+<a class="jxr_linenumber" name="L359" href="#L359">359</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContent\&quot;&gt;\n"</span>);
+<a class="jxr_linenumber" name="L360" href="#L360">360</a>     output.append(
+<a class="jxr_linenumber" name="L361" href="#L361">361</a>         <span class="jxr_string">"The options (separated by the &amp; character, all optional except for &lt;code&gt;code&lt;/code&gt; ) are defined as follows:&lt;br&gt;&lt;br&gt;"</span>
+<a class="jxr_linenumber" name="L362" href="#L362">362</a>             + <span class="jxr_string">"&lt;code&gt;w&lt;/code&gt;: &lt;b&gt;Width&lt;/b&gt; in pixels of the returned image (default = "</span> + DEFAULT_W
+<a class="jxr_linenumber" name="L363" href="#L363">363</a>             + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
+<a class="jxr_linenumber" name="L364" href="#L364">364</a>             + <span class="jxr_string">"&lt;code&gt;h&lt;/code&gt;: &lt;b&gt;Height&lt;/b&gt; in pixels of the returned image (default = "</span>
+<a class="jxr_linenumber" name="L365" href="#L365">365</a>             + DEFAULT_H + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span> + <span class="jxr_string">""</span>
+<a class="jxr_linenumber" name="L366" href="#L366">366</a>             + <span class="jxr_string">"&lt;code&gt;t1&lt;/code&gt;: &lt;b&gt;Start Time&lt;/b&gt; The start time (local) of the rsam plot as given by the number of days before present or a specific time in the format YYYYMMDDHHMM.  Note that, in the first case, this is a negative number (default = "</span>
+<a class="jxr_linenumber" name="L367" href="#L367">367</a>             + DEFAULT_T1 + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span> + <span class="jxr_string">""</span>
+<a class="jxr_linenumber" name="L368" href="#L368">368</a>             + <span class="jxr_string">"&lt;code&gt;t2&lt;/code&gt;: &lt;b&gt;End Time&lt;/b&gt; The end time (local) of the rsam plot as given by the format YYYYMMDDHHMM or 'now' (default = "</span>
+<a class="jxr_linenumber" name="L369" href="#L369">369</a>             + DEFAULT_T2 + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span> + <span class="jxr_string">""</span>
+<a class="jxr_linenumber" name="L370" href="#L370">370</a>             + <span class="jxr_string">"&lt;code&gt;dt&lt;/code&gt;: &lt;b&gt;Detrend&lt;/b&gt; Whether to detrend (linear) the plot, 1 is yes, 0 is no (default = "</span>
+<a class="jxr_linenumber" name="L371" href="#L371">371</a>             + DEFAULT_DT + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
+<a class="jxr_linenumber" name="L372" href="#L372">372</a>             + <span class="jxr_string">"&lt;code&gt;ds&lt;/code&gt;: &lt;b&gt;Despike&lt;/b&gt; Whether to despike (mean) the plot, 1 is yes, 0 is no (default = "</span>
+<a class="jxr_linenumber" name="L373" href="#L373">373</a>             + DEFAULT_DS + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
+<a class="jxr_linenumber" name="L374" href="#L374">374</a>             + <span class="jxr_string">"&lt;code&gt;dsp&lt;/code&gt;: &lt;b&gt;Despike Period&lt;/b&gt; Period to use for despike (default = "</span>
+<a class="jxr_linenumber" name="L375" href="#L375">375</a>             + DEFAULT_DSP + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span>
+<a class="jxr_linenumber" name="L376" href="#L376">376</a>             + <span class="jxr_string">"&lt;code&gt;max&lt;/code&gt;: &lt;b&gt;Plot Max&lt;/b&gt; Largest value to plot&lt;BR&gt;&lt;BR&gt;"</span>
+<a class="jxr_linenumber" name="L377" href="#L377">377</a>             + <span class="jxr_string">"&lt;code&gt;min&lt;/code&gt;: &lt;b&gt;Plot Min&lt;/b&gt; Smallest value to plot&lt;BR&gt;&lt;BR&gt;"</span>
+<a class="jxr_linenumber" name="L378" href="#L378">378</a>             + <span class="jxr_string">"&lt;code&gt;csv&lt;/code&gt;: &lt;b&gt;CSV&lt;/b&gt; Whether to return a CSV file rather than a plot, 1 is yes, 0 is no (default = "</span>
+<a class="jxr_linenumber" name="L379" href="#L379">379</a>             + DEFAULT_CSV + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;"</span> + <span class="jxr_string">""</span>
+<a class="jxr_linenumber" name="L380" href="#L380">380</a>             + <span class="jxr_string">"&lt;code&gt;rm&lt;/code&gt;: &lt;b&gt;Running Median&lt;/b&gt;Whether to apply a running median filter&lt;br&gt;&lt;br&gt;"</span>
+<a class="jxr_linenumber" name="L381" href="#L381">381</a>             + <span class="jxr_string">"&lt;code&gt;rmp&lt;/code&gt;: &lt;b&gt;Running Median Period&lt;/b&gt; Period to use for running medial, in seconds (defualt = "</span>
+<a class="jxr_linenumber" name="L382" href="#L382">382</a>             + DEFAULT_RMP + <span class="jxr_string">")&lt;br&gt;&lt;br&gt;"</span> + <span class="jxr_string">""</span>
+<a class="jxr_linenumber" name="L383" href="#L383">383</a>             + <span class="jxr_string">"&lt;code&gt;tz&lt;/code&gt;: &lt;b&gt;Time Zone&lt;/b&gt; The time zone, a complete list of time zones that WWS understands is shown below.&lt;br&gt;&lt;br&gt;"</span>);
+<a class="jxr_linenumber" name="L384" href="#L384">384</a>     output.append(<span class="jxr_string">"&lt;/div&gt;"</span>);
+<a class="jxr_linenumber" name="L385" href="#L385">385</a>     <strong class="jxr_keyword">return</strong> output.toString();
+<a class="jxr_linenumber" name="L386" href="#L386">386</a>   }
+<a class="jxr_linenumber" name="L387" href="#L387">387</a> 
+<a class="jxr_linenumber" name="L388" href="#L388">388</a>   <strong class="jxr_keyword">public</strong> String getAnchor() {
+<a class="jxr_linenumber" name="L389" href="#L389">389</a>     <strong class="jxr_keyword">return</strong> <span class="jxr_string">"rsam"</span>;
+<a class="jxr_linenumber" name="L390" href="#L390">390</a>   }
+<a class="jxr_linenumber" name="L391" href="#L391">391</a> 
+<a class="jxr_linenumber" name="L392" href="#L392">392</a>   <strong class="jxr_keyword">public</strong> String getTitle() {
+<a class="jxr_linenumber" name="L393" href="#L393">393</a>     <strong class="jxr_keyword">return</strong> <span class="jxr_string">"RSAM"</span>;
+<a class="jxr_linenumber" name="L394" href="#L394">394</a>   }
+<a class="jxr_linenumber" name="L395" href="#L395">395</a> 
+<a class="jxr_linenumber" name="L396" href="#L396">396</a>   @Override
+<a class="jxr_linenumber" name="L397" href="#L397">397</a>   <strong class="jxr_keyword">public</strong> String getCommand() {
+<a class="jxr_linenumber" name="L398" href="#L398">398</a>     <strong class="jxr_keyword">return</strong> <span class="jxr_string">"/rsam"</span>;
+<a class="jxr_linenumber" name="L399" href="#L399">399</a>   }
+<a class="jxr_linenumber" name="L400" href="#L400">400</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2015. All rights reserved.</div>
