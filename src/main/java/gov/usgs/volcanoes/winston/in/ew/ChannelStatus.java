@@ -5,8 +5,8 @@ import java.util.Comparator;
 import java.util.TimeZone;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.CurrentTime;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.winston.db.InputEW;
 
 /**
@@ -57,7 +57,7 @@ public class ChannelStatus {
     if (code == InputEW.InputResult.Code.SUCCESS
         || code == InputEW.InputResult.Code.SUCCESS_CREATED_TABLE) {
       successes++;
-      lastTime = CurrentTime.getInstance().nowJ2K();
+      lastTime = J2kSec.now();
     } else
       failures++;
 
@@ -69,7 +69,7 @@ public class ChannelStatus {
   }
 
   public double timeSinceLast() {
-    final double now = CurrentTime.getInstance().nowJ2K();
+    final double now = J2kSec.now();
     return now - lastTime;
   }
 
@@ -80,8 +80,8 @@ public class ChannelStatus {
   @Override
   public String toString() {
     return String.format("%-13s %-12s %-24s %-24s %-12s", channel,
-        Util.timeDifferenceToString(timeSinceLast()), dateFormat.format(Util.j2KToDate(minBufTime)),
-        dateFormat.format(Util.j2KToDate(maxBufTime)), successes + "/" + failures);
+        Util.timeDifferenceToString(timeSinceLast()), dateFormat.format(J2kSec.asDate(minBufTime)),
+        dateFormat.format(J2kSec.asDate(maxBufTime)), successes + "/" + failures);
   }
 
   public static Comparator<ChannelStatus> getComparator(final SortOrder order, final boolean desc) {

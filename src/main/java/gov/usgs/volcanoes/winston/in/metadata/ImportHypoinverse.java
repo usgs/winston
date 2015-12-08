@@ -1,5 +1,8 @@
 package gov.usgs.volcanoes.winston.in.metadata;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.LinkedList;
@@ -17,6 +20,7 @@ import gov.usgs.winston.Instrument;
  *
  */
 public class ImportHypoinverse extends AbstractMetadataImporter {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImportHypoinverse.class);
 
   public static final String me = ImportHypoinverse.class.getName();
 
@@ -26,7 +30,7 @@ public class ImportHypoinverse extends AbstractMetadataImporter {
 
   @Override
   public List<Instrument> readMetadata(final String fn) {
-    LOGGER.fine("Reading " + fn);
+    LOGGER.info("Reading {}", fn);
 
     final List<Instrument> list = new LinkedList<Instrument>();
     try {

@@ -9,7 +9,7 @@ import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
 
-import gov.usgs.util.ConfigFile;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.winston.Channel;
 
 /**

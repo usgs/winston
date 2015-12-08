@@ -153,8 +153,9 @@ public class PlotHelicorderPanel extends WinstonToolsRunnablePanel {
     filePanel = new FilePanel(FilePanel.Type.SAVE);
 
     end = new JTextField(15);
-    end.setText(gov.usgs.util.Time.format(gov.usgs.util.Time.INPUT_TIME_FORMAT, new Date()));
-    end.setToolTipText(gov.usgs.util.Time.INPUT_TIME_FORMAT);
+    SimpleDateFormat dateF = new SimpleDateFormat(Time.INPUT_TIME_FORMAT);
+    end.setText(dateF.format(new Date()));
+    end.setToolTipText(Time.INPUT_TIME_FORMAT);
     end.getDocument().addDocumentListener(new TimeRangeDocumentListener(end));
 
     fileTypePanel = new JPanel();
@@ -283,7 +284,7 @@ public class PlotHelicorderPanel extends WinstonToolsRunnablePanel {
     final String scnl = scnlPanel.getSCNLasSCNL('_');
 
     final String timeZone = (String) timeZones.getSelectedItem();
-    final SimpleDateFormat dateFormat = new SimpleDateFormat(gov.usgs.util.Time.INPUT_TIME_FORMAT);
+    final SimpleDateFormat dateFormat = new SimpleDateFormat(Time.INPUT_TIME_FORMAT);
     long date = 0;
     try {
       date = dateFormat.parse(end.getText()).getTime();

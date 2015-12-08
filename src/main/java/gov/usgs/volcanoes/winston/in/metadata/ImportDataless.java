@@ -6,16 +6,21 @@ import edu.iris.Fissures.seed.container.SeedObjectContainer;
 import edu.iris.Fissures.seed.director.ImportDirector;
 import edu.iris.Fissures.seed.director.SeedImportDirector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.util.LinkedList;
 import java.util.List;
 
+import gov.usgs.volcanoes.winston.in.ew.ImportEW;
 import gov.usgs.winston.Instrument;
 
 @SuppressWarnings("deprecation")
 public class ImportDataless extends AbstractMetadataImporter {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImportDataless.class);
 
   public static final String me = ImportDataless.class.getName();
 
@@ -25,7 +30,7 @@ public class ImportDataless extends AbstractMetadataImporter {
 
   @Override
   public List<Instrument> readMetadata(final String fn) {
-    LOGGER.fine("Reading " + fn);
+    LOGGER.info("Reading {}", fn);
 
     final List<Instrument> list = new LinkedList<Instrument>();
     try {
@@ -54,7 +59,7 @@ public class ImportDataless extends AbstractMetadataImporter {
         inst.setName((String) b.getFieldVal(3));
         inst.setDescription((String) b.getFieldVal(9));
 
-        LOGGER.fine("found " + inst.toString());
+        LOGGER.info("found {}", inst.toString());
         list.add(inst);
       }
     } catch (final Exception e) {

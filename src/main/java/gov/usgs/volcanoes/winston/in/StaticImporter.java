@@ -14,8 +14,8 @@ import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.util.Arguments;
 import gov.usgs.util.CodeTimer;
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.winston.db.Channels;
 import gov.usgs.winston.db.Data;
 import gov.usgs.winston.db.InputEW;
@@ -162,9 +162,9 @@ abstract public class StaticImporter {
 
   public void processArguments(final Arguments args) {
     final String rd = args.get("-rd");
-    rsamDelta = Util.stringToInt(rd, 10);
+    rsamDelta = StringUtils.stringToInt(rd, 10);
     final String rl = args.get("-rl");
-    rsamDuration = Util.stringToInt(rl, 60);
+    rsamDuration = StringUtils.stringToInt(rl, 60);
     System.out.printf("RSAM parameters: delta=%d, duration=%d.\n", rsamDelta, rsamDuration);
   }
 

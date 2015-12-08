@@ -8,31 +8,35 @@ import com.martiansoftware.jsap.SimpleJSAP;
 import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.UnflaggedOption;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gov.usgs.earthworm.Menu;
 import gov.usgs.earthworm.MenuItem;
 import gov.usgs.earthworm.WaveServer;
 import gov.usgs.util.CodeTimer;
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.Log;
-import gov.usgs.util.Time;
 import gov.usgs.util.Util;
-import gov.usgs.winston.db.Channels;
-import gov.usgs.winston.db.Data;
-import gov.usgs.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.util.StringUtils;
+import gov.usgs.volcanoes.winston.db.Channels;
+import gov.usgs.volcanoes.winston.db.Data;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 
 /**
  *
  * @author Dan Cervelli
  */
 public class ImportWS {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImportWS.class);
+
   private static final String DEFAULT_CONFIG_FILENAME = "ImportWS.config";
   private static final double DEFAULT_CHUNK_SIZE = 600.0;
   private static final int DEFAULT_CHUNK_DELAY = 500;
@@ -56,8 +60,6 @@ public class ImportWS {
   private List<ImportWSJob> jobs;
   private ImportWSJob currentJob;
   private List<String> sourceChannels;
-
-  private final Logger logger;
 
   private double startTime;
   private double endTime;
@@ -100,8 +102,6 @@ public class ImportWS {
 
   public ImportWS() {
     appTimer = new CodeTimer("application");
-    logger = Log.getLogger("gov.usgs.winston");
-    logger.setLevel(Level.FINE);
   }
 
   public ImportWS(final String fileName) {
@@ -123,14 +123,14 @@ public class ImportWS {
   }
 
   public void processConfig() {
-    createDatabase = Util.stringToBoolean(config.getString("createDatabase"));
-    logger.fine("createDatabase: " + createDatabase);
+    createDatabase = StringUtils.stringToBoolean(config.getString("createDatabase"));
+    LOGGER.info("createDatabase: " + createDatabase);
 
     winston = WinstonDatabase.processWinstonConfigFile(config);
-    logger.fine("winston.driver: " + winston.dbDriver);
-    logger.fine("winston.url: " + winston.dbURL);
-    logger.fine("winston.prefix: " + winston.databasePrefix);
-    logger.fine("winston.statementCacheCap: " + winston.cacheCap);
+    LOGGER.info("winston.driver: " + winston.dbDriver);
+    LOGGER.info("winston.url: " + winston.dbURL);
+    LOGGER.info("winston.prefix: " + winston.databasePrefix);
+    LOGGER.info("winston.statementCacheCap: " + winston.cacheCap);
 
     if (createDatabase) {
       winston.checkDatabase();
@@ -141,32 +141,32 @@ public class ImportWS {
       throw new RuntimeException("no waveServer string");
 
     waveServer = new WaveServer(config.getString("waveServer"));
-    logger.fine("waveServer: " + waveServer.host + ":" + waveServer.port);
+    LOGGER.info("waveServer: {}:{}", waveServer.host, waveServer.port);
 
-    createChannels = Util.stringToBoolean(config.getString("createChannels"));
-    logger.fine("createChannels: " + createChannels);
+    createChannels = StringUtils.stringToBoolean(config.getString("createChannels"));
+    LOGGER.info("createChannels: {}", createChannels);
 
     sourceChannels = config.getList("channel");
-    logger.fine("sourceChannels: " + sourceChannels);
+    LOGGER.info("sourceChannels: {}", sourceChannels);
 
     final String timeRange = config.getString("timeRange");
-    logger.fine("timeRange: " + timeRange);
+    LOGGER.info("timeRange: {}", timeRange);
     parseTimeRange(timeRange);
 
-    chunkSize = Util.stringToDouble(config.getString("chunkSize"), DEFAULT_CHUNK_SIZE);
-    logger.fine("chunkSize: " + chunkSize);
+    chunkSize = StringUtils.stringToDouble(config.getString("chunkSize"), DEFAULT_CHUNK_SIZE);
+    LOGGER.info("chunkSize: {}", chunkSize);
 
-    chunkDelay = Util.stringToInt(config.getString("chunkDelay"), DEFAULT_CHUNK_DELAY);
-    logger.fine("chunkDelay: " + chunkDelay);
+    chunkDelay = StringUtils.stringToInt(config.getString("chunkDelay"), DEFAULT_CHUNK_DELAY);
+    LOGGER.info("chunkDelay: {}", chunkDelay);
 
-    rsamEnable = Util.stringToBoolean(config.getString("rsam.enable"), DEFAULT_RSAM_ENABLE);
-    logger.fine("rsamEnable: " + rsamEnable);
+    rsamEnable = StringUtils.stringToBoolean(config.getString("rsam.enable"), DEFAULT_RSAM_ENABLE);
+    LOGGER.info("rsamEnable: {}", rsamEnable);
 
-    rsamDelta = Util.stringToInt(config.getString("rsam.delta"), DEFAULT_RSAM_DELTA);
-    logger.fine("rsamDelta: " + rsamDelta);
+    rsamDelta = StringUtils.stringToInt(config.getString("rsam.delta"), DEFAULT_RSAM_DELTA);
+    LOGGER.info("rsamDelta: {}", rsamDelta);
 
-    rsamDuration = Util.stringToInt(config.getString("rsam.duration"), DEFAULT_RSAM_DURATION);
-    logger.fine("rsamDuration: " + rsamDuration);
+    rsamDuration = StringUtils.stringToInt(config.getString("rsam.duration"), DEFAULT_RSAM_DURATION);
+    LOGGER.info("rsamDuration: {}", rsamDuration);
     // TODO: log level
   }
 
@@ -178,16 +178,16 @@ public class ImportWS {
 
   private void parseTimeRange(final String timeRange) {
     try {
-      final double[] tr = Time.parseTimeRange(timeRange);
+      final double[] tr = gov.usgs.util.Time.parseTimeRange(timeRange);
       startTime = tr[0];
       endTime = tr[1];
     } catch (final Exception e) {
-      logger.severe("Error parsing time range: " + e.getMessage());
+      LOGGER.error("Error parsing time range: {}", e.getMessage());
       System.exit(-1);
     }
 
-    logger.fine(String.format("Requested time range: [%s -> %s, %s]", Time.toDateString(startTime),
-        Time.toDateString(endTime), Util.timeDifferenceToString(endTime - startTime)));
+    LOGGER.info(String.format("Requested time range: [%s -> %s, %s]", J2kSec.toDateString(startTime),
+        J2kSec.toDateString(endTime), Util.timeDifferenceToString(endTime - startTime)));
   }
 
   public void setWinston(final WinstonDatabase w) {
@@ -228,7 +228,7 @@ public class ImportWS {
           if (!createChannels && !channels.channelExists(wc))
             continue;
 
-          logger.fine("Remote channel matched: " + wc);
+          LOGGER.info("Remote channel matched: {}", wc);
           final ImportWSJob job = new ImportWSJob(winston, waveServer, this);
           job.setChannel(wc);
           job.setChunkDelay(chunkDelay);
@@ -243,7 +243,7 @@ public class ImportWS {
   public void startImport() {
     for (final ImportWSJob job : jobs) {
       currentJob = job;
-      logger.info(job.getChannel() + ": finding gaps");
+      LOGGER.info("{}: finding gaps", job.getChannel());
       final List<double[]> gaps = data.findGaps(job.getChannel(), startTime, endTime);
       for (final double[] gap : gaps)
         job.addSpan(gap[0], gap[1]);
@@ -254,11 +254,11 @@ public class ImportWS {
         break;
     }
     appTimer.stop();
-    logger.info(
+    LOGGER.info(
         String.format("%d tbs inserted, total download time: %s, total insert time: %s (%.3fms/tb)",
             totalInserted, Util.timeDifferenceToString(totalDownloadTime / 1000),
             Util.timeDifferenceToString(totalInsertTime / 1000), totalInsertTime / totalInserted));
-    logger.info(
+    LOGGER.info(
         "Total run time: " + Util.timeDifferenceToString(appTimer.getRunTimeMillis() / 1000.0));
     quit = true;
   }
@@ -276,9 +276,9 @@ public class ImportWS {
     if (currentJob != null)
       currentJob.quit();
     else
-      logger.info("Null job");
+      LOGGER.info("Null job");
     quit = true;
-    logger.info("Quitting cleanly.");
+    LOGGER.info("Quitting cleanly.");
   }
 
   /**
@@ -307,10 +307,6 @@ public class ImportWS {
       System.exit(1);
     }
     return config;
-  }
-
-  public Logger getLogger() {
-    return logger;
   }
 
   public static void main(final String[] args) throws IOException {

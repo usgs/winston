@@ -1,5 +1,8 @@
 package gov.usgs.volcanoes.winston.server.cmd;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.text.DecimalFormat;
@@ -9,16 +12,21 @@ import gov.usgs.net.Command;
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.Ew;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WaveServerEmulator;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
+import gov.usgs.volcanoes.winston.server.WWSClient;
 
 /**
  *
  * @author Dan Cervelli
  */
 abstract public class BaseCommand implements Command {
+  private static final Logger LOGGER = LoggerFactory.getLogger(BaseCommand.class);
+
   protected final static int ONE_HOUR = 60 * 60;
   protected final static int ONE_DAY = 24 * ONE_HOUR;
 
@@ -72,10 +80,10 @@ abstract public class BaseCommand implements Command {
       return "FB";
 
     if (Double.isNaN(d[0]))
-      return "FL s4 " + Double.toString(Util.j2KToEW(d[1]));
+      return "FL s4 " + Double.toString(Ew.fromEpoch(J2kSec.asEpoch(d[1])));
 
     if (Double.isNaN(d[1]))
-      return "FR s4 " + Double.toString(Util.j2KToEW(d[0]));
+      return "FR s4 " + Double.toString(Ew.fromEpoch(J2kSec.asEpoch(d[0])));
 
     return "OK";
   }
@@ -122,7 +130,7 @@ abstract public class BaseCommand implements Command {
         break;
       ct += dt;
     }
-    sts = numberFormat.format(Util.j2KToEW(ct));
+    sts = numberFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ct)));
     final ByteBuffer bb = ByteBuffer.allocate(wave.numSamples() * 13 + 256);
     bb.put(id.getBytes());
     bb.put((byte) ' ');
@@ -175,6 +183,6 @@ abstract public class BaseCommand implements Command {
     if (maxDays == 0)
       return t;
     else
-      return Math.max(t, Util.nowJ2K() - (maxDays * ONE_DAY));
+      return Math.max(t, J2kSec.now() - (maxDays * ONE_DAY));
   }
 }

@@ -13,9 +13,9 @@ import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.util.CodeTimer;
 import gov.usgs.util.Util;
 import gov.usgs.volcanoes.core.time.J2kSec;
-import gov.usgs.winston.db.Channels;
-import gov.usgs.winston.db.InputEW;
-import gov.usgs.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.db.Channels;
+import gov.usgs.volcanoes.winston.db.InputEW;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 
 /**
  * If a span is added to the job it is an explicit guarantee that there is

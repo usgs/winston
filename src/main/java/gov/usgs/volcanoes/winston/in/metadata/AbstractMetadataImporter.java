@@ -1,11 +1,11 @@
 package gov.usgs.volcanoes.winston.in.metadata;
 
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.Log;
+import java.util.List;
+
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.winston.Instrument;
 import gov.usgs.winston.db.Channels;
 import gov.usgs.winston.db.WinstonDatabase;
@@ -18,8 +18,8 @@ import gov.usgs.winston.db.WinstonDatabase;
  */
 
 public abstract class AbstractMetadataImporter {
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractMetadataImporter.class);
 
-  protected final static Logger LOGGER = Log.getLogger(AbstractMetadataImporter.class.getName());
   protected final static String DEFAULT_CONFIG_FILE = "Winston.config";
 
   protected final Channels channels;
@@ -35,9 +35,7 @@ public abstract class AbstractMetadataImporter {
 
     if (cf.getList("debug") != null) {
       for (final String name : cf.getList("debug")) {
-        final Logger l = Log.getLogger(name);
-        l.setLevel(Level.ALL);
-        LOGGER.fine("debugging " + name);
+        LOGGER.debug("debugging {}", name);
       }
     }
 
@@ -49,7 +47,7 @@ public abstract class AbstractMetadataImporter {
   public void updateInstruments(final String fileName) {
 
     for (final Instrument instrument : readMetadata(fileName)) {
-      LOGGER.fine("updating " + instrument.toString());
+      LOGGER.info("updating {}", instrument.toString());
       channels.updateInstrument(instrument);
     }
   }

@@ -13,8 +13,9 @@ import java.util.TimeZone;
 import gov.usgs.net.HttpRequest;
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
-import gov.usgs.util.CurrentTime;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WaveServerEmulator;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -138,7 +139,7 @@ public abstract class AbstractHttpCommand {
     Double startTime = Double.NaN;
 
     if (t1 == null || t1.substring(0, 1).equals("-")) {
-      final double hrs = Util.stringToDouble(t1, -12);
+      final double hrs = StringUtils.stringToDouble(t1, -12);
       startTime = endTime + hrs * mult;
     } else {
       final DateFormat dateFormat = new SimpleDateFormat(INPUT_DATE_FORMAT);
@@ -146,7 +147,7 @@ public abstract class AbstractHttpCommand {
       Date bt;
       try {
         bt = dateFormat.parse(t1);
-        startTime = Util.dateToJ2K(bt);
+        startTime = J2kSec.fromDate(bt);
       } catch (final ParseException e) {
         startTime = Double.NaN;
       }
@@ -161,7 +162,7 @@ public abstract class AbstractHttpCommand {
   protected Double getStartTime(final String t1, final Double endTime, final long mult,
       final TimeZone tz) {
     final double startTime = getStartTime(t1, endTime, mult);
-    return timeOrMaxDays(startTime - (tz.getOffset((long) Util.j2KToEW(endTime) * 1000) / 1000));
+    return timeOrMaxDays(startTime - (tz.getOffset(J2kSec.asEpoch(endTime))));
   }
 
   /**
@@ -173,14 +174,14 @@ public abstract class AbstractHttpCommand {
   protected Double getEndTime(final String t2) {
     Double endTime = Double.NaN;
     if (t2 == null || t2.equalsIgnoreCase("now"))
-      endTime = CurrentTime.getInstance().nowJ2K();
+      endTime = J2kSec.now();
     else {
       final DateFormat dateFormat = new SimpleDateFormat(INPUT_DATE_FORMAT);
       dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
       Date bt;
       try {
         bt = dateFormat.parse(t2);
-        endTime = Util.dateToJ2K(bt) - 1;
+        endTime = J2kSec.fromDate(bt) - 1;
       } catch (final ParseException e) {
         endTime = Double.NaN;
       }
@@ -195,7 +196,7 @@ public abstract class AbstractHttpCommand {
    */
   protected Double getEndTime(final String t2, final TimeZone tz) {
     final Double endTime = getEndTime(t2);
-    return timeOrMaxDays(endTime - (tz.getOffset((long) Util.j2KToEW(endTime) * 1000) / 1000));
+    return timeOrMaxDays(endTime - (tz.getOffset(J2kSec.asEpoch(endTime))));
   }
 
   /**
@@ -209,7 +210,7 @@ public abstract class AbstractHttpCommand {
     if (maxDays == 0)
       return t;
     else
-      return Math.max(t, Util.nowJ2K() - (maxDays * ONE_DAY));
+      return Math.max(t, J2kSec.now() - (maxDays * ONE_DAY));
   }
 
   /**

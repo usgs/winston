@@ -80,7 +80,7 @@ public class TimePanel extends WinstonToolsPanel {
     public InputTimeBox() {
       super(20);
       time.addObserver(this);
-      setToolTipText(gov.usgs.util.Time.INPUT_TIME_FORMAT);
+      setToolTipText(Time.INPUT_TIME_FORMAT);
 
       addActionListener(new ActionListener() {
         public void actionPerformed(final ActionEvent evt) {
@@ -182,12 +182,12 @@ public class TimePanel extends WinstonToolsPanel {
     }
 
     public final void updateTime(final String s) {
-      final double d = gov.usgs.util.Time.parse(Time.STANDARD_TIME_FORMAT, getText());
-      if (d != 0) {
-        time.setDate(J2kSec.asDate(d));
-      } else {
-        setBackground(RED);
-      }
+      SimpleDateFormat dateF = new SimpleDateFormat(Time.STANDARD_TIME_FORMAT);
+        try {
+          time.setDate(dateF.parse(getText()));
+          setBackground(RED);
+        } catch (ParseException e) {
+        }
     }
   }
 
@@ -205,7 +205,7 @@ public class TimePanel extends WinstonToolsPanel {
     }
 
     public String getInputTime() {
-      return Time.format(gov.usgs.util.Time.INPUT_TIME_FORMAT, date);
+      return Time.format(Time.INPUT_TIME_FORMAT, date);
     }
 
     public double getJ2k() {
@@ -213,7 +213,7 @@ public class TimePanel extends WinstonToolsPanel {
     }
 
     public String getStandardTime() {
-      return Time.format(gov.usgs.util.Time.STANDARD_TIME_FORMAT, date);
+      return Time.format(Time.STANDARD_TIME_FORMAT, date);
     }
 
     public void setDate() {
