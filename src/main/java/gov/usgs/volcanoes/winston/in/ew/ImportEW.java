@@ -39,6 +39,7 @@ import gov.usgs.earthworm.message.MessageType;
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.util.CodeTimer;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.Log;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.J2kSec;
@@ -944,13 +945,13 @@ public class ImportEW extends Thread {
           else if (s.startsWith("c"))
             im.printChannels(s);
           else if (s.equals("0"))
-            LogManager.getRootLogger().setLevel(Level.OFF);
+            Log.setLevel(Level.OFF);
           else if (s.equals("1"))
-            LogManager.getRootLogger().setLevel(Level.ERROR);
+            Log.setLevel(Level.ERROR);
           else if (s.equals("2"))
-            LogManager.getRootLogger().setLevel(Level.INFO);
+            Log.setLevel(Level.INFO);
           else if (s.equals("3"))
-            LogManager.getRootLogger().setLevel(Level.TRACE);
+            Log.setLevel(Level.TRACE);
           else if (s.equals("i")) {
             acceptCommands = false;
             LOGGER.error("No longer accepting console commands.");
@@ -965,7 +966,8 @@ public class ImportEW extends Thread {
     }
   }
 
-  public static void main(final String[] args) {
+  public static void main(final String[] args) throws IOException {
+    Log.addFileAppender("ImportEW.log");
     final JSAPResult config = getArguments(args);
 
     final String fn =
