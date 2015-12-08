@@ -1,21 +1,27 @@
 package gov.usgs.volcanoes.winston.server.cmd;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 
 import gov.usgs.net.NetTools;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.Ew;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
+import gov.usgs.volcanoes.winston.server.WWSClient;
 
 /**
  *
  * @author Dan Cervelli
  */
 public class GetSCNRawCommand extends BaseCommand {
+  private static final Logger LOGGER = LoggerFactory.getLogger(WWSClient.class);
+
   public GetSCNRawCommand(final NetTools nt, final WinstonDatabase db, final WWS wws) {
     super(nt, db, wws);
   }
@@ -34,10 +40,10 @@ public class GetSCNRawCommand extends BaseCommand {
     double t1 = Double.NaN;
     double t2 = Double.NaN;
     try {
-      t1 = Util.ewToJ2K(Double.parseDouble(ss[5]));
+      t1 = J2kSec.fromEpoch(Ew.asEpoch(Double.parseDouble(ss[5])));
       t1 = timeOrMaxDays(t1);
 
-      t2 = Util.ewToJ2K(Double.parseDouble(ss[6]));
+      t2 = J2kSec.fromEpoch(Ew.asEpoch(Double.parseDouble(ss[6])));
       t2 = timeOrMaxDays(t2);
     } catch (final Exception e) {
     }
@@ -78,8 +84,7 @@ public class GetSCNRawCommand extends BaseCommand {
       netTools.writeString(id + " " + sid + " " + s + " " + c + " " + n + " FG s4\n", channel);
     }
     final String scn = s + "_" + c + "_" + n;
-    final String time = Util.j2KToDateString(t1) + " - " + Util.j2KToDateString(t2);
-    wws.log(Level.FINER, "GETSCNRAW " + scn + " : " + time + ", " + totalBytes + " bytes.",
-        channel);
+    final String time = J2kSec.toDateString(t1) + " - " + J2kSec.toDateString(t2);
+    LOGGER.debug("GETSCNRAW {} : {}, {} bytes.", scn, time, totalBytes);
   }
 }

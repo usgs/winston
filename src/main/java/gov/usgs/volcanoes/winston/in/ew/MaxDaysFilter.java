@@ -1,7 +1,7 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.CurrentTime;
+import gov.usgs.volcanoes.core.time.J2kSec;
 
 /**
  *
@@ -18,7 +18,7 @@ public class MaxDaysFilter extends TraceBufFilter {
       return false;
 
     final double t = tb.getStartTimeJ2K();
-    final double ds = CurrentTime.getInstance().nowJ2K() - t;
+    final double ds = J2kSec.now() - t;
     return (ds > (options.maxDays * 86400.0));
   }
 

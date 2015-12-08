@@ -1,13 +1,15 @@
 package gov.usgs.volcanoes.winston.server.cmd;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.logging.Level;
 
 import gov.usgs.math.DownsamplingType;
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.RSAMData;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
@@ -18,6 +20,8 @@ import gov.usgs.volcanoes.winston.server.WWSCommandString;
  * @author Dan Cervelli
  */
 public class GetSCNLRSAMRawCommand extends BaseCommand {
+  private static final Logger LOGGER = LoggerFactory.getLogger(GetSCNLRSAMRawCommand.class);
+
   public GetSCNLRSAMRawCommand(final NetTools nt, final WinstonDatabase db, final WWS wws) {
     super(nt, db, wws);
   }
@@ -53,8 +57,7 @@ public class GetSCNLRSAMRawCommand extends BaseCommand {
       bb = (ByteBuffer) rsam.toBinary().flip();
     final int bytes = writeByteBuffer(cmd.getID(), bb, cmd.getInt(9) == 1, channel);
 
-    final String time = Util.j2KToDateString(t1) + " - " + Util.j2KToDateString(t2);
-    wws.log(Level.FINER,
-        "GETSCNLRSAMRAW " + cmd.getWinstonSCNL() + ": " + time + ", " + bytes + " bytes.", channel);
+    final String time = J2kSec.toDateString(t1) + " - " + J2kSec.toDateString(t2);
+    LOGGER.debug("GETSCNLRSAMRAW {}: {},{} bytes.", cmd.getWinstonSCNL(), time, bytes);
   }
 }

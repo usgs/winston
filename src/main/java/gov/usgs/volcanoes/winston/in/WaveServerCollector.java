@@ -20,7 +20,6 @@ import gov.usgs.winston.db.WinstonDatabase;
  *
  * @author Dan Cervelli
  */
-@Deprecated
 public class WaveServerCollector extends Thread {
   public static final int COLLECT = 1;
   public static final int FILL_GAPS = 2;

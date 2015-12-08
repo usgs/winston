@@ -1,5 +1,8 @@
 package gov.usgs.volcanoes.winston.server;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
@@ -12,8 +15,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gov.usgs.earthworm.WaveServer;
 import gov.usgs.net.ReadListener;
@@ -23,11 +24,12 @@ import gov.usgs.plot.data.Wave;
 import gov.usgs.plot.data.file.FileType;
 import gov.usgs.plot.data.file.SeismicDataFile;
 import gov.usgs.util.Arguments;
-import gov.usgs.util.Log;
-import gov.usgs.util.Retriable;
 import gov.usgs.util.Util;
-import gov.usgs.util.UtilException;
-import gov.usgs.winston.Channel;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.Retriable;
+import gov.usgs.volcanoes.core.util.UtilException;
+import gov.usgs.volcanoes.winston.Channel;
+import gov.usgs.volcanoes.winston.in.ew.ImportWS;
 
 /**
  * A class that extends the Earthworm Wave Server to include a get helicorder
@@ -36,8 +38,9 @@ import gov.usgs.winston.Channel;
  * @author Dan Cervelli
  */
 public class WWSClient extends WaveServer {
+  private static final Logger LOGGER = LoggerFactory.getLogger(WWSClient.class);
+
   protected ReadListener readListener;
-  protected final static Logger logger = Log.getLogger("gov.usgs.winston.server.WaveServer");
 
   public WWSClient(final String h, final int p) {
     super(h, p);
@@ -262,7 +265,7 @@ public class WWSClient extends WaveServer {
   public static void outputSac(final String s, final int p, final Double st, final Double et,
       final String c) {
     final DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
-    final String date = df.format(Util.j2KToDate(st)) + "-" + df.format(Util.j2KToDate(et));
+    final String date = df.format(J2kSec.asDate(st)) + "-" + df.format(J2kSec.asDate(et));
 
     outputSac(s, p, st, et, c, c.replace('$', '_') + "_" + date + ".sac");
   }
@@ -396,8 +399,6 @@ public class WWSClient extends WaveServer {
   }
 
   public static void main(final String[] as) {
-    final Logger logger = Log.getLogger("gov.usgs.winston");
-    logger.setLevel(Level.INFO);
     final DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
     df.setTimeZone(TimeZone.getTimeZone("UTC"));
 
@@ -437,8 +438,8 @@ public class WWSClient extends WaveServer {
     p = Integer.parseInt(args.get("-p"));
 
     try {
-      st = Util.dateToJ2K(df.parse(args.get("-st")));
-      et = Util.dateToJ2K(df.parse(args.get("-et")));
+      st = J2kSec.fromDate(df.parse(args.get("-st")));
+      et = J2kSec.fromDate(df.parse(args.get("-et")));
     } catch (final ParseException e) {
       e.printStackTrace();
     }

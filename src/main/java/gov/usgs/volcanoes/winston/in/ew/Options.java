@@ -1,8 +1,8 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
-import gov.usgs.util.Util;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.util.StringUtils;
 
 /**
  *
@@ -24,14 +24,14 @@ public class Options {
   public static Options createOptions(final ConfigFile cf, final Options defaults) {
     final Options threshold = new Options();
     threshold.timeThreshold =
-        Util.stringToDouble(cf.getString("timeThreshold"), defaults.timeThreshold);
+        StringUtils.stringToDouble(cf.getString("timeThreshold"), defaults.timeThreshold);
     threshold.bufThreshold =
-        Util.stringToInt(cf.getString("traceBufThreshold"), defaults.bufThreshold);
-    threshold.maxBacklog = Util.stringToInt(cf.getString("maxBacklog"), defaults.maxBacklog);
-    threshold.rsamEnable = Util.stringToBoolean(cf.getString("rsam.enable"), defaults.rsamEnable);
-    threshold.rsamDelta = Util.stringToInt(cf.getString("rsam.delta"), defaults.rsamDelta);
-    threshold.rsamDuration = Util.stringToInt(cf.getString("rsam.duration"), defaults.rsamDuration);
-    threshold.maxDays = Util.stringToInt(cf.getString("maxDays"), defaults.maxDays);
+        StringUtils.stringToInt(cf.getString("traceBufThreshold"), defaults.bufThreshold);
+    threshold.maxBacklog = StringUtils.stringToInt(cf.getString("maxBacklog"), defaults.maxBacklog);
+    threshold.rsamEnable = StringUtils.stringToBoolean(cf.getString("rsam.enable"), defaults.rsamEnable);
+    threshold.rsamDelta = StringUtils.stringToInt(cf.getString("rsam.delta"), defaults.rsamDelta);
+    threshold.rsamDuration = StringUtils.stringToInt(cf.getString("rsam.duration"), defaults.rsamDuration);
+    threshold.maxDays = StringUtils.stringToInt(cf.getString("maxDays"), defaults.maxDays);
     return threshold;
   }
 

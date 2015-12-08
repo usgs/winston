@@ -1,20 +1,24 @@
 package gov.usgs.volcanoes.winston.server.cmd;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 
 import gov.usgs.net.ConnectionStatistics;
 import gov.usgs.net.Connections;
 import gov.usgs.net.NetTools;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
+import gov.usgs.volcanoes.winston.server.WWSClient;
 import gov.usgs.volcanoes.winston.server.WWSCommandString;
 
 /**
@@ -24,6 +28,7 @@ import gov.usgs.volcanoes.winston.server.WWSCommandString;
  * @author Tom Parker
  */
 public class StatusCommand extends BaseCommand {
+  private static final Logger LOGGER = LoggerFactory.getLogger(WWSClient.class);
 
   private final Channels channels;
   private static Connections connections = Connections.getInstance();
@@ -36,9 +41,9 @@ public class StatusCommand extends BaseCommand {
   public void doCommand(final Object info, final SocketChannel channel) {
 
     final WWSCommandString cmd = new WWSCommandString((String) info);
-    final double ageThreshold = Util.stringToDouble(cmd.getString(2), 0);
-    final double now = Util.ewToJ2K(System.currentTimeMillis() / 1000);
-    wws.log(Level.FINER, "STATUS: ", channel);
+    final double ageThreshold = StringUtils.stringToDouble(cmd.getString(2), 0);
+    final double now = J2kSec.fromEpoch(System.currentTimeMillis());
+    LOGGER.debug("STATUS: {}", channel);
 
     final StringBuilder sb = new StringBuilder();
     int lines = 0;
@@ -67,6 +72,6 @@ public class StatusCommand extends BaseCommand {
 
     netTools.writeString("GC: " + lines + "\n" + sb.toString(), channel);
 
-    wws.log(Level.FINER, "STATUS: ", channel);
+    LOGGER.debug("STATUS: {}", channel);
   }
 }

@@ -6,8 +6,8 @@ import java.util.TimeZone;
 
 import gov.usgs.plot.data.Wave;
 import gov.usgs.plot.data.file.SeismicDataFile;
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.time.J2kSec;
 
 /**
  *
@@ -86,8 +86,8 @@ public class Export {
     final String prefix = args[1];
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-    final double t1 = Util.dateToJ2K(dateFormat.parse(args[2]));
-    final double t2 = Util.dateToJ2K(dateFormat.parse(args[3]));
+    final double t1 = J2kSec.fromDate(dateFormat.parse(args[2]));
+    final double t2 = J2kSec.fromDate(dateFormat.parse(args[3]));
     System.out.println("Attempting to extract " + (t2 - t1) + " seconds from " + code);
     final WinstonDatabase winston = new WinstonDatabase(dbDriver, dbURL, dbPrefix);
     final Export export = new Export(winston);

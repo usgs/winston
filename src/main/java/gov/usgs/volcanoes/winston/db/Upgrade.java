@@ -2,7 +2,8 @@ package gov.usgs.volcanoes.winston.db;
 
 import java.sql.SQLException;
 
-import gov.usgs.util.ConfigFile;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
+
 
 /**
  *

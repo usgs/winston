@@ -394,8 +394,15 @@ public class ImportEW extends Thread {
     for (final String filterName : filters) {
       final ConfigFile fc = config.getSubConfig(filterName);
       try {
+        String filterClass = fc.getString("class");
+        if (filterClass.startsWith("gov.usgs.winston")) {
+          String newFilterClass = filterClass.replace("gov.usgs.winston", "gov.usgs.volcanoes.winston");
+          LOGGER.error("Defunct filter class found. I'll fix it this time, but this will cease to work in future versions.");
+          LOGGER.error("Update ImportEW config to reference {} in place of {}", newFilterClass, filterClass);
+          filterClass = newFilterClass;
+        }
         final TraceBufFilter filter =
-            (TraceBufFilter) Class.forName(fc.getString("class")).newInstance();
+            (TraceBufFilter) Class.forName(filterClass).newInstance();
         filter.configure(fc);
         traceBufFilters.add(filter);
       } catch (final Exception ex) {

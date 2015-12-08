@@ -8,7 +8,7 @@ import gov.usgs.net.Connections;
 import gov.usgs.net.HttpRequest;
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -31,7 +31,7 @@ public final class HttpStatusCommand extends AbstractHttpCommand implements Http
   @Override
   protected void sendResponse() {
     final DecimalFormat formatter = new DecimalFormat("#.##");
-    final double now = Util.ewToJ2K(System.currentTimeMillis() / 1000);
+    final double now = J2kSec.fromEpoch(System.currentTimeMillis());
 
     final Channels channels = new Channels(winston);
     final List<Channel> sts = channels.getChannelsByLastInsert();

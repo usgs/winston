@@ -1,17 +1,19 @@
 package gov.usgs.volcanoes.winston.server.cmd;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.logging.Level;
 
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.util.CodeTimer;
-import gov.usgs.util.CurrentTime;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
+import gov.usgs.volcanoes.winston.server.WWSClient;
 import gov.usgs.volcanoes.winston.server.WWSCommandString;
 
 /**
@@ -25,6 +27,8 @@ import gov.usgs.volcanoes.winston.server.WWSCommandString;
  * @author Dan Cervelli
  */
 public class GetWaveRawCommand extends BaseCommand {
+  private static final Logger LOGGER = LoggerFactory.getLogger(GetWaveRawCommand.class);
+
   public GetWaveRawCommand(final NetTools nt, final WinstonDatabase db, final WWS wws) {
     super(nt, db, wws);
   }
@@ -42,7 +46,7 @@ public class GetWaveRawCommand extends BaseCommand {
     double st = cmd.getT1(true);
     st = timeOrMaxDays(st);
 
-    et = Math.min(et, CurrentTime.getInstance().nowJ2K() - wws.getEmbargo());
+    et = Math.min(et, J2kSec.now() - wws.getEmbargo());
     Wave wave = null;
     if (st < et) {
       try {
@@ -54,7 +58,7 @@ public class GetWaveRawCommand extends BaseCommand {
 
     // Did it take too long to gather the data?
     if (wws.getSlowCommandTime() > 0 && ct.getRunTimeMillis() > wws.getSlowCommandTime() * .75)
-      wws.log(Level.INFO,
+      LOGGER.info(
           String.format("slow db query (%1.2f ms) GETWAVERAW " + cmd.getWinstonSCNL() + " " + st
               + " -> " + et + " (" + decimalFormat.format(et - st) + ") ", ct.getRunTimeMillis()),
           channel);
@@ -71,13 +75,12 @@ public class GetWaveRawCommand extends BaseCommand {
 
     // Did it take too long to deliver the data?
     if (wws.getSlowCommandTime() > 0 && ct.getRunTimeMillis() > wws.getSlowCommandTime() * .75)
-      wws.log(Level.INFO,
+      LOGGER.info(
           String.format("slow network (%1.2f ms) GETWAVERAW " + cmd.getWinstonSCNL() + " " + st
               + " -> " + et + " (" + decimalFormat.format(et - st) + ") ", ct.getRunTimeMillis()),
           channel);
 
-    final String time = Util.j2KToDateString(st) + " - " + Util.j2KToDateString(et);
-    wws.log(Level.FINER, "GETWAVERAW " + cmd.getWinstonSCNL() + ": " + time + ", " + bytes
-        + " bytes. (" + (String) info, channel);
+    final String time = J2kSec.toDateString(st) + " - " + J2kSec.toDateString(et);
+    LOGGER.info("GETWAVERAW {}: {}, {} bytes. ({})", cmd.getWinstonSCNL(), time, bytes, info);
   }
 }

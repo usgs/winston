@@ -1,13 +1,15 @@
 package gov.usgs.volcanoes.winston.server.cmd;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.logging.Level;
 
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.HelicorderData;
-import gov.usgs.util.CurrentTime;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
@@ -20,6 +22,8 @@ import gov.usgs.volcanoes.winston.server.WWSCommandString;
  * @author Dan Cervelli
  */
 public class GetSCNLHeliRawCommand extends BaseCommand {
+  private static final Logger LOGGER = LoggerFactory.getLogger(GetSCNLHeliRawCommand.class);
+
   public GetSCNLHeliRawCommand(final NetTools nt, final WinstonDatabase db, final WWS wws) {
     super(nt, db, wws);
   }
@@ -35,7 +39,7 @@ public class GetSCNLHeliRawCommand extends BaseCommand {
     double st = cmd.getT1(true);
     st = timeOrMaxDays(st);
 
-    et = Math.min(et, CurrentTime.getInstance().nowJ2K() - wws.getEmbargo());
+    et = Math.min(et, J2kSec.fromEpoch(CurrentTime.getInstance().now()) - wws.getEmbargo());
     HelicorderData heli = null;
     if (st < et) {
       try {
@@ -49,9 +53,7 @@ public class GetSCNLHeliRawCommand extends BaseCommand {
     final boolean compress = cmd.getInt(8) == 1;
     final int bytes = writeByteBuffer(cmd.getID(), bb, compress, channel);
 
-    final String time = Util.j2KToDateString(st) + " - " + Util.j2KToDateString(et);
-    wws.log(Level.FINER,
-        "GETSCNLHELIRAW " + cmd.getWinstonSCNL() + " : " + time + ", " + bytes + " bytes.",
-        channel);
+    final String time = J2kSec.toDateString(st) + " - " + J2kSec.toDateString(et);
+    LOGGER.debug("GETSCNLHELIRAW {} : {}, {} bytes.", cmd.getWinstonSCNL(), time, bytes);
   }
 }

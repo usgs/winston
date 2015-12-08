@@ -198,6 +198,7 @@ public class WWS extends Server {
   }
 
   public void launch() {
+    LOGGER.info("Launching WWS. {}", Version.VERSION_STRING);
     final Thread launchThread = new Thread(new Runnable() {
       public void run() {
         startListening();
