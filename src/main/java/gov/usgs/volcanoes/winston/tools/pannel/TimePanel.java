@@ -11,6 +11,8 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Observable;
 import java.util.Observer;
@@ -19,7 +21,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.Ew;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.winston.tools.WinstonToolsPanel;
 
 /**
@@ -30,141 +34,6 @@ import gov.usgs.volcanoes.winston.tools.WinstonToolsPanel;
  */
 public class TimePanel extends WinstonToolsPanel {
 
-  private static final long serialVersionUID = 1L;
-  private static final Color RED = new Color(0xFFA07A);
-  private static final Color WHITE = new Color(0xFFFFFF);
-  private static final NumberFormat timeFormatter = new DecimalFormat("#0.000");
-
-  private JTextField standardF;
-  private JTextField inputF;
-  private JTextField ewF;
-  private JTextField j2kF;
-  private JButton nowB;
-  private Time time;
-
-  public TimePanel() {
-    super("Time");
-  }
-
-  @Override
-  protected void createUI() {
-    this.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
-        "Time Conversion"));
-
-    final FormLayout layout = new FormLayout("right:max(40dlu;p), 4dlu, left:p", "");
-
-    final DefaultFormBuilder builder = new DefaultFormBuilder(layout);
-    builder.setDefaultDialogBorder();
-    builder.appendSeparator("Time Formats");
-    builder.append("Standard", standardF);
-    builder.nextLine();
-    builder.append("Input", inputF);
-    builder.nextLine();
-    builder.append("J2K", j2kF);
-    builder.nextLine();
-    builder.append("EW", ewF);
-    builder.nextLine();
-    builder.appendUnrelatedComponentsGapRow();
-    builder.nextLine();
-    builder.append("", nowB);
-    this.add(builder.getPanel(), BorderLayout.CENTER);
-
-  }
-
-  @Override
-  protected void createFields() {
-
-    time = new Time();
-
-    standardF = new StandardTimeBox();
-    inputF = new InputTimeBox();
-    ewF = new EwBox();
-    j2kF = new J2kBox();
-
-    time.setDate();
-
-    nowB = new JButton("Now");
-    nowB.addActionListener(new ActionListener() {
-      public void actionPerformed(final ActionEvent e) {
-        time.setDate();
-      }
-    });
-  }
-
-  public class StandardTimeBox extends JTextField implements Observer {
-
-    private static final long serialVersionUID = 1L;
-
-    public StandardTimeBox() {
-      super(20);
-      time.addObserver(this);
-      this.setToolTipText(gov.usgs.util.Time.STANDARD_TIME_FORMAT);
-      addActionListener(new ActionListener() {
-        public void actionPerformed(final ActionEvent evt) {
-          updateTime(getText());
-        }
-      });
-      addFocusListener(new FocusListener() {
-        public void focusGained(final FocusEvent e) {}
-
-        public void focusLost(final FocusEvent e) {
-          updateTime(getText());
-        }
-      });
-
-    }
-
-    public final void updateTime(final String s) {
-      final double d = gov.usgs.util.Time.parse(gov.usgs.util.Time.STANDARD_TIME_FORMAT, getText());
-      if (d != 0)
-        time.setDate(Util.j2KToDate(d));
-      else
-        this.setBackground(RED);
-    }
-
-    public void update(final Observable o, final Object arg) {
-      this.setText("" + ((Time) o).getStandardTime());
-      this.setBackground(WHITE);
-    }
-  }
-
-  public class InputTimeBox extends JTextField implements Observer {
-
-    private static final long serialVersionUID = 1L;
-
-    public InputTimeBox() {
-      super(20);
-      time.addObserver(this);
-      this.setToolTipText(gov.usgs.util.Time.INPUT_TIME_FORMAT);
-
-      addActionListener(new ActionListener() {
-        public void actionPerformed(final ActionEvent evt) {
-          updateTime(getText());
-        }
-      });
-      addFocusListener(new FocusListener() {
-        public void focusGained(final FocusEvent e) {}
-
-        public void focusLost(final FocusEvent e) {
-          updateTime(getText());
-        }
-      });
-    }
-
-    public final void updateTime(final String s) {
-      final double d = gov.usgs.util.Time.parse(gov.usgs.util.Time.INPUT_TIME_FORMAT, getText());
-      if (d != 0)
-        time.setDate(Util.j2KToDate(d));
-      else
-        this.setBackground(RED);
-    }
-
-    public void update(final Observable o, final Object arg) {
-      this.setText("" + ((Time) o).getInputTime());
-      this.setBackground(WHITE);
-    }
-  }
-
   public class EwBox extends JTextField implements Observer {
 
     private static final long serialVersionUID = 1L;
@@ -172,7 +41,7 @@ public class TimePanel extends WinstonToolsPanel {
     public EwBox() {
       super(20);
       time.addObserver(this);
-      this.setToolTipText("seconds past 1970-01-01 00:00:00 UTC");
+      setToolTipText("seconds past 1970-01-01 00:00:00 UTC");
 
 
       addActionListener(new ActionListener() {
@@ -190,21 +59,59 @@ public class TimePanel extends WinstonToolsPanel {
 
     }
 
+    public void update(final Observable o, final Object arg) {
+      final double d = ((TimeSubject) o).getEW();
+      setText(timeFormatter.format(d));
+      setBackground(WHITE);
+    }
+
     public final void updateTime(final String s) {
       try {
-        time.setDate(Util.j2KToDate(Util.ewToJ2K(Double.parseDouble(s))));
+        time.setDate(Ew.asDate(Double.parseDouble(s)));
       } catch (final NumberFormatException ex) {
-        this.setBackground(RED);
+        setBackground(RED);
       }
+    }
+  }
+  public class InputTimeBox extends JTextField implements Observer {
+
+    private static final long serialVersionUID = 1L;
+
+    public InputTimeBox() {
+      super(20);
+      time.addObserver(this);
+      setToolTipText(gov.usgs.util.Time.INPUT_TIME_FORMAT);
+
+      addActionListener(new ActionListener() {
+        public void actionPerformed(final ActionEvent evt) {
+          updateTime(getText());
+        }
+      });
+      addFocusListener(new FocusListener() {
+        public void focusGained(final FocusEvent e) {}
+
+        public void focusLost(final FocusEvent e) {
+          updateTime(getText());
+        }
+      });
     }
 
     public void update(final Observable o, final Object arg) {
-      final double d = ((Time) o).getEW();
-      this.setText(timeFormatter.format(d));
-      this.setBackground(WHITE);
+      setText("" + ((TimeSubject) o).getInputTime());
+      setBackground(WHITE);
+    }
+
+    public final void updateTime(final String s) {
+      SimpleDateFormat dateF = new SimpleDateFormat(Time.INPUT_TIME_FORMAT);
+      Date d;
+      try {
+        d = dateF.parse(getText());
+        time.setDate(d);
+      } catch (ParseException e) {
+        setBackground(RED);
+      }
     }
   }
-
   public class J2kBox extends JTextField implements Observer {
 
     private static final long serialVersionUID = 1L;
@@ -230,31 +137,84 @@ public class TimePanel extends WinstonToolsPanel {
 
     }
 
+    public void update(final Observable o, final Object arg) {
+      final double d = ((TimeSubject) o).getJ2k();
+      setText(timeFormatter.format(d));
+      setBackground(WHITE);
+    }
+
     public final void updateTime(final String s) {
       try {
-        time.setDate(Util.j2KToDate(Double.parseDouble(s)));
+        time.setDate(J2kSec.asDate(Double.parseDouble(s)));
       } catch (final NumberFormatException ex) {
-        this.setBackground(RED);
+        setBackground(RED);
       }
 
     }
 
-    public void update(final Observable o, final Object arg) {
-      final double d = ((Time) o).getJ2k();
-      this.setText(timeFormatter.format(d));
-      this.setBackground(WHITE);
+  }
+  public class StandardTimeBox extends JTextField implements Observer {
+
+    private static final long serialVersionUID = 1L;
+
+    public StandardTimeBox() {
+      super(20);
+      time.addObserver(this);
+      setToolTipText(Time.STANDARD_TIME_FORMAT);
+      addActionListener(new ActionListener() {
+        public void actionPerformed(final ActionEvent evt) {
+          updateTime(getText());
+        }
+      });
+      addFocusListener(new FocusListener() {
+        public void focusGained(final FocusEvent e) {}
+
+        public void focusLost(final FocusEvent e) {
+          updateTime(getText());
+        }
+      });
+
     }
 
+    public void update(final Observable o, final Object arg) {
+      setText("" + ((TimeSubject) o).getStandardTime());
+      setBackground(WHITE);
+    }
+
+    public final void updateTime(final String s) {
+      final double d = gov.usgs.util.Time.parse(Time.STANDARD_TIME_FORMAT, getText());
+      if (d != 0) {
+        time.setDate(J2kSec.asDate(d));
+      } else {
+        setBackground(RED);
+      }
+    }
   }
 
-  public class Time extends Observable {
+  public class TimeSubject extends Observable {
 
     Date date;
 
-    public Time() {
+    public TimeSubject() {
       setDate();
     }
 
+
+    public double getEW() {
+      return gov.usgs.volcanoes.core.time.Ew.fromEpoch(date.getTime());
+    }
+
+    public String getInputTime() {
+      return Time.format(gov.usgs.util.Time.INPUT_TIME_FORMAT, date);
+    }
+
+    public double getJ2k() {
+      return J2kSec.fromDate(date);
+    }
+
+    public String getStandardTime() {
+      return Time.format(gov.usgs.util.Time.STANDARD_TIME_FORMAT, date);
+    }
 
     public void setDate() {
       setDate(new Date());
@@ -265,22 +225,71 @@ public class TimePanel extends WinstonToolsPanel {
       setChanged();
       notifyObservers();
     }
+  }
 
-    public double getJ2k() {
-      return Util.dateToJ2K(date);
-    }
+  private static final Color RED = new Color(0xFFA07A);
+  private static final long serialVersionUID = 1L;
+  private static final NumberFormat timeFormatter = new DecimalFormat("#0.000");
+  private static final Color WHITE = new Color(0xFFFFFF);
+  private JTextField ewF;
 
-    public double getEW() {
-      return Util.j2KToEW(Util.dateToJ2K(date));
-    }
+  private JTextField inputF;
 
-    public String getInputTime() {
-      return gov.usgs.util.Time.format(gov.usgs.util.Time.INPUT_TIME_FORMAT, date);
-    }
+  private JTextField j2kF;
 
-    public String getStandardTime() {
-      return gov.usgs.util.Time.format(gov.usgs.util.Time.STANDARD_TIME_FORMAT, date);
-    }
+  private JButton nowB;
+
+  private JTextField standardF;
+
+  private TimeSubject time;
+
+  public TimePanel() {
+    super("Time");
+  }
+
+  @Override
+  protected void createFields() {
+
+    time = new TimeSubject();
+
+    standardF = new StandardTimeBox();
+    inputF = new InputTimeBox();
+    ewF = new EwBox();
+    j2kF = new J2kBox();
+
+    time.setDate();
+
+    nowB = new JButton("Now");
+    nowB.addActionListener(new ActionListener() {
+      public void actionPerformed(final ActionEvent e) {
+        time.setDate();
+      }
+    });
+  }
+
+  @Override
+  protected void createUI() {
+    setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black),
+        "Time Conversion"));
+
+    final FormLayout layout = new FormLayout("right:max(40dlu;p), 4dlu, left:p", "");
+
+    final DefaultFormBuilder builder = new DefaultFormBuilder(layout);
+    builder.setDefaultDialogBorder();
+    builder.appendSeparator("Time Formats");
+    builder.append("Standard", standardF);
+    builder.nextLine();
+    builder.append("Input", inputF);
+    builder.nextLine();
+    builder.append("J2K", j2kF);
+    builder.nextLine();
+    builder.append("EW", ewF);
+    builder.nextLine();
+    builder.appendUnrelatedComponentsGapRow();
+    builder.nextLine();
+    builder.append("", nowB);
+    this.add(builder.getPanel(), BorderLayout.CENTER);
+
   }
 
   @Override

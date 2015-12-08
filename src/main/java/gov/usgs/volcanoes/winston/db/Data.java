@@ -1,5 +1,8 @@
 package gov.usgs.volcanoes.winston.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.sql.Blob;
 import java.sql.PreparedStatement;
@@ -10,7 +13,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
-import java.util.logging.Level;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.math.DownsamplingType;
@@ -27,6 +29,8 @@ import gov.usgs.volcanoes.core.util.UtilException;
  * @author Dan Cervelli
  */
 public class Data {
+  private static final Logger LOGGER = LoggerFactory.getLogger(Data.class);
+
   private static final int ONE_DAY = 60 * 60 * 24;
   private final WinstonDatabase winston;
   private final Channels channels;
@@ -65,8 +69,7 @@ public class Data {
       rs.close();
       return d;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not get time span for channel: " + code, e);// Util.getLineNumber(this,
-                                                                                               // e));
+     LOGGER.error("Could not get time span for channel: {}. ({})", code, e.getLocalizedMessage());
     }
     return null;
   }
@@ -285,8 +288,7 @@ public class Data {
           }
           rs.close();
         } catch (final SQLException e) {
-          winston.getLogger().log(Level.FINEST,
-              "No table found for " + date + ", " + t1 + "->" + t2);
+          LOGGER.debug("No table found for {}, {}->{}", date, t1, t2);
         }
       }
 
@@ -303,7 +305,7 @@ public class Data {
           rs = winston.getStatement().executeQuery(sql);
         } catch (final SQLException e) {
           // table not found
-          winston.getLogger().log(Level.FINEST, "No table found for " + code + "$$" + date);
+          LOGGER.debug("No table found for {}$${})", code, date);
           ct += ONE_DAY;
           continue;
         }
@@ -321,11 +323,9 @@ public class Data {
       }
       return bufs;
     } catch (final SQLException e) {
-      winston.getLogger().log(Level.FINEST,
-          "Could not get TraceBuf bytes for " + code + ", " + t1 + "->" + t2);
+      LOGGER.debug("Could not get TraceBuf bytes for {}, {}->{}", code, t1, t2);
     } catch (final IOException e) {
-      winston.getLogger().log(Level.FINEST,
-          "Could not get TraceBuf bytes for " + code + ", " + t1 + "->" + t2);
+      LOGGER.debug("Could not get TraceBuf bytes for {}, {}->{}", code, t1, t2);
     }
     return null;
 
@@ -363,8 +363,7 @@ public class Data {
 
       return traceBufs;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE,
-          "Could not get TraceBufs for " + code + ", " + t1 + "->" + t2);
+      LOGGER.error("Could not get TraceBufs for {}, {}->{}", code, t1, t2);
     }
     return null;
   }
@@ -459,8 +458,7 @@ public class Data {
       }
       return new HelicorderData(list);
     } catch (final SQLException e) {
-      winston.getLogger().log(Level.SEVERE,
-          "Could not get helicorder for " + code + ", " + t1 + "->" + t2);
+      LOGGER.error("Could not get helicorder for {}, {}->{}", code, t1, t2);
     }
     return null;
   }
@@ -546,8 +544,7 @@ public class Data {
       }
       return new RSAMData(list);
     } catch (final SQLException e) {
-      winston.getLogger().log(Level.SEVERE,
-          "Could not get RSAM for " + code + ", " + t1 + "->" + t2);
+      LOGGER.error("Could not get RSAM for {}, {}->{}", code, t1, t2);
     }
     return null;
   }

@@ -86,7 +86,7 @@ public final class HttpRsamCommand extends AbstractHttpCommand implements HttpBa
       errorString += "Error: could not parse start time (t1). Should be " + INPUT_DATE_FORMAT
           + " or -HH.M<br>";
 
-    timeZoneOffset = timeZone.getOffset(J2kSec.asEpochMs(endTime));
+    timeZoneOffset = timeZone.getOffset(J2kSec.asEpoch(endTime));
 
     width = StringUtils.stringToInt(arguments.get("w"), DEFAULT_W);
     height = StringUtils.stringToInt(arguments.get("h"), DEFAULT_H);

@@ -1,5 +1,8 @@
 package gov.usgs.volcanoes.winston.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,7 +17,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.TreeMap;
-import java.util.logging.Level;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.util.CurrentTime;
@@ -26,78 +28,73 @@ import gov.usgs.util.Util;
  * TODO: helicorder seconds spanning tables.
  * TODO: bulk-insert method.
  * TODO: clean up.
- * 
+ *
  *
  * @author Dan Cervelli
  */
 public class Input {
+  class ChannelInputOptimizer {
+    String code;
+    TreeMap<Double, double[]> data;
+    double t1;
+    double t2;
+
+    public ChannelInputOptimizer(final String c) {
+      code = c;
+      data = new TreeMap<Double, double[]>();
+      t1 = Double.NaN;
+      t2 = Double.NaN;
+    }
+
+    public double[] getData(final double j2k) {
+      return data.get(j2k);
+    }
+
+    public boolean isInitialized() {
+      return !Double.isNaN(t1);
+    }
+
+    // TODO: optimize. garbage generator.
+    public void putData(final double j2k, final double[] d) {
+      data.put(j2k, d);
+      if (data.size() > 60) {
+        final int numToDelete = data.size() - 30;
+        final Iterator<Double> it = data.keySet().iterator();
+        for (int i = 0; i < numToDelete; i++) {
+          it.next();
+          it.remove();
+        }
+      }
+    }
+  }
+
   public enum InputResult {
     ERROR, SUCCESS, SUCCESS_CREATED_TABLE
   };
 
-  private WinstonDatabase winston;
-  private final DateFormat dateFormat;
-  private int maxDays = 0;
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(Input.class);
   private final HashMap<String, ChannelInputOptimizer> channelOptimizers;
   private final HashSet<String> checkTableCache;
 
+  private ChannelInputOptimizer currentLock;
   private final Data data;
 
-  public Input(final WinstonDatabase w) {
-    winston = w;
-    data = new Data(w);
-    channelOptimizers = new HashMap<String, ChannelInputOptimizer>();
-    checkTableCache = new HashSet<String>();
-    dateFormat = new SimpleDateFormat("yyyy_MM_dd");
-    dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-  }
+  private final DateFormat dateFormat;
 
-  public void setWinston(final WinstonDatabase db) {
-    winston = db;
-  }
+  private final ArrayList<String> locks = new ArrayList<String>(9);
 
-  /**
-   * Sets the maximum number of days (tables) allowed after a TraceBuf is
-   * put into the table. WARNING: if the value is >0 then Import WILL drop
-   * tables, data will be lossed.
-   * 
-   * @param i the maximum number of days
-   */
-  public void setMaxDays(final int i) {
-    if (i >= 0)
-      maxDays = i;
-  }
+  private int maxDays = 0;
 
-  public void setTimeSpan(final String code, final double st, final double et) {
-    if (!winston.checkConnect())
-      return;
-    try {
-      final ChannelInputOptimizer opt = channelOptimizers.get(code);
+  private WinstonDatabase winston;
 
-      if (!Double.isNaN(st)) {
-        if (opt != null)
-          opt.t1 = st;
-        winston.getStatement().execute("UPDATE `" + winston.databasePrefix
-            + "_ROOT`.channels SET st=" + st + " WHERE code='" + code + "'");
-      }
-      if (!Double.isNaN(et)) {
-        if (opt != null)
-          opt.t2 = et;
-        winston.getStatement().execute("UPDATE `" + winston.databasePrefix
-            + "_ROOT`.channels SET et=" + et + " WHERE code='" + code + "'");
-      }
-    } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not set time span for channel: " + code, e);
-    }
-  }
+  private boolean writeLocks = false;
 
   /*
    * protected void purgeTables(String code)
    * {
    * if (maxDays <= 0)
    * return;
-   * 
+   *
    * List list = getDayTables(code);
    * if (list.size() > maxDays)
    * {
@@ -136,202 +133,13 @@ public class Input {
    * }
    */
 
-  /**
-   * Purge tables.
-   * 
-   * @param channel the channel
-   * @param days the number of days
-   * @return the Admin or null if none.
-   */
-  public Admin purgeTables(final String channel, final int days) {
-    return purgeTables(channel, days, (Admin) null);
-  }
-
-  /**
-   * Purge tables.
-   * 
-   * @param channel the channel
-   * @param days the number of days
-   * @param admin the Admin or null to create one if needed.
-   * @return the Admin or null if none.
-   */
-  public Admin purgeTables(final String channel, final int days, Admin admin) {
-    if (days <= 0)
-      return admin;
-
-    final SimpleDateFormat df = new SimpleDateFormat("yyyy_MM_dd");
-    df.setTimeZone(TimeZone.getTimeZone("GMT"));
-    final Date now = CurrentTime.getInstance().nowDate();
-    final Date then = new Date(now.getTime() - (days * 86400000L));
-
-    winston.getLogger().info("Purging '" + channel + "' tables before: " + df.format(then));
-
-    final List<String> list = getDayTables(channel);
-    if (list == null || list.size() == 0) {
-      winston.getLogger().info("No day tables found");
-      return admin;
-    }
-
-    boolean deleted = false;
-    boolean setTime = false;
-    for (final String table : list) {
-      final String ss[] = table.split("\\$\\$");
-
-      if (df.format(then).compareTo(ss[1]) > 0) {
-        try {
-          if (!winston.useDatabase(channel))
-            return admin;
-
-          checkTableCache.remove(table);
-
-          winston.getStatement().execute("DROP TABLE `" + table + "`");
-          winston.getStatement().execute("DROP TABLE `" + ss[0] + "$$H" + ss[1] + "`");
-          deleted = true;
-          winston.getLogger().info("Deleted table: " + table);
-        } catch (final Exception e) {
-          winston.getLogger()
-              .severe("Could not drop old table: " + channel + ".  Are permissions set properly?");
-        }
-      } else {
-        if (deleted) {
-          try {
-            final String nextLowestTable = table;
-            final ResultSet rs = winston.getStatement()
-                .executeQuery("SELECT MIN(st) FROM `" + nextLowestTable + "`");
-            rs.next();
-            final double t1 = rs.getDouble(1);
-            setTimeSpan(channel, t1, Double.NaN);
-            rs.close();
-            setTime = true;
-          } catch (final Exception e) {
-            winston.getLogger().severe("Could not update span after dropping table: " + channel);
-          }
-        }
-        break;
-      }
-    }
-    if (deleted && !setTime) {
-      // must have deleted all of the tables, just delete the channel entirely
-      winston.getLogger().info("Permanently deleting channel: " + channel);
-      if (admin == null)
-        admin = new Admin(winston);
-      admin.deleteChannel(channel);
-    }
-    return admin;
-  }
-
-  private boolean createDayTable(final String code, final String date) {
-    try {
-      winston.getStatement()
-          .execute("CREATE TABLE `" + code + "$$" + date + "` (" + "st DOUBLE PRIMARY KEY, "
-              + "et DOUBLE, " + "sr DOUBLE, " + "datatype CHAR(3), " + "tracebuf BLOB) "
-              + winston.tableEngine);
-
-      winston.getStatement()
-          .execute("CREATE TABLE `" + code + "$$H" + date + "` (" + "j2ksec DOUBLE PRIMARY KEY, "
-              + "smin INT, " + "smax INT, " + "rcnt INT, " + "rsam DOUBLE) " + winston.tableEngine);
-
-      purgeTables(code, maxDays);
-      return true;
-    } catch (final Exception ex) {
-      winston.getLogger().severe(
-          "Could not create day table: " + code + "$" + date + ".  Are permissions set properly?");
-    }
-    return false;
-  }
-
-  /**
-   * This is private because it is only meant to be called from inputTraceBuf.
-   * It is expected that the correct database is currently in use.
-   * 
-   * This function checks to see if a data table exists, if it does not, it creates
-   * one.
-   * 
-   * TODO: revisit; this doesn't seem clean.
-   * 
-   * @param table the table name to check
-   */
-  private boolean checkTable(final String code, final String date) {
-    final String table = code + "$$" + date;
-    if (checkTableCache.contains(table))
-      return true;
-
-    try {
-      final ResultSet rs =
-          winston.getStatement().executeQuery("SELECT COUNT(*) FROM `" + table + "`");
-      final boolean result = rs.next();
-      if (result)
-        checkTableCache.add(table);
-      rs.close();
-      return result;
-    } catch (final Exception e) {
-      checkTableCache.clear();
-      return createDayTable(code, date);
-    }
-  }
-
-  private boolean tableExists(final String code, final String date) {
-    final String table = code + "$$" + date;
-    if (checkTableCache.contains(table))
-      return true;
-
-    try {
-      final ResultSet rs =
-          winston.getStatement().executeQuery("SELECT COUNT(*) FROM `" + table + "`");
-      final boolean result = rs.next();
-      if (result)
-        checkTableCache.add(table);
-      rs.close();
-      return result;
-    } catch (final Exception e) {
-    }
-    // checkTableCache.clear();
-    // return createDayTable(code, date);
-    return false;
-  }
-
-  private boolean createTable(final String code, final String date) {
-    try {
-      winston.getStatement()
-          .execute("CREATE TABLE `" + code + "$$" + date + "` (" + "st DOUBLE PRIMARY KEY, "
-              + "et DOUBLE, " + "sr DOUBLE, " + "datatype CHAR(3), " + "tracebuf BLOB) "
-              + winston.tableEngine);
-      winston.getStatement()
-          .execute("CREATE TABLE `" + code + "$$H" + date + "` (" + "j2ksec DOUBLE PRIMARY KEY, "
-              + "smin INT, " + "smax INT, " + "rcnt INT, " + "rsam DOUBLE) " + winston.tableEngine);
-      // purgeTables(code, maxDays);
-      return true;
-    } catch (final Exception ex) {
-      winston.getLogger().severe(
-          "Could not create day table: " + code + "$" + date + ".  Are permissions set properly?");
-    }
-    return false;
-  }
-
-  public List<String> getDayTables(final String code) {
-    try {
-      final ArrayList<String> list = new ArrayList<String>(10);
-      if (!winston.useDatabase(code))
-        return null;
-      final ResultSet rs = winston.getStatement().executeQuery("SHOW TABLES");
-      while (rs.next())
-        list.add(rs.getString(1));
-      rs.close();
-      Collections.sort(list);
-      final ArrayList<String> dayList = new ArrayList<String>(list.size() / 2);
-      for (int i = 0; i < list.size(); i++) {
-        final String table = list.get(i);
-        final String day = table.substring(table.indexOf("$$") + 2);
-        if (day.length() == 10 && day.charAt(4) == '_' && day.charAt(7) == '_'
-            && Character.isDigit(day.charAt(0)) && Character.isDigit(day.charAt(9))) {
-          dayList.add(table);
-        }
-      }
-      return dayList;
-    } catch (final Exception e) {
-      winston.getLogger().severe("Could not generate list of tables: " + code);
-    }
-    return null;
+  public Input(final WinstonDatabase w) {
+    winston = w;
+    data = new Data(w);
+    channelOptimizers = new HashMap<String, ChannelInputOptimizer>();
+    checkTableCache = new HashSet<String>();
+    dateFormat = new SimpleDateFormat("yyyy_MM_dd");
+    dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
   }
 
   public void calculateSpan(final String code) {
@@ -350,70 +158,109 @@ public class Input {
       setTimeSpan(code, mint, maxt);
       rs.close();
     } catch (final Exception e) {
-      winston.getLogger().severe("Could not calculate span: " + code);
-    }
-  }
-
-  class ChannelInputOptimizer {
-    String code;
-    double t1;
-    double t2;
-    TreeMap<Double, double[]> data;
-
-    public ChannelInputOptimizer(final String c) {
-      code = c;
-      data = new TreeMap<Double, double[]>();
-      t1 = Double.NaN;
-      t2 = Double.NaN;
-    }
-
-    public boolean isInitialized() {
-      return !Double.isNaN(t1);
-    }
-
-    // TODO: optimize. garbage generator.
-    public void putData(final double j2k, final double[] d) {
-      data.put(j2k, d);
-      if (data.size() > 60) {
-        final int numToDelete = data.size() - 30;
-        final Iterator<Double> it = data.keySet().iterator();
-        for (int i = 0; i < numToDelete; i++) {
-          it.next();
-          it.remove();
-        }
-      }
-    }
-
-    public double[] getData(final double j2k) {
-      return data.get(j2k);
-    }
-  }
-
-  private final ArrayList<String> locks = new ArrayList<String>(9);
-  private boolean writeLocks = false;
-  private ChannelInputOptimizer currentLock;
-
-  public void setWriteLock(final boolean b) {
-    writeLocks = b;
-  }
-
-  public void unlockTables() {
-    if (currentLock == null)
-      return;
-    try {
-      winston.getStatement().execute("UNLOCK TABLES");
-      setTimeSpan(currentLock.code, currentLock.t1, currentLock.t2);
-      currentLock = null;
-      writeLocks = false;
-      locks.clear();
-    } catch (final SQLException e) {
-      winston.getLogger().log(Level.SEVERE, "Exception while unlocking tables.", e);
+      LOGGER.error("Could not calculate span: {}", code);
     }
   }
 
   /**
+   * This is private because it is only meant to be called from inputTraceBuf.
+   * It is expected that the correct database is currently in use.
+   *
+   * This function checks to see if a data table exists, if it does not, it creates
+   * one.
+   *
+   * TODO: revisit; this doesn't seem clean.
+   *
+   * @param table the table name to check
+   */
+  private boolean checkTable(final String code, final String date) {
+    final String table = code + "$$" + date;
+    if (checkTableCache.contains(table)) {
+      return true;
+    }
+
+    try {
+      final ResultSet rs =
+          winston.getStatement().executeQuery("SELECT COUNT(*) FROM `" + table + "`");
+      final boolean result = rs.next();
+      if (result) {
+        checkTableCache.add(table);
+      }
+      rs.close();
+      return result;
+    } catch (final Exception e) {
+      checkTableCache.clear();
+      return createDayTable(code, date);
+    }
+  }
+
+  private boolean createDayTable(final String code, final String date) {
+    try {
+      winston.getStatement()
+          .execute("CREATE TABLE `" + code + "$$" + date + "` (" + "st DOUBLE PRIMARY KEY, "
+              + "et DOUBLE, " + "sr DOUBLE, " + "datatype CHAR(3), " + "tracebuf BLOB) "
+              + winston.tableEngine);
+
+      winston.getStatement()
+          .execute("CREATE TABLE `" + code + "$$H" + date + "` (" + "j2ksec DOUBLE PRIMARY KEY, "
+              + "smin INT, " + "smax INT, " + "rcnt INT, " + "rsam DOUBLE) " + winston.tableEngine);
+
+      purgeTables(code, maxDays);
+      return true;
+    } catch (final Exception ex) {
+      LOGGER.error("Could not create day table: {}${}.  Are permissions set properly?", code, date);
+    }
+    return false;
+  }
+
+  private boolean createTable(final String code, final String date) {
+    try {
+      winston.getStatement()
+          .execute("CREATE TABLE `" + code + "$$" + date + "` (" + "st DOUBLE PRIMARY KEY, "
+              + "et DOUBLE, " + "sr DOUBLE, " + "datatype CHAR(3), " + "tracebuf BLOB) "
+              + winston.tableEngine);
+      winston.getStatement()
+          .execute("CREATE TABLE `" + code + "$$H" + date + "` (" + "j2ksec DOUBLE PRIMARY KEY, "
+              + "smin INT, " + "smax INT, " + "rcnt INT, " + "rsam DOUBLE) " + winston.tableEngine);
+      // purgeTables(code, maxDays);
+      return true;
+    } catch (final Exception ex) {
+      LOGGER.error("Could not create day table: {}${}.  Are permissions set properly?", code, date);
+    }
+    return false;
+  }
+
+  public List<String> getDayTables(final String code) {
+    try {
+      final ArrayList<String> list = new ArrayList<String>(10);
+      if (!winston.useDatabase(code)) {
+        return null;
+      }
+      final ResultSet rs = winston.getStatement().executeQuery("SHOW TABLES");
+      while (rs.next()) {
+        list.add(rs.getString(1));
+      }
+      rs.close();
+      Collections.sort(list);
+      final ArrayList<String> dayList = new ArrayList<String>(list.size() / 2);
+      for (int i = 0; i < list.size(); i++) {
+        final String table = list.get(i);
+        final String day = table.substring(table.indexOf("$$") + 2);
+        if (day.length() == 10 && day.charAt(4) == '_' && day.charAt(7) == '_'
+            && Character.isDigit(day.charAt(0)) && Character.isDigit(day.charAt(9))) {
+          dayList.add(table);
+        }
+      }
+      return dayList;
+    } catch (final Exception e) {
+      LOGGER.error("Could not generate list of tables: {}", code);
+    }
+    return null;
+  }
+
+  /**
    * This one is used by ImportEW.
-   * 
+   *
    * @param tb
    * @return result
    */
@@ -435,10 +282,11 @@ public class Input {
       final String date = dateFormat.format(Util.j2KToDate(ts));
       boolean createdTable = false;
       if (!tableExists(code, date)) {
-        if (createTable(code, date))
+        if (createTable(code, date)) {
           createdTable = true;
-        else
+        } else {
           throw new Exception("Could not create table.");
+        }
       }
 
       String table = code + "$$" + date;
@@ -465,9 +313,10 @@ public class Input {
       opt.t1 = Math.min(opt.t1, tb.getStartTimeJ2K());
       opt.t2 = Math.max(opt.t2, tb.getEndTimeJ2K());
 
-      if (!writeLocks)
+      if (!writeLocks) {
         setTimeSpan(code, opt.t1, opt.t2);
-      // setTimeSpan(code, opt.t1, opt.t2);
+        // setTimeSpan(code, opt.t1, opt.t2);
+      }
 
       /// ----- now insert/update helicorder/rsam data
       table = code + "$$H" + date;
@@ -525,22 +374,22 @@ public class Input {
       }
       result = createdTable ? InputResult.SUCCESS_CREATED_TABLE : InputResult.SUCCESS;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not insert TraceBuf: " + tb, e);
+      LOGGER.error("Could not insert TraceBuf: {}. ({})", tb, e.getLocalizedMessage());
     }
     return result;
   }
 
   /**
    * Inputs a TraceBuf into the Winston database.
-   * 
+   *
    * It seems that this method is slow on older machines. It's not clear that
    * it is the fault of the compress function. I've tried prepared
    * statements in some places and they seem to be marginally slower. There
    * probably will be a real speed increase if the optimization code could
    * be written to avoid extra garbage generation and didn't use TreeMap.
-   * 
+   *
    * TODO: this is still used by the static importers. Need to eliminate.
-   * 
+   *
    * @param tb the TraceBuf
    */
   public boolean inputTraceBuf(final TraceBuf tb, final boolean fillHeli) {
@@ -588,8 +437,9 @@ public class Input {
 
       opt.t1 = Math.min(opt.t1, tb.getStartTimeJ2K());
       opt.t2 = Math.max(opt.t2, tb.getEndTimeJ2K());
-      if (!writeLocks)
+      if (!writeLocks) {
         setTimeSpan(code, opt.t1, opt.t2);
+      }
 
       /// ----- now insert/update helicorder/rsam data
       table = code + "$$H" + date;
@@ -656,8 +506,178 @@ public class Input {
       }
       return true;
     } catch (final Exception e) {
-      winston.getLogger().log(Level.SEVERE, "Could not insert TraceBuf: " + tb, e);
+      LOGGER.error("Could not insert TraceBuf: {}. ({})", tb, e.getLocalizedMessage());
     }
     return false;
+  }
+
+  /**
+   * Purge tables.
+   *
+   * @param channel the channel
+   * @param days the number of days
+   * @return the Admin or null if none.
+   */
+  public Admin purgeTables(final String channel, final int days) {
+    return purgeTables(channel, days, (Admin) null);
+  }
+
+  /**
+   * Purge tables.
+   *
+   * @param channel the channel
+   * @param days the number of days
+   * @param admin the Admin or null to create one if needed.
+   * @return the Admin or null if none.
+   */
+  public Admin purgeTables(final String channel, final int days, Admin admin) {
+    if (days <= 0) {
+      return admin;
+    }
+
+    final SimpleDateFormat df = new SimpleDateFormat("yyyy_MM_dd");
+    df.setTimeZone(TimeZone.getTimeZone("GMT"));
+    final Date now = CurrentTime.getInstance().nowDate();
+    final Date then = new Date(now.getTime() - (days * 86400000L));
+
+    LOGGER.info("Purging '{}' tables before: {}", channel, df.format(then));
+
+    final List<String> list = getDayTables(channel);
+    if (list == null || list.size() == 0) {
+      LOGGER.info("No day tables found");
+      return admin;
+    }
+
+    boolean deleted = false;
+    boolean setTime = false;
+    for (final String table : list) {
+      final String ss[] = table.split("\\$\\$");
+
+      if (df.format(then).compareTo(ss[1]) > 0) {
+        try {
+          if (!winston.useDatabase(channel)) {
+            return admin;
+          }
+
+          checkTableCache.remove(table);
+
+          winston.getStatement().execute("DROP TABLE `" + table + "`");
+          winston.getStatement().execute("DROP TABLE `" + ss[0] + "$$H" + ss[1] + "`");
+          deleted = true;
+          LOGGER.info("Deleted table: {}", table);
+        } catch (final Exception e) {
+          LOGGER.error("Could not drop old table: {}.  Are permissions set properly?", channel);
+        }
+      } else {
+        if (deleted) {
+          try {
+            final String nextLowestTable = table;
+            final ResultSet rs = winston.getStatement()
+                .executeQuery("SELECT MIN(st) FROM `" + nextLowestTable + "`");
+            rs.next();
+            final double t1 = rs.getDouble(1);
+            setTimeSpan(channel, t1, Double.NaN);
+            rs.close();
+            setTime = true;
+          } catch (final Exception e) {
+            LOGGER.error("Could not update span after dropping table: ", channel);
+          }
+        }
+        break;
+      }
+    }
+    if (deleted && !setTime) {
+      // must have deleted all of the tables, just delete the channel entirely
+      LOGGER.info("Permanently deleting channel: {}", channel);
+      if (admin == null) {
+        admin = new Admin(winston);
+      }
+      admin.deleteChannel(channel);
+    }
+    return admin;
+  }
+
+  /**
+   * Sets the maximum number of days (tables) allowed after a TraceBuf is
+   * put into the table. WARNING: if the value is >0 then Import WILL drop
+   * tables, data will be lossed.
+   *
+   * @param i the maximum number of days
+   */
+  public void setMaxDays(final int i) {
+    if (i >= 0) {
+      maxDays = i;
+    }
+  }
+
+  public void setTimeSpan(final String code, final double st, final double et) {
+    if (!winston.checkConnect()) {
+      return;
+    }
+    try {
+      final ChannelInputOptimizer opt = channelOptimizers.get(code);
+
+      if (!Double.isNaN(st)) {
+        if (opt != null) {
+          opt.t1 = st;
+        }
+        winston.getStatement().execute("UPDATE `" + winston.databasePrefix
+            + "_ROOT`.channels SET st=" + st + " WHERE code='" + code + "'");
+      }
+      if (!Double.isNaN(et)) {
+        if (opt != null) {
+          opt.t2 = et;
+        }
+        winston.getStatement().execute("UPDATE `" + winston.databasePrefix
+            + "_ROOT`.channels SET et=" + et + " WHERE code='" + code + "'");
+      }
+    } catch (final Exception e) {
+      LOGGER.error("Could not set time span for channel: {}. ({})", code, e.getLocalizedMessage());
+    }
+  }
+
+  public void setWinston(final WinstonDatabase db) {
+    winston = db;
+  }
+
+  public void setWriteLock(final boolean b) {
+    writeLocks = b;
+  }
+
+  private boolean tableExists(final String code, final String date) {
+    final String table = code + "$$" + date;
+    if (checkTableCache.contains(table)) {
+      return true;
+    }
+
+    try {
+      final ResultSet rs =
+          winston.getStatement().executeQuery("SELECT COUNT(*) FROM `" + table + "`");
+      final boolean result = rs.next();
+      if (result) {
+        checkTableCache.add(table);
+      }
+      rs.close();
+      return result;
+    } catch (final Exception e) {
+    }
+    // checkTableCache.clear();
+    // return createDayTable(code, date);
+    return false;
+  }
+
+  public void unlockTables() {
+    if (currentLock == null) {
+      return;
+    }
+    try {
+      winston.getStatement().execute("UNLOCK TABLES");
+      setTimeSpan(currentLock.code, currentLock.t1, currentLock.t2);
+      currentLock = null;
+      writeLocks = false;
+      locks.clear();
+    } catch (final SQLException e) {
+      LOGGER.error("Exception while unlocking tables. ({})", e.getLocalizedMessage());
+    }
   }
 }

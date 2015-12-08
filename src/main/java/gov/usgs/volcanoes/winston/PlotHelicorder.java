@@ -23,6 +23,7 @@ import gov.usgs.winston.server.WWSClient;
  *
  * @author Dan Cervelli
  */
+@Deprecated
 public class PlotHelicorder {
   private String host;
   private int port;

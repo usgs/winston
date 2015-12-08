@@ -1,15 +1,14 @@
 package gov.usgs.volcanoes.winston.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.text.ParseException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.util.CodeTimer;
-import gov.usgs.util.ConfigFile;
-import gov.usgs.util.Log;
-import gov.usgs.util.Time;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 
@@ -20,6 +19,8 @@ import gov.usgs.volcanoes.core.util.UtilException;
  * @author Tom Parker
  */
 public class Deriver {
+  private static final Logger LOGGER = LoggerFactory.getLogger(Deriver.class);
+
   private static final String DEFAULT_CONFIG_FILENAME = "Deriver.config";
   private static final double DEFAULT_CHUNK_SIZE = 600.0;
 
@@ -34,8 +35,6 @@ public class Deriver {
   private double startTime;
   private double endTime;
 
-  private final Logger logger;
-
   private double chunkSize = 3600;
 
   private final boolean quit = false;
@@ -49,8 +48,6 @@ public class Deriver {
   private List<String> sourceChannels;
 
   public Deriver() {
-    logger = Log.getLogger("gov.usgs.winston");
-    logger.setLevel(Level.FINE);
     config = new ConfigFile(DEFAULT_CONFIG_FILENAME);
     processConfigFile();
     input = new InputEW(winston);
@@ -83,7 +80,7 @@ public class Deriver {
 
   public void deriveAll() {
     for (final String channel : sourceChannels) {
-      logger.info("Working on " + channel);
+      LOGGER.info("Working on {}", channel);
       derive(channel, startTime, endTime);
     }
   }
@@ -111,7 +108,7 @@ public class Deriver {
         input.rederive(tbs, rsamEnable, rsamDelta, rsamDuration);
         inputTimer.stop();
 
-        logger.info(String.format("Derived %d TraceBufs in %.3fms, insert completed in %.3fms",
+        LOGGER.info(String.format("Derived %d TraceBufs in %.3fms, insert completed in %.3fms",
             tbs.size(), netTimer.getRunTimeMillis(), inputTimer.getRunTimeMillis()));
       }
     }
