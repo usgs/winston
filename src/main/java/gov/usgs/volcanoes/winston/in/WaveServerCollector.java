@@ -9,12 +9,12 @@ import gov.usgs.earthworm.MenuItem;
 import gov.usgs.earthworm.SCN;
 import gov.usgs.earthworm.WaveServer;
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.CurrentTime;
-import gov.usgs.util.Util;
-import gov.usgs.winston.db.Channels;
-import gov.usgs.winston.db.Data;
-import gov.usgs.winston.db.Input;
-import gov.usgs.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.core.time.Ew;
+import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.winston.db.Channels;
+import gov.usgs.volcanoes.winston.db.Data;
+import gov.usgs.volcanoes.winston.db.Input;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 
 /**
  *
@@ -70,12 +70,12 @@ public class WaveServerCollector extends Thread {
       final long ts = System.currentTimeMillis();
       List<TraceBuf> tbs = null;
       if (t2 - ct > maxSize) {
-        tbs = waveServer.getTraceBufs(scn.station, scn.channel, scn.network, Util.j2KToEW(ct - 5),
-            Util.j2KToEW(ct + maxSize + 5));
+        tbs = waveServer.getTraceBufs(scn.station, scn.channel, scn.network, Time.j2kToEw(ct - 5),
+            Time.j2kToEw(ct + maxSize + 5));
         ct += maxSize;
       } else {
-        tbs = waveServer.getTraceBufs(scn.station, scn.channel, scn.network, Util.j2KToEW(ct - 5),
-            Util.j2KToEW(t2 + 5));
+        tbs = waveServer.getTraceBufs(scn.station, scn.channel, scn.network, Time.j2kToEw(ct - 5),
+            Time.j2kToEw(t2 + 5));
         ct = t2;
       }
       if (tbs != null && tbs.size() > 0) {
@@ -99,17 +99,17 @@ public class WaveServerCollector extends Thread {
       final String code = scn.toString().replace('_', '$');
       System.out.println("[" + name + "/" + code + "]: ");
 
-      final double now = CurrentTime.getInstance().nowEW();
+      final double now = Ew.now();
 
       final MenuItem mi = menu.getItem(scn);
       if (mi == null)
         continue;
 
-      final List<double[]> gaps = data.findGaps(code, Util.ewToJ2K(mi.startTime), now);
+      final List<double[]> gaps = data.findGaps(code, Time.ewToj2k(mi.startTime), now);
       final double[] span = data.getTimeSpan(code);
       final double fdt = span[0];
-      if (fdt > Util.ewToJ2K(mi.startTime)) {
-        gaps.add(new double[] {Util.ewToJ2K(mi.startTime), fdt});
+      if (fdt > Time.ewToj2k(mi.startTime)) {
+        gaps.add(new double[] {Time.ewToj2k(mi.startTime), fdt});
       }
       if (gaps != null) {
         final Iterator<double[]> it2 = gaps.iterator();
@@ -139,8 +139,8 @@ public class WaveServerCollector extends Thread {
         continue;
 
       final double[] span = data.getTimeSpan(code);
-      final double now = CurrentTime.getInstance().nowEW();
-      double last = Util.j2KToEW(span[1]);
+      final double now = Ew.now();
+      double last = Time.j2kToEw(span[1]);
       if (last == -1E300)
         last = now - 10 * 60;
 

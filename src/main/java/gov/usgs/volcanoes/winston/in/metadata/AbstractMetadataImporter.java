@@ -1,14 +1,14 @@
 package gov.usgs.volcanoes.winston.in.metadata;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
-import gov.usgs.winston.Instrument;
-import gov.usgs.winston.db.Channels;
-import gov.usgs.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.Instrument;
+import gov.usgs.volcanoes.winston.db.Channels;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 
 /**
  * Import station metadata into instruments table

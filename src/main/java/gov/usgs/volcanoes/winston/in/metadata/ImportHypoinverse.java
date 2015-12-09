@@ -1,14 +1,15 @@
 package gov.usgs.volcanoes.winston.in.metadata;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.LinkedList;
 import java.util.List;
 
-import gov.usgs.winston.Instrument;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import gov.usgs.volcanoes.winston.Instrument;
+
 
 /**
  * Import station metadata from hypoinverse station file

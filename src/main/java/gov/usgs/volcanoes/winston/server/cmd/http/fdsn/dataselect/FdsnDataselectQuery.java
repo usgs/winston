@@ -21,7 +21,7 @@ import java.util.List;
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -126,7 +126,7 @@ public class FdsnDataselectQuery extends FdsnQueryCommand implements FdsnDatasel
 
         header.setNumSamples((short) tb.bytes.length);
         header.setSampleRate(tb.samplingRate());
-        final Btime btime = new Btime(Util.j2KToDate(tb.firstSampleTime()));
+        final Btime btime = new Btime(J2kSec.asDate(tb.firstSampleTime()));
         header.setStartBtime(btime);
 
         final DataRecord record = new DataRecord(header);

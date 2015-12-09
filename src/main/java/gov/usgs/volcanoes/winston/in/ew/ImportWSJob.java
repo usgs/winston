@@ -10,9 +10,9 @@ import java.util.List;
 import gov.usgs.earthworm.Menu;
 import gov.usgs.earthworm.WaveServer;
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.CodeTimer;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.InputEW;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -106,7 +106,7 @@ public class ImportWSJob {
       final double t2 = span[1];
 
       LOGGER.info("{}: downloading gap: [{} -> {}, {}]", channel, J2kSec.toDateString(span[0]),
-          J2kSec.toDateString(span[1]), Util.timeDifferenceToString(span[1] - span[0]));
+          J2kSec.toDateString(span[1]), Time.secondsToString(span[1] - span[0]));
 
       input.setRowParameters((int) chunkSize + 65, 60);
 
@@ -165,7 +165,7 @@ public class ImportWSJob {
           LOGGER.debug("{}: {} tb ({}/{}ms), [{} -> {}, {}]", channel, tbs.size(),
               netTimer.getRunTimeMillis(), inputTimer.getRunTimeMillis(),
               J2kSec.toDateString(minTime), J2kSec.toDateString(maxTime),
-              Util.timeDifferenceToString(maxTime - minTime));
+              Time.secondsToString(maxTime - minTime));
 
           // TODO: clean this up, unify with ImportEW
           if (results.size() == 1) {
@@ -249,12 +249,12 @@ public class ImportWSJob {
   public void go() {
     for (final double[] span : spans) {
       LOGGER.info(String.format("%s: gap: [%s -> %s, %s]", channel, J2kSec.toDateString(span[0]),
-          J2kSec.toDateString(span[1]), Util.timeDifferenceToString(span[1] - span[0])));
+          J2kSec.toDateString(span[1]), Time.secondsToString(span[1] - span[0])));
     }
 
     LOGGER.info(
         "{}: starting job, total gaps: {} for a total duration of {}, Chunk: {}s, Delay: {}ms",
-        channel, spans.size(), Util.timeDifferenceToString(getSpansDuration()), chunkSize,
+        channel, spans.size(), Time.secondsToString(getSpansDuration()), chunkSize,
         chunkDelay);
 
     if (!menu.channelExists(channel)) {

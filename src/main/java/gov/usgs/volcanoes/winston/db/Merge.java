@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import gov.usgs.util.CodeTimer;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.CodeTimer;
+import gov.usgs.volcanoes.core.DataUtils;
 import gov.usgs.volcanoes.winston.in.ew.ImportWSJob;
 
 /**
@@ -109,7 +109,7 @@ public class Merge {
           source.getStatement().executeQuery("SELECT st FROM `" + code + "$$" + date + "`");
       while (srs.next()) {
         total++;
-        sourceTimes.add(Util.register(srs.getDouble(1), EPSILON));
+        sourceTimes.add(DataUtils.register(srs.getDouble(1), EPSILON));
       }
 
       LOGGER.info("Getting destination times.");
@@ -119,7 +119,7 @@ public class Merge {
       total = 0;
       while (drs.next()) {
         total++;
-        sourceTimes.remove(new Double(Util.register(drs.getDouble(1), EPSILON)));
+        sourceTimes.remove(new Double(DataUtils.register(drs.getDouble(1), EPSILON)));
       }
 
       total = 0;
@@ -170,7 +170,8 @@ public class Merge {
 
   public static void main(final String[] args) {
     if (args.length != 4) {
-      System.err.println("usage: java gov.usgs.winston.db.Merge [srcURL] [destURL] [table] [date]");
+      System.err.println(
+          "usage: java gov.usgs.volcanoes.winston.db.Merge [srcURL] [destURL] [table] [date]");
       System.err.println("[table] is case sensitive; example: CRP_SHZ_AK");
       System.err.println("[date] is in YYYY_MM_DD form; example: 2005_03_27");
       System.exit(1);

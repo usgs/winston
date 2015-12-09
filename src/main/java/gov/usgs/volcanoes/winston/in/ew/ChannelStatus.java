@@ -5,9 +5,9 @@ import java.util.Comparator;
 import java.util.TimeZone;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.Util;
 import gov.usgs.volcanoes.core.time.J2kSec;
-import gov.usgs.winston.db.InputEW;
+import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.winston.db.InputEW;
 
 /**
  *
@@ -80,7 +80,7 @@ public class ChannelStatus {
   @Override
   public String toString() {
     return String.format("%-13s %-12s %-24s %-24s %-12s", channel,
-        Util.timeDifferenceToString(timeSinceLast()), dateFormat.format(J2kSec.asDate(minBufTime)),
+        Time.secondsToString(timeSinceLast()), dateFormat.format(J2kSec.asDate(minBufTime)),
         dateFormat.format(J2kSec.asDate(maxBufTime)), successes + "/" + failures);
   }
 

@@ -150,7 +150,7 @@ public class Admin {
         "Winston Admin\n\n" + "A collection of commands for administering a Winston database.\n"
             + "Information about connecting to the Winston database must be present\n"
             + "in Winston.config in the current directory.\n\n" + "Usage:\n"
-            + "  java gov.usgs.winston.db.Admin [options] command [command arguments]\n"
+            + "  java gov.usgs.volcanoes.winston.db.Admin [options] command [command arguments]\n"
             + "\nValid options:\n"
             + "  --delay seconds                 the delay between each channel for commands\n"
             + "                                  for multiple channels\n" + "\nValid commands:\n"

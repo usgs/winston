@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -23,8 +24,8 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import gov.usgs.util.Time;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.winston.in.ew.ImportWS;
 import gov.usgs.volcanoes.winston.tools.ScnlPanel;
 import gov.usgs.volcanoes.winston.tools.WinstonToolsStoppablePanel;
@@ -122,17 +123,18 @@ public class ImportWSPanel extends WinstonToolsStoppablePanel {
     timeRangeG.add(explicitB);
     timeRangeG.add(relativeB);
 
+    SimpleDateFormat dateF = new SimpleDateFormat(Time.INPUT_TIME_FORMAT);
     start = new JTextField();
     final Calendar cal = Calendar.getInstance();
     cal.add(Calendar.DATE, -7);
-    start.setText(gov.usgs.util.Time.format(gov.usgs.util.Time.INPUT_TIME_FORMAT, cal.getTime()));
-    start.setToolTipText(gov.usgs.util.Time.INPUT_TIME_FORMAT);
+    start.setText(dateF.format(cal.getTime()));
+    start.setToolTipText(Time.INPUT_TIME_FORMAT);
     start.addFocusListener(new TimeRangeFocusListener(explicitB));
     start.getDocument().addDocumentListener(new TimeRangeDocumentListener(start));
 
     end = new JTextField();
-    end.setText(gov.usgs.util.Time.format(gov.usgs.util.Time.INPUT_TIME_FORMAT, new Date()));
-    end.setToolTipText(gov.usgs.util.Time.INPUT_TIME_FORMAT);
+    end.setText(dateF.format(new Date()));
+    end.setToolTipText(Time.INPUT_TIME_FORMAT);
     end.addFocusListener(new TimeRangeFocusListener(explicitB));
     end.getDocument().addDocumentListener(new TimeRangeDocumentListener(end));
 
@@ -200,11 +202,12 @@ public class ImportWSPanel extends WinstonToolsStoppablePanel {
 
   private String getTimeRange() {
     String s;
+    SimpleDateFormat dateF = new SimpleDateFormat(Time.INPUT_TIME_FORMAT);
     if (explicitB.isSelected())
       s = start.getText() + "," + end.getText();
     else {
       s = ((TimeRangeOption) rangeList.getSelectedItem()).getValue();
-      s += "," + gov.usgs.util.Time.format(gov.usgs.util.Time.INPUT_TIME_FORMAT, new Date());
+      s += "," + dateF.format(new Date());
     }
 
     return s;

@@ -1,9 +1,9 @@
 package gov.usgs.volcanoes.winston.server.cmd.http.fdsn.event;
 
 import gov.usgs.net.NetTools;
-import gov.usgs.winston.db.WinstonDatabase;
-import gov.usgs.winston.server.WWS;
-import gov.usgs.winston.server.cmd.http.fdsn.command.FdsnQueryCommand;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.server.WWS;
+import gov.usgs.volcanoes.winston.server.cmd.http.fdsn.command.FdsnQueryCommand;
 
 /**
  *

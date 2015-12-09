@@ -12,14 +12,14 @@ import java.util.Set;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.plot.data.Wave;
-import gov.usgs.util.Arguments;
-import gov.usgs.util.CodeTimer;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.legacy.Arguments;
 import gov.usgs.volcanoes.core.util.StringUtils;
-import gov.usgs.winston.db.Channels;
-import gov.usgs.winston.db.Data;
-import gov.usgs.winston.db.InputEW;
-import gov.usgs.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.db.Channels;
+import gov.usgs.volcanoes.winston.db.Data;
+import gov.usgs.volcanoes.winston.db.InputEW;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 
 
 /**

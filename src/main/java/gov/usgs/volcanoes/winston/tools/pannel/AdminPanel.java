@@ -3,6 +3,9 @@ package gov.usgs.volcanoes.winston.tools.pannel;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
+import gov.usgs.volcanoes.winston.db.Upgrade;
+import gov.usgs.volcanoes.winston.tools.WinstonToolsRunnablePanel;
+
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,9 +15,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-
-import gov.usgs.winston.db.Upgrade;
-import gov.usgs.winston.tools.WinstonToolsRunnablePanel;
 
 public class AdminPanel extends WinstonToolsRunnablePanel {
 

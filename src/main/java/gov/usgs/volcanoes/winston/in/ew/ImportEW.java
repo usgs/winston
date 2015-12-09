@@ -1,18 +1,5 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
-import com.martiansoftware.jsap.FlaggedOption;
-import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.JSAPResult;
-import com.martiansoftware.jsap.Parameter;
-import com.martiansoftware.jsap.SimpleJSAP;
-import com.martiansoftware.jsap.Switch;
-import com.martiansoftware.jsap.UnflaggedOption;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -32,23 +19,35 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.martiansoftware.jsap.FlaggedOption;
+import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.Parameter;
+import com.martiansoftware.jsap.SimpleJSAP;
+import com.martiansoftware.jsap.Switch;
+import com.martiansoftware.jsap.UnflaggedOption;
+
 import gov.usgs.earthworm.ImportGeneric;
 import gov.usgs.earthworm.MessageListener;
 import gov.usgs.earthworm.message.Message;
 import gov.usgs.earthworm.message.MessageType;
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.CodeTimer;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.Log;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Version;
-import gov.usgs.winston.db.Admin;
-import gov.usgs.winston.db.Channels;
-import gov.usgs.winston.db.InputEW;
-import gov.usgs.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.db.Admin;
+import gov.usgs.volcanoes.winston.db.Channels;
+import gov.usgs.volcanoes.winston.db.InputEW;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 
 /**
  * The new ImportEW.
@@ -92,7 +91,7 @@ public class ImportEW extends Thread {
   public static final int DEFAULT_REPAIR_RETRY_INTERVAL = 10 * 60;
 
   // JSAP related stuff.
-  public static String JSAP_PROGRAM_NAME = "java gov.usgs.winston.in.ew.ImportEW";
+  public static String JSAP_PROGRAM_NAME = "java gov.usgs.volcanoes.winston.in.ew.ImportEW";
   public static String JSAP_EXPLANATION_PREFACE = "Winston ImportEW\n" + "\n"
       + "This program gets data from an Earthworm export process and imports\n"
       + "it into a Winston database. See 'ImportEW.config' for more options.\n" + "\n";
@@ -805,7 +804,7 @@ public class ImportEW extends Thread {
     strings.add("------- ImportEW --------");
     strings.add("Status time: " + dateFormat.format(now));
     strings.add("Start time:  " + dateFormat.format(importStartTime));
-    strings.add("Up time:     " + Util.timeDifferenceToString(uptime));
+    strings.add("Up time:     " + Time.secondsToString(uptime));
 
     long ht = importGeneric.getLastHeartbeatTime();
     double dt = (double) (nowST - ht) / 1000;
@@ -813,14 +812,14 @@ public class ImportEW extends Thread {
       strings.add("Last HB RX:  (never)");
     else
       strings.add("Last HB RX:  " + dateFormat.format(new Date(ht)) + ", "
-          + Util.timeDifferenceToString(dt));
+          + Time.secondsToString(dt));
     ht = importGeneric.getLastHeartbeatSentTime();
     dt = (double) (nowST - ht) / 1000;
     if (ht == 0)
       strings.add("Last HB TX:  (never)");
     else
       strings.add("Last HB TX:  " + dateFormat.format(new Date(ht)) + ", "
-          + Util.timeDifferenceToString(dt));
+          + Time.secondsToString(dt));
 
     final Runtime rt = Runtime.getRuntime();
     strings.add(String.format("Memory (used / max): %.1fMB / %.1fMB",
@@ -839,7 +838,7 @@ public class ImportEW extends Thread {
     // by each filter
     strings.add("---- Timing");
     strings.add(String.format("Total input time:        %s",
-        Util.timeDifferenceToString(inputTimer.getTotalTimeMillis() / 1000)));
+        Time.secondsToString(inputTimer.getTotalTimeMillis() / 1000)));
     strings.add(String.format("Input time per TraceBuf: %.2fms",
         inputTimer.getTotalTimeMillis() / totalTraceBufsWritten));
 

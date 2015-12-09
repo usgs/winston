@@ -23,7 +23,7 @@ import gov.usgs.plot.data.file.SeismicDataFile;
  */
 public class ImportSeed extends StaticImporter {
 
-  public static final String JSAP_PROGRAM_NAME = "java gov.usgs.winston.in.ImportSeed";
+  public static final String JSAP_PROGRAM_NAME = "java gov.usgs.volcanoes.winston.in.ImportSeed";
 
   public static final String JSAP_EXPLANATION = "Import miniSEED\n" + "\n"
       + "This program imports data from miniSEED volumes into a winston database\n";

@@ -23,13 +23,12 @@ import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.plot.data.file.FileType;
 import gov.usgs.plot.data.file.SeismicDataFile;
-import gov.usgs.util.Arguments;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.legacy.Arguments;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.Retriable;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
-import gov.usgs.volcanoes.winston.in.ew.ImportWS;
 
 /**
  * A class that extends the Earthworm Wave Server to include a get helicorder
@@ -101,7 +100,7 @@ public class WWSClient extends WaveServer {
           byte[] buf = readBinary(bytes, readListener);
 
           if (compressed)
-            buf = Util.decompress(buf);
+            buf = Zip.decompress(buf);
 
           result = buf;
           return true;
@@ -423,7 +422,7 @@ public class WWSClient extends WaveServer {
     final Arguments args = new Arguments(as, flags, keys);
 
     if (args.flagged("--help") || as.length == 0) {
-      System.err.println("java gov.usgs.winston.server.WWSClient [OPTIONS]\n");
+      System.err.println("java gov.usgs.volcanoes.winston.server.WWSClient [OPTIONS]\n");
       System.out.println("-s [server]\t\tWinston server");
       System.out.println("-p [port]\t\tport");
       System.out.println("-st [yyyymmddHHmmss]\tstart time");

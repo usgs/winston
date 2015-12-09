@@ -20,8 +20,7 @@ import java.util.List;
 import gov.usgs.earthworm.Menu;
 import gov.usgs.earthworm.MenuItem;
 import gov.usgs.earthworm.WaveServer;
-import gov.usgs.util.CodeTimer;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
@@ -82,7 +81,7 @@ public class ImportWS {
   private final CodeTimer appTimer;
 
   // JSAP related stuff.
-  public static String JSAP_PROGRAM_NAME = "java gov.usgs.winston.in.ew.ImportWS";
+  public static String JSAP_PROGRAM_NAME = "java gov.usgs.volcanoes.winston.in.ew.ImportWS";
   public static String JSAP_EXPLANATION_PREFACE = "Winston ImportWS\n" + "\n"
       + "This program gets data from a Winston wave server and imports\n"
       + "it into a Winston database. See 'ImportWS.config' for more options.\n" + "\n";
@@ -165,7 +164,8 @@ public class ImportWS {
     rsamDelta = StringUtils.stringToInt(config.getString("rsam.delta"), DEFAULT_RSAM_DELTA);
     LOGGER.info("rsamDelta: {}", rsamDelta);
 
-    rsamDuration = StringUtils.stringToInt(config.getString("rsam.duration"), DEFAULT_RSAM_DURATION);
+    rsamDuration =
+        StringUtils.stringToInt(config.getString("rsam.duration"), DEFAULT_RSAM_DURATION);
     LOGGER.info("rsamDuration: {}", rsamDuration);
     // TODO: log level
   }
@@ -178,7 +178,7 @@ public class ImportWS {
 
   private void parseTimeRange(final String timeRange) {
     try {
-      final double[] tr = gov.usgs.util.Time.parseTimeRange(timeRange);
+      final double[] tr = Time.parseTimeRange(timeRange);
       startTime = tr[0];
       endTime = tr[1];
     } catch (final Exception e) {
@@ -186,8 +186,9 @@ public class ImportWS {
       System.exit(-1);
     }
 
-    LOGGER.info(String.format("Requested time range: [%s -> %s, %s]", J2kSec.toDateString(startTime),
-        J2kSec.toDateString(endTime), Util.timeDifferenceToString(endTime - startTime)));
+    LOGGER
+        .info(String.format("Requested time range: [%s -> %s, %s]", J2kSec.toDateString(startTime),
+            J2kSec.toDateString(endTime), Time.secondsToString(endTime - startTime)));
   }
 
   public void setWinston(final WinstonDatabase w) {
@@ -256,10 +257,9 @@ public class ImportWS {
     appTimer.stop();
     LOGGER.info(
         String.format("%d tbs inserted, total download time: %s, total insert time: %s (%.3fms/tb)",
-            totalInserted, Util.timeDifferenceToString(totalDownloadTime / 1000),
-            Util.timeDifferenceToString(totalInsertTime / 1000), totalInsertTime / totalInserted));
-    LOGGER.info(
-        "Total run time: " + Util.timeDifferenceToString(appTimer.getRunTimeMillis() / 1000.0));
+            totalInserted, Time.secondsToString(totalDownloadTime / 1000),
+            Time.secondsToString(totalInsertTime / 1000), totalInsertTime / totalInserted));
+    LOGGER.info("Total run time: " + Time.secondsToString(appTimer.getRunTimeMillis() / 1000.0));
     quit = true;
   }
 

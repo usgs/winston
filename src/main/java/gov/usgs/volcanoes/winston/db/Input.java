@@ -18,9 +18,11 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
+import cern.colt.Arrays;
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.CurrentTime;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.time.J2kSec;
 
 /**
  * A class for inputting data into the Winston database.
@@ -279,7 +281,7 @@ public class Input {
 
       winston.useDatabase(code);
       final double ts = tb.getStartTimeJ2K();
-      final String date = dateFormat.format(Util.j2KToDate(ts));
+      final String date = dateFormat.format(J2kSec.asDate(ts));
       boolean createdTable = false;
       if (!tableExists(code, date)) {
         if (createTable(code, date)) {
@@ -305,8 +307,8 @@ public class Input {
       insert.setDouble(2, tb.getEndTimeJ2K());
       insert.setDouble(3, tb.samplingRate());
       insert.setString(4, tb.dataType());
-      final byte[] stripped = Util.resize(tb.bytes, tb.bytes.length - 1);
-      final byte[] compressed = Util.compress(stripped);
+      final byte[] stripped = Arrays.trimToCapacity(tb.bytes, tb.bytes.length - 1);
+      final byte[] compressed = Zip.compress(stripped);
       insert.setBytes(5, compressed);
       insert.executeUpdate();
 
@@ -406,7 +408,7 @@ public class Input {
 
       winston.useDatabase(code);
       final double ts = tb.getStartTimeJ2K();
-      final String date = dateFormat.format(Util.j2KToDate(ts));
+      final String date = dateFormat.format(J2kSec.asDate(ts));
       checkTable(code, date);
       String table = code + "$$" + date;
       if (writeLocks && !locks.contains(table)) {
@@ -423,8 +425,8 @@ public class Input {
       insert.setDouble(2, tb.getEndTimeJ2K());
       insert.setDouble(3, tb.samplingRate());
       insert.setString(4, tb.dataType());
-      final byte[] stripped = Util.resize(tb.bytes, tb.bytes.length - 1);
-      final byte[] compressed = Util.compress(stripped);
+      final byte[] stripped = Arrays.trimToCapacity(tb.bytes, tb.bytes.length - 1);
+      final byte[] compressed = Zip.compress(stripped);
       insert.setBytes(5, compressed);
       try {
         insert.executeUpdate();
@@ -537,7 +539,7 @@ public class Input {
 
     final SimpleDateFormat df = new SimpleDateFormat("yyyy_MM_dd");
     df.setTimeZone(TimeZone.getTimeZone("GMT"));
-    final Date now = CurrentTime.getInstance().nowDate();
+    final Date now = new Date(CurrentTime.getInstance().now());
     final Date then = new Date(now.getTime() - (days * 86400000L));
 
     LOGGER.info("Purging '{}' tables before: {}", channel, df.format(then));
