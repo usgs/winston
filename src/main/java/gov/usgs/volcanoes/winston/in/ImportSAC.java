@@ -9,7 +9,7 @@ import java.util.Set;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.plot.data.file.FileType;
 import gov.usgs.plot.data.file.SeismicDataFile;
-import gov.usgs.util.Arguments;
+import gov.usgs.volcanoes.core.legacy.Arguments;
 
 /**
  *

@@ -8,6 +8,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -17,7 +18,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import gov.usgs.util.Time;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.winston.server.WWSClient;
 import gov.usgs.volcanoes.winston.tools.FilePanel;
 import gov.usgs.volcanoes.winston.tools.ScnlPanel;
@@ -83,6 +84,7 @@ public class ExportSACPanel extends WinstonToolsRunnablePanel {
 
   @Override
   protected void createFields() {
+    SimpleDateFormat dateF = new SimpleDateFormat(Time.INPUT_TIME_FORMAT);
     waveServerF = new JTextField(15);
     portF = new JTextField();
     portF.setText("16022");
@@ -94,13 +96,13 @@ public class ExportSACPanel extends WinstonToolsRunnablePanel {
     start = new JTextField(15);
     final Calendar cal = Calendar.getInstance();
     cal.add(Calendar.DATE, -7);
-    start.setText(gov.usgs.util.Time.format(gov.usgs.util.Time.INPUT_TIME_FORMAT, cal.getTime()));
+    start.setText(dateF.format(cal.getTime()));
     start.setToolTipText(gov.usgs.util.Time.INPUT_TIME_FORMAT);
     start.getDocument().addDocumentListener(new TimeRangeDocumentListener(start));
 
     end = new JTextField(15);
-    end.setText(gov.usgs.util.Time.format(gov.usgs.util.Time.INPUT_TIME_FORMAT, new Date()));
-    end.setToolTipText(gov.usgs.util.Time.INPUT_TIME_FORMAT);
+    end.setText(dateF.format(new Date()));
+    end.setToolTipText(Time.INPUT_TIME_FORMAT);
     end.getDocument().addDocumentListener(new TimeRangeDocumentListener(end));
 
     chunkSize = new JTextField(5);

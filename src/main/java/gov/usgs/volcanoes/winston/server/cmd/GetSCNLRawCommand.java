@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.logging.Level;
 
 import gov.usgs.net.NetTools;
-import gov.usgs.util.CodeTimer;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;

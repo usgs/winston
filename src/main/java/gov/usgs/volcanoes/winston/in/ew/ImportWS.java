@@ -20,8 +20,8 @@ import java.util.List;
 import gov.usgs.earthworm.Menu;
 import gov.usgs.earthworm.MenuItem;
 import gov.usgs.earthworm.WaveServer;
-import gov.usgs.util.CodeTimer;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
@@ -178,7 +178,7 @@ public class ImportWS {
 
   private void parseTimeRange(final String timeRange) {
     try {
-      final double[] tr = gov.usgs.util.Time.parseTimeRange(timeRange);
+      final double[] tr = Time.parseTimeRange(timeRange);
       startTime = tr[0];
       endTime = tr[1];
     } catch (final Exception e) {

@@ -10,7 +10,7 @@ import gov.usgs.net.NetTools;
 import gov.usgs.plot.HelicorderSettings;
 import gov.usgs.plot.PlotException;
 import gov.usgs.plot.data.HelicorderData;
-import gov.usgs.util.CodeTimer;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;

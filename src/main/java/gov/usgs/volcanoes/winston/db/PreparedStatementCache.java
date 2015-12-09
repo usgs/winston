@@ -5,7 +5,7 @@ import org.apache.commons.collections.map.LRUMap;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import gov.usgs.util.CodeTimer;
+import gov.usgs.volcanoes.core.CodeTimer;
 
 /**
  * A class that implements a LRUMap for prepared statements.

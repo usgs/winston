@@ -7,8 +7,9 @@ import java.text.ParseException;
 import java.util.List;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.CodeTimer;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 
@@ -63,7 +64,7 @@ public class Deriver {
     final String timeRange = config.getString("timeRange");
     double[] t;
     try {
-      t = gov.usgs.util.Time.parseTimeRange(timeRange);
+      t = Time.parseTimeRange(timeRange);
       startTime = t[0];
       endTime = t[1];
     } catch (final ParseException e) {

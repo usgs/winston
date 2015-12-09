@@ -9,8 +9,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import gov.usgs.util.CodeTimer;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.winston.in.ew.ImportWSJob;
 
 /**
