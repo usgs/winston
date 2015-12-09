@@ -11,10 +11,10 @@ import gov.usgs.earthworm.WaveServer;
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.Time;
-import gov.usgs.winston.db.Channels;
-import gov.usgs.winston.db.Data;
-import gov.usgs.winston.db.Input;
-import gov.usgs.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.db.Channels;
+import gov.usgs.volcanoes.winston.db.Data;
+import gov.usgs.volcanoes.winston.db.Input;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 
 /**
  *

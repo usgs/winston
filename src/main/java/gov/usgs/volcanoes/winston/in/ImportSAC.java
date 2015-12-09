@@ -59,7 +59,7 @@ public class ImportSAC extends StaticImporter {
     instructions.append("Information about connecting to the Winston database must be present\n");
     instructions.append("in Winston.config in the current directory.\n\n");
     instructions.append("Usage:\n");
-    instructions.append("  java gov.usgs.winston.in.ImportSAC [files]\n");
+    instructions.append("  java gov.usgs.volcanoes.winston.in.ImportSAC [files]\n");
 
     final ImportSAC is = new ImportSAC();
 

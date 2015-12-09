@@ -68,7 +68,7 @@ public class Export {
   public static void main(final String[] args) throws ParseException {
     if (args.length != 4) {
       System.out.println(
-          "Usage: java gov.usgs.winston.db.Export [code] [prefix] [yyyymmddhhmmss] [yyyymmddhhmmss]");
+          "Usage: java gov.usgs.volcanoes.winston.db.Export [code] [prefix] [yyyymmddhhmmss] [yyyymmddhhmmss]");
       System.out.println();
       System.out.println("Database parameters ('winston.url', 'winston.driver', 'winston.prefix')\n"
           + "must be in 'Winston.config'.");

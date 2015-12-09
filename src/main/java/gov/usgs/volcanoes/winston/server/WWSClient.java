@@ -422,7 +422,7 @@ public class WWSClient extends WaveServer {
     final Arguments args = new Arguments(as, flags, keys);
 
     if (args.flagged("--help") || as.length == 0) {
-      System.err.println("java gov.usgs.winston.server.WWSClient [OPTIONS]\n");
+      System.err.println("java gov.usgs.volcanoes.winston.server.WWSClient [OPTIONS]\n");
       System.out.println("-s [server]\t\tWinston server");
       System.out.println("-p [port]\t\tport");
       System.out.println("-st [yyyymmddHHmmss]\tstart time");

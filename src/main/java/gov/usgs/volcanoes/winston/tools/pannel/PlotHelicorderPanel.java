@@ -33,7 +33,7 @@ import gov.usgs.volcanoes.winston.tools.ScnlPanel;
 import gov.usgs.volcanoes.winston.tools.WinstonToolsRunnablePanel;
 
 /**
- * A simple wrapper around gov.usgs.winston.PlotHelicorder
+ * A simple wrapper around gov.usgs.volcanoes.winston.PlotHelicorder
  *
  * @author Tom Parker
  */

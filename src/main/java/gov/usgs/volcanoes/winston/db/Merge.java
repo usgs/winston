@@ -170,7 +170,7 @@ public class Merge {
 
   public static void main(final String[] args) {
     if (args.length != 4) {
-      System.err.println("usage: java gov.usgs.winston.db.Merge [srcURL] [destURL] [table] [date]");
+      System.err.println("usage: java gov.usgs.volcanoes.winston.db.Merge [srcURL] [destURL] [table] [date]");
       System.err.println("[table] is case sensitive; example: CRP_SHZ_AK");
       System.err.println("[date] is in YYYY_MM_DD form; example: 2005_03_27");
       System.exit(1);

@@ -1,17 +1,5 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
-import com.martiansoftware.jsap.FlaggedOption;
-import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.JSAPResult;
-import com.martiansoftware.jsap.Parameter;
-import com.martiansoftware.jsap.SimpleJSAP;
-import com.martiansoftware.jsap.Switch;
-import com.martiansoftware.jsap.UnflaggedOption;
-
-import org.apache.log4j.Level;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -31,6 +19,18 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.martiansoftware.jsap.FlaggedOption;
+import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.Parameter;
+import com.martiansoftware.jsap.SimpleJSAP;
+import com.martiansoftware.jsap.Switch;
+import com.martiansoftware.jsap.UnflaggedOption;
+
 import gov.usgs.earthworm.ImportGeneric;
 import gov.usgs.earthworm.MessageListener;
 import gov.usgs.earthworm.message.Message;
@@ -44,10 +44,10 @@ import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Version;
-import gov.usgs.winston.db.Admin;
-import gov.usgs.winston.db.Channels;
-import gov.usgs.winston.db.InputEW;
-import gov.usgs.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.db.Admin;
+import gov.usgs.volcanoes.winston.db.Channels;
+import gov.usgs.volcanoes.winston.db.InputEW;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 
 /**
  * The new ImportEW.
@@ -91,7 +91,7 @@ public class ImportEW extends Thread {
   public static final int DEFAULT_REPAIR_RETRY_INTERVAL = 10 * 60;
 
   // JSAP related stuff.
-  public static String JSAP_PROGRAM_NAME = "java gov.usgs.winston.in.ew.ImportEW";
+  public static String JSAP_PROGRAM_NAME = "java gov.usgs.volcanoes.winston.in.ew.ImportEW";
   public static String JSAP_EXPLANATION_PREFACE = "Winston ImportEW\n" + "\n"
       + "This program gets data from an Earthworm export process and imports\n"
       + "it into a Winston database. See 'ImportEW.config' for more options.\n" + "\n";

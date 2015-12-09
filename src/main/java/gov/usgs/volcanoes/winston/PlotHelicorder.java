@@ -14,7 +14,7 @@ import gov.usgs.util.Arguments;
 import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
-import gov.usgs.winston.server.WWSClient;
+import gov.usgs.volcanoes.winston.server.WWSClient;
 
 /**
  * A command line driven program that connects to a WWS and plots a helicorder.

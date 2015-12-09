@@ -82,7 +82,7 @@ public class ImportWS {
   private final CodeTimer appTimer;
 
   // JSAP related stuff.
-  public static String JSAP_PROGRAM_NAME = "java gov.usgs.winston.in.ew.ImportWS";
+  public static String JSAP_PROGRAM_NAME = "java gov.usgs.volcanoes.winston.in.ew.ImportWS";
   public static String JSAP_EXPLANATION_PREFACE = "Winston ImportWS\n" + "\n"
       + "This program gets data from a Winston wave server and imports\n"
       + "it into a Winston database. See 'ImportWS.config' for more options.\n" + "\n";
