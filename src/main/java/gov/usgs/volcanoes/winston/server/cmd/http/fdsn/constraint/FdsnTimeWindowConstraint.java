@@ -2,7 +2,7 @@ package gov.usgs.volcanoes.winston.server.cmd.http.fdsn.constraint;
 
 import java.text.ParseException;
 
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.server.cmd.http.fdsn.FdsnException;
 
@@ -46,8 +46,8 @@ public class FdsnTimeWindowConstraint extends FdsnTimeConstraint {
 
   @Override
   public String toString() {
-    return "FdsnTimeWindowConstraint: " + Util.j2KToDateString(startBefore) + " : "
-        + Util.j2KToDateString(startAfter) + " : " + Util.j2KToDateString(endBefore) + " : "
-        + Util.j2KToDateString(endAfter);
+    return "FdsnTimeWindowConstraint: " + J2kSec.toDateString(startBefore) + " : "
+        + J2kSec.toDateString(startAfter) + " : " + J2kSec.toDateString(endBefore) + " : "
+        + J2kSec.toDateString(endAfter);
   }
 }

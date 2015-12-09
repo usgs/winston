@@ -11,14 +11,13 @@ import java.text.NumberFormat;
 import gov.usgs.net.Command;
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.Wave;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WaveServerEmulator;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
-import gov.usgs.volcanoes.winston.server.WWSClient;
 
 /**
  *
@@ -66,7 +65,7 @@ abstract public class BaseCommand implements Command {
       return 0;
     }
     if (compress)
-      bb = ByteBuffer.wrap(Util.compress(bb.array()));
+      bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
     netTools.writeString(id + " " + bb.limit() + "\n", channel);
     return netTools.writeByteBuffer(bb, channel);

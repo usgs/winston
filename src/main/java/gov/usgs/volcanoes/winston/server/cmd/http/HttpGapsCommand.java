@@ -8,6 +8,8 @@ import gov.usgs.net.HttpRequest;
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
 
@@ -28,7 +30,7 @@ public final class HttpGapsCommand extends AbstractHttpCommand implements HttpBa
   private static final double EPSILON = 1e-6
       ;
   DecimalFormat formatter = new DecimalFormat("#.###");
-  double now = Util.ewToJ2K(System.currentTimeMillis() / 1000);
+  double now = J2kSec.now();
 
   String error = "";
   String code;
@@ -91,14 +93,14 @@ public final class HttpGapsCommand extends AbstractHttpCommand implements HttpBa
     }
 
     // TimeZone
-    timeZone = Util.stringToString(arguments.get("tz"), "UTC");
+    timeZone = StringUtils.stringToString(arguments.get("tz"), "UTC");
     zone = TimeZone.getTimeZone(timeZone);
 
     // Minimum Gap Duration
-    minGapDuration = Util.stringToDouble(arguments.get("mgd"), 5);
+    minGapDuration = StringUtils.stringToDouble(arguments.get("mgd"), 5);
 
     // Write Computer
-    writeComputer = Util.stringToInt(arguments.get("wc"), 0);
+    writeComputer = StringUtils.stringToInt(arguments.get("wc"), 0);
 
     // If Error
     if (error.length() > 0) {

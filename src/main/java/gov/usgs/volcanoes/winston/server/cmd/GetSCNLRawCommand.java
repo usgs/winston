@@ -8,7 +8,8 @@ import java.util.logging.Level;
 
 import gov.usgs.net.NetTools;
 import gov.usgs.util.CodeTimer;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
 
@@ -39,10 +40,10 @@ public class GetSCNLRawCommand extends BaseCommand {
     double t1 = Double.NaN;
     double t2 = Double.NaN;
     try {
-      t1 = Util.ewToJ2K(Double.parseDouble(ss[6]));
+      t1 = Time.ewToj2k(Double.parseDouble(ss[6]));
       t1 = timeOrMaxDays(t1);
 
-      t2 = Util.ewToJ2K(Double.parseDouble(ss[7]));
+      t2 = Time.ewToj2k(Double.parseDouble(ss[7]));
       t2 = timeOrMaxDays(t2);
     } catch (final Exception e) {
     }
@@ -104,7 +105,7 @@ public class GetSCNLRawCommand extends BaseCommand {
     }
 
     final String scnl = s + "_" + c + "_" + n + "_" + l;
-    final String time = Util.j2KToDateString(t1) + " - " + Util.j2KToDateString(t2);
+    final String time = J2kSec.toDateString(t1) + " - " + J2kSec.toDateString(t2);
     wws.log(Level.FINER, "GETSCNLRAW " + scnl + " : " + time + ", " + totalBytes + " bytes.",
         channel);
   }

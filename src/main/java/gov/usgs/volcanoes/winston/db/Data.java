@@ -19,7 +19,7 @@ import gov.usgs.math.DownsamplingType;
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.data.Wave;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
 
@@ -69,7 +69,7 @@ public class Data {
       rs.close();
       return d;
     } catch (final Exception e) {
-     LOGGER.error("Could not get time span for channel: {}. ({})", code, e.getLocalizedMessage());
+      LOGGER.error("Could not get time span for channel: {}. ({})", code, e.getLocalizedMessage());
     }
     return null;
   }
@@ -227,7 +227,7 @@ public class Data {
   private byte[] getTraceBufBytes(final ResultSet rs) throws SQLException, IOException {
     final Blob b = rs.getBlob("tracebuf");
     byte[] bs = b.getBytes(1, (int) b.length());
-    bs = Util.decompress(bs, 512);
+    bs = Zip.decompress(bs, 512);
     return bs;
   }
 

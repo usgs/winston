@@ -26,7 +26,7 @@ import java.util.TreeSet;
 import java.util.zip.Deflater;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
@@ -269,7 +269,7 @@ public class InputEW {
       insert.setDouble(3, tb.samplingRate());
       insert.setString(4, tb.dataType());
       final byte[] compressed =
-          Util.compress(tb.bytes, Deflater.BEST_SPEED, 0, tb.bytes.length - 1);
+          Zip.compress(tb.bytes, Deflater.BEST_SPEED, 0, tb.bytes.length - 1);
       insert.setBytes(5, compressed);
     } catch (final SQLException e) {
       LOGGER.error("Could not create prepared statement: {}.({})", tb, e);

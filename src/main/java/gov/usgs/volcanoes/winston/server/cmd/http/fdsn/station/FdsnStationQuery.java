@@ -17,7 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.volcanoes.winston.db.Channels;
@@ -93,8 +93,8 @@ public class FdsnStationQuery extends FdsnQueryCommand implements FdsnStationSer
 
       if (!c.network.equals(previousChannel.network)) {
         out.append(previousChannel.network + " |  | "
-            + dateFormat.format(Util.j2KToDate(stationStart)) + " | "
-            + dateFormat.format(Util.j2KToDate(stationEnd)) + " | " + stationCount + "\n");
+            + dateFormat.format(J2kSec.asDate(stationStart)) + " | "
+            + dateFormat.format(J2kSec.asDate(stationEnd)) + " | " + stationCount + "\n");
         stationStart = c.getMinTime();
         stationEnd = c.getMaxTime();
         stationCount = 0;
@@ -107,8 +107,8 @@ public class FdsnStationQuery extends FdsnQueryCommand implements FdsnStationSer
       previousChannel = c;
     }
 
-    out.append(previousChannel.network + " |  | " + dateFormat.format(Util.j2KToDate(stationStart))
-        + " | " + dateFormat.format(Util.j2KToDate(stationEnd)) + " | " + stationCount + "\n");
+    out.append(previousChannel.network + " |  | " + dateFormat.format(J2kSec.asDate(stationStart))
+        + " | " + dateFormat.format(J2kSec.asDate(stationEnd)) + " | " + stationCount + "\n");
 
     return out.toString();
   }
@@ -130,8 +130,8 @@ public class FdsnStationQuery extends FdsnQueryCommand implements FdsnStationSer
         out.append(c.network + "|" + c.station + "|" + c.getInstrument().getLatitude() + "|"
             + c.getInstrument().getLongitude() + "|" + c.getInstrument().getHeight() + "|"
             + c.getInstrument().getDescription() + "|"
-            + dateFormat.format(Util.j2KToDate(stationStart)) + "|"
-            + dateFormat.format(Util.j2KToDate(stationEnd)) + "\n");
+            + dateFormat.format(J2kSec.asDate(stationStart)) + "|"
+            + dateFormat.format(J2kSec.asDate(stationEnd)) + "\n");
         stationStart = c.getMinTime();
         stationEnd = c.getMaxTime();
       } else {
@@ -147,8 +147,8 @@ public class FdsnStationQuery extends FdsnQueryCommand implements FdsnStationSer
         + previousChannel.getInstrument().getLongitude() + "|"
         + previousChannel.getInstrument().getHeight() + "|"
         + previousChannel.getInstrument().getName() + "|"
-        + dateFormat.format(Util.j2KToDate(stationStart)) + "|"
-        + dateFormat.format(Util.j2KToDate(stationEnd)) + "\n");
+        + dateFormat.format(J2kSec.asDate(stationStart)) + "|"
+        + dateFormat.format(J2kSec.asDate(stationEnd)) + "\n");
     stationStart = Double.MAX_VALUE;
     stationEnd = -Double.MAX_VALUE;
 
@@ -165,8 +165,8 @@ public class FdsnStationQuery extends FdsnQueryCommand implements FdsnStationSer
       out.append(c.network + "|" + c.station + "|" + loc + "|" + c.channel + "|"
           + c.getInstrument().getLatitude() + "|" + c.getInstrument().getLongitude() + "|"
           + c.getInstrument().getHeight() + "||||||||||"
-          + dateFormat.format(Util.j2KToDate(c.getMinTime())) + "|"
-          + dateFormat.format(Util.j2KToDate(c.getMaxTime())) + "\n");
+          + dateFormat.format(J2kSec.asDate(c.getMinTime())) + "|"
+          + dateFormat.format(J2kSec.asDate(c.getMaxTime())) + "\n");
     }
 
     return out.toString();
@@ -208,17 +208,17 @@ public class FdsnStationQuery extends FdsnQueryCommand implements FdsnStationSer
 
       if (!c.station.equals(sta)) {
         if (stationElement != null) {
-          final String s = dateFormat.format(Util.j2KToDate(stationStart));
+          final String s = dateFormat.format(J2kSec.asDate(stationStart));
           stationElement.setAttribute("startDate", s);
           stationStart = Double.MAX_VALUE;
 
-          final String e = dateFormat.format(Util.j2KToDate(stationEnd));
+          final String e = dateFormat.format(J2kSec.asDate(stationEnd));
           stationElement.setAttribute("endDate", e);
           stationEnd = -Double.MAX_VALUE;
 
           final Element creationElement = doc.createElement("CreationDate");
           creationElement
-              .appendChild(doc.createTextNode(dateFormat.format(Util.j2KToDate(stationStart))));
+              .appendChild(doc.createTextNode(dateFormat.format(J2kSec.asDate(stationStart))));
         }
 
         sta = c.station;

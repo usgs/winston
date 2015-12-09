@@ -2,7 +2,8 @@ package gov.usgs.volcanoes.winston.server.cmd.http.fdsn.constraint;
 
 import java.text.ParseException;
 
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.server.cmd.http.fdsn.FdsnDateFormat;
 
 /**
@@ -21,7 +22,7 @@ abstract public class FdsnTimeConstraint implements FdsnConstraint {
   }
   
   protected double dateStringToDouble(final String s1, final String s2) throws ParseException {
-    String s = Util.stringToString(s1, s2);
+    String s = StringUtils.stringToString(s1, s2);
 
     if (s.indexOf('T') == -1)
       s += "T00:00:00.0000";
@@ -35,6 +36,6 @@ abstract public class FdsnTimeConstraint implements FdsnConstraint {
       while (dot + 5 < s.length())
         s += "0";
 
-    return Util.dateToJ2K(fdsnDate.parse(s));
+    return J2kSec.fromDate(fdsnDate.parse(s));
   }
 }

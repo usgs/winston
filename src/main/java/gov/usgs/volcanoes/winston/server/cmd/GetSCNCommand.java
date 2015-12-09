@@ -5,7 +5,8 @@ import java.util.logging.Level;
 
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.Wave;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
@@ -33,10 +34,10 @@ public class GetSCNCommand extends BaseCommand {
       return;
     }
 
-    double t1 = Util.ewToJ2K(cmd.getT1(false));
+    double t1 = Time.ewToj2k(cmd.getT1(false));
     t1 = timeOrMaxDays(t1);
 
-    double t2 = Util.ewToJ2K(cmd.getT2(false));
+    double t2 = Time.ewToj2k(cmd.getT2(false));
     t2 = timeOrMaxDays(t2);
 
     final double[] bounds = checkTimes(sid, t1, t2);
@@ -56,7 +57,7 @@ public class GetSCNCommand extends BaseCommand {
       netTools.writeString(cmd.getEarthwormErrorString(sid, "FG s4"), channel);
 
     final String scn = cmd.getS() + "_" + cmd.getC() + "_" + cmd.getN();
-    final String time = Util.j2KToDateString(t1) + " - " + Util.j2KToDateString(t2);
+    final String time = J2kSec.toDateString(t1) + " - " + J2kSec.toDateString(t2);
     wws.log(Level.FINER, "GETSCN " + scn + " : " + time + ", " + totalBytes + " bytes.", channel);
   }
 }

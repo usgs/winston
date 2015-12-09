@@ -8,6 +8,8 @@ import java.util.TimeZone;
 import gov.usgs.net.HttpRequest;
 import gov.usgs.net.NetTools;
 import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
 
@@ -29,20 +31,20 @@ public final class HttpMenuCommand extends AbstractHttpCommand implements HttpBa
   @Override
   protected void sendResponse() {
     // validate input. Write error and return if bad.
-    final int sortCol = Util.stringToInt(arguments.get("ob"), DEFAULT_OB);
+    final int sortCol = StringUtils.stringToInt(arguments.get("ob"), DEFAULT_OB);
     if (sortCol < 1 || sortCol > 8) {
       writeSimpleHTML("Error: could not parse ob = " + arguments.get("ob"));
       return;
     }
 
-    final String o = Util.stringToString(arguments.get("so"), DEFAULT_SO);
+    final String o = StringUtils.stringToString(arguments.get("so"), DEFAULT_SO);
     final char order = o.charAt(0);
     if (order != 'a' && order != 'd') {
       writeSimpleHTML("Error: could not parse so = " + arguments.get("so"));
       return;
     }
 
-    final String tz = Util.stringToString(arguments.get("tz"), DEFAULT_TZ);
+    final String tz = StringUtils.stringToString(arguments.get("tz"), DEFAULT_TZ);
     final TimeZone timeZone = TimeZone.getTimeZone(tz);
 
     // write header
@@ -88,8 +90,8 @@ public final class HttpMenuCommand extends AbstractHttpCommand implements HttpBa
       output.append("<td>" + line[3] + "</td>");
       output.append("<td>" + line[4] + "</td>");
       output.append("<td>" + line[5] + "</td>");
-      output.append("<td>" + Util.j2KToDateString(Util.ewToJ2K(start), timeZone) + "</td>");
-      output.append("<td>" + Util.j2KToDateString(Util.ewToJ2K(end), timeZone) + "</td>");
+      output.append("<td>" + Util.j2KToDateString(Time.ewToj2k(start), timeZone) + "</td>");
+      output.append("<td>" + Util.j2KToDateString(Time.ewToj2k(end), timeZone) + "</td>");
       output.append("<td>" + line[8] + "</td>");
       output.append("</tr>\n");
     }

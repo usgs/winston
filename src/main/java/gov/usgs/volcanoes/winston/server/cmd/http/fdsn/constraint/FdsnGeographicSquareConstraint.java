@@ -1,6 +1,6 @@
 package gov.usgs.volcanoes.winston.server.cmd.http.fdsn.constraint;
 
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.Instrument;
 import gov.usgs.volcanoes.winston.server.cmd.http.fdsn.FdsnException;
@@ -25,10 +25,10 @@ public class FdsnGeographicSquareConstraint implements FdsnConstraint {
   public FdsnGeographicSquareConstraint(final String minlatitude, final String maxlatitude,
       final String minlongitude, final String maxlongitude) throws FdsnException {
 
-    this.minlatitude = Util.stringToDouble(minlatitude, DEFAULT_MINLATITUDE);
-    this.maxlatitude = Util.stringToDouble(maxlatitude, DEFAULT_MAXLATITUDE);
-    this.minlongitude = Util.stringToDouble(minlongitude, DEFAULT_MINLONGITUDE);
-    this.maxlongitude = Util.stringToDouble(maxlongitude, DEFAULT_MAXLONGITUDE);
+    this.minlatitude = StringUtils.stringToDouble(minlatitude, DEFAULT_MINLATITUDE);
+    this.maxlatitude = StringUtils.stringToDouble(maxlatitude, DEFAULT_MAXLATITUDE);
+    this.minlongitude = StringUtils.stringToDouble(minlongitude, DEFAULT_MINLONGITUDE);
+    this.maxlongitude = StringUtils.stringToDouble(maxlongitude, DEFAULT_MAXLONGITUDE);
 
   }
 
