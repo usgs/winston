@@ -2,6 +2,7 @@ package gov.usgs.volcanoes.winston.in.ew;
 
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
 
 /**
@@ -37,7 +38,7 @@ public class Options {
 
   public boolean thresholdExceeded(final double time, final int size) {
     if (timeThreshold != -1) {
-      final double dt = CurrentTime.getInstance().nowJ2k() - time;
+      final double dt = J2kSec.now() - time;
       if (dt > timeThreshold)
         return true;
     }

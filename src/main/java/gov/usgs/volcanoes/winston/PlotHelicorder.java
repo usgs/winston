@@ -345,7 +345,7 @@ public class PlotHelicorder {
       settings.timeZoneOffset = h;
     }
 
-    settings.endTime = CurrentTime.getInstance().nowJ2k();
+    settings.endTime = J2kSec.now();
     s = args.get("-e");
     if (s != null) {
       if (!s.equals("now")) {

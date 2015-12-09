@@ -559,7 +559,7 @@ public class ImportEW extends Thread {
 
     final Double lastRepair = attemptedRepair.get(table);
     if (lastRepair != null) {
-      if (CurrentTime.getInstance().nowJ2k() - lastRepair.doubleValue() > repairRetryInterval)
+      if (J2kSec.now() - lastRepair.doubleValue() > repairRetryInterval)
         attemptedRepair.remove(table);
       else
         return null;
@@ -572,7 +572,7 @@ public class ImportEW extends Thread {
           final boolean healthy = fixerAdmin.repairTable(database, table);
           LOGGER.info("After repair attempt, table {} appears to {}.", table,
               (healthy ? "be healthy" : "still be broken"));
-          attemptedRepair.put(table, CurrentTime.getInstance().nowJ2k());
+          attemptedRepair.put(table, J2kSec.now());
           underRepair.remove(table);
         } catch (final OutOfMemoryError e) {
           handleOutOfMemoryError(e);
