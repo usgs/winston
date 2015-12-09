@@ -97,7 +97,7 @@ public class ExportSACPanel extends WinstonToolsRunnablePanel {
     final Calendar cal = Calendar.getInstance();
     cal.add(Calendar.DATE, -7);
     start.setText(dateF.format(cal.getTime()));
-    start.setToolTipText(gov.usgs.util.Time.INPUT_TIME_FORMAT);
+    start.setToolTipText(Time.INPUT_TIME_FORMAT);
     start.getDocument().addDocumentListener(new TimeRangeDocumentListener(start));
 
     end = new JTextField(15);

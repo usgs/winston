@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
+import cern.colt.Arrays;
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.Util;
 import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.J2kSec;
@@ -307,7 +307,7 @@ public class Input {
       insert.setDouble(2, tb.getEndTimeJ2K());
       insert.setDouble(3, tb.samplingRate());
       insert.setString(4, tb.dataType());
-      final byte[] stripped = Util.resize(tb.bytes, tb.bytes.length - 1);
+      final byte[] stripped = Arrays.trimToCapacity(tb.bytes, tb.bytes.length - 1);
       final byte[] compressed = Zip.compress(stripped);
       insert.setBytes(5, compressed);
       insert.executeUpdate();
@@ -425,7 +425,7 @@ public class Input {
       insert.setDouble(2, tb.getEndTimeJ2K());
       insert.setDouble(3, tb.samplingRate());
       insert.setString(4, tb.dataType());
-      final byte[] stripped = Util.resize(tb.bytes, tb.bytes.length - 1);
+      final byte[] stripped = Arrays.trimToCapacity(tb.bytes, tb.bytes.length - 1);
       final byte[] compressed = Zip.compress(stripped);
       insert.setBytes(5, compressed);
       try {
