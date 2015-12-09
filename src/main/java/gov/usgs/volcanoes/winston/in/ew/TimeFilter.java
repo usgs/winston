@@ -3,6 +3,7 @@ package gov.usgs.volcanoes.winston.in.ew;
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
 
 /**
@@ -37,7 +38,7 @@ public class TimeFilter extends TraceBufFilter {
 
   @Override
   public boolean match(final TraceBuf tb, final Options options) {
-    final double dt = tb.getStartTimeJ2K() - CurrentTime.getInstance().nowJ2k();
+    final double dt = tb.getStartTimeJ2K() - J2kSec.now();
     if (!Double.isNaN(tLessThan) && dt < tLessThan)
       return true;
 

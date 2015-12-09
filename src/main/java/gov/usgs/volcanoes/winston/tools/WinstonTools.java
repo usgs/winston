@@ -2,6 +2,7 @@ package gov.usgs.volcanoes.winston.tools;
 
 import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
 
+import org.apache.log4j.Appender;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

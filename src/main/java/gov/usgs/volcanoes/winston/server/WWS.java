@@ -1,7 +1,7 @@
 package gov.usgs.volcanoes.winston.server;
 
+
 import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +11,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import gov.usgs.net.Server;
+import gov.usgs.volcanoes.core.Log;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Version;
@@ -36,6 +37,9 @@ public class WWS extends Server {
    * @throws Exception when command line cannot be parsed
    */
   public static void main(final String[] args) throws Exception {
+    
+    Log.addFileAppender("WWS.log");
+
     final WWSArgs config = new WWSArgs(args);
     final WWS wws = new WWS(config.configFileName);
 
@@ -63,13 +67,13 @@ public class WWS extends Server {
         } else if (s.startsWith("t")) {
           wws.toggleTrace(s);
         } else if (s.equals("0")) {
-          LogManager.getRootLogger().setLevel(Level.ERROR);
+          Log.setLevel(Level.ERROR);
         } else if (s.equals("1")) {
-          LogManager.getRootLogger().setLevel(Level.WARN);
+          Log.setLevel(Level.WARN);
         } else if (s.equals("2")) {
-          LogManager.getRootLogger().setLevel(Level.INFO);
+          Log.setLevel(Level.INFO);
         } else if (s.equals("3")) {
-          LogManager.getRootLogger().setLevel(Level.DEBUG);
+          Log.setLevel(Level.DEBUG);
         } else if (s.equals("?")) {
           WWS.printKeys();
         } else {
