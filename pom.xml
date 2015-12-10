@@ -351,6 +351,7 @@
 					<inputDirectory>${project.basedir}/src/main/resources/docs/</inputDirectory>
 					<outputDirectory>${project.build.directory}/docs/</outputDirectory>
 					<transformRelativeMarkdownLinks>true</transformRelativeMarkdownLinks>
+					<pegdownExtensions>ANCHORLINKS</pegdownExtensions>
 				</configuration>
 
 			</plugin>

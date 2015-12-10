@@ -17,16 +17,14 @@ Winston ships with several applications included in the jar file.
 
 ## Data Export
 - [PlotHelicorder](#plothelicorder) -- Create a PNG helicorder plot. 
-- [WWS](#wws) -- Winston wave server. 
+- [Winston Wave Server](WWS.md) -- Winston wave server. 
 
 ## Miscellanea
 - [WinstonTools](#winstontools) -- A GUI to launch winston accessories.
 
 ---
-<a name="admin"></a>
+
 ### Admin
-
-
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.db.Admin --help
 	Winston Admin
 
@@ -64,7 +62,6 @@ Winston ships with several applications included in the jar file.
 	
 	% 
 
-<a name="importdataless"></a>
 ### ImportDataless
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.in.metadata.ImportDataless
 	Usage: ImportDataless [-c <winston.config>] <dataless>
@@ -74,11 +71,9 @@ Winston ships with several applications included in the jar file.
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.in.metadata.ImportHypoinverse 
 	Usage: ImportDataless [-c <winston.config>] <dataless>
 	% 
-	
-<a name="importsac"></a>
+
 ### ImportSac
 
-<a name="importseed"></a>
 ### ImportSEED
 
 ### ImportWS
@@ -116,7 +111,7 @@ Winston ships with several applications included in the jar file.
 	        The config file name. (default: ImportWS.config)
 	
 	% 
-	
+
 ### Merge
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.db.Merge 
 	usage: java gov.usgs.winston.db.Merge [srcURL] [destURL] [table] [date]
@@ -158,27 +153,3 @@ Winston ships with several applications included in the jar file.
 	% 
 
 ### WinstonTools
-
-### WWS
-	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.server.WWS --help
-	
-	Usage:
-	  java -jar gov.usgs.volcanoes.winston.server.WWS [--help] [-i|--noinput]
-	  [<config-filename>] [-v|--verbose]
-	
-	I am the Winston wave server
-	
-	
-	  [--help]
-	        Prints this help message.
-	
-	  [-i|--noinput]
-	        Do not poll keyboard for input.
-	
-	  [<config-filename>]
-	        The config file name. (default: WWS.config)
-	
-	  [-v|--verbose]
-	        Verbose logging.
-	
-	%

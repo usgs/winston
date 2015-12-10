@@ -2,7 +2,11 @@
 
 ImportEW imports waveforms into winston from an Earthworm export. 
 
+--- 
+
 ## Configuration
+
+---
 
 ## Launching
 Start ImportEW with a command similar to <code>java -cp lib/winston.jar gov.usgs.volcanoes.winston.in.ew.ImportEW</code>. Convienence scripts are provided in bin/ to make this easier.
