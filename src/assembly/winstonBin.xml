@@ -26,6 +26,12 @@
 			<outputDirectory>bin</outputDirectory>
 			<includes />
 		</fileSet>
+		<fileSet>
+			<directory>${project.build.directory}/docs</directory>
+			<outputDirectory>docs</outputDirectory>
+			<includes />
+		</fileSet>
+
 	</fileSets>
 	<files>
 		<file>
