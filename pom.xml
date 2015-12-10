@@ -350,6 +350,7 @@
 					<recursiveInput>true</recursiveInput>
 					<inputDirectory>${project.basedir}/src/main/resources/docs/</inputDirectory>
 					<outputDirectory>${project.build.directory}/docs/</outputDirectory>
+					<transformRelativeMarkdownLinks>true</transformRelativeMarkdownLinks>
 				</configuration>
 
 			</plugin>
