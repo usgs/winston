@@ -1,5 +1,6 @@
 package gov.usgs.volcanoes.winston.server.cmd.http;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -7,7 +8,8 @@ import java.util.TimeZone;
 
 import gov.usgs.net.HttpRequest;
 import gov.usgs.net.NetTools;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.time.Ew;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -81,6 +83,9 @@ public final class HttpMenuCommand extends AbstractHttpCommand implements HttpBa
         continue;
       }
 
+      SimpleDateFormat dateF = new SimpleDateFormat(Time.STANDARD_TIME_FORMAT);
+      dateF.setTimeZone(timeZone);
+      
       final double start = Double.parseDouble(line[6]);
       final double end = Double.parseDouble(line[7]);
 
@@ -90,8 +95,8 @@ public final class HttpMenuCommand extends AbstractHttpCommand implements HttpBa
       output.append("<td>" + line[3] + "</td>");
       output.append("<td>" + line[4] + "</td>");
       output.append("<td>" + line[5] + "</td>");
-      output.append("<td>" + Util.j2KToDateString(Time.ewToj2k(start), timeZone) + "</td>");
-      output.append("<td>" + Util.j2KToDateString(Time.ewToj2k(end), timeZone) + "</td>");
+      output.append("<td>" + dateF.format(Ew.asEpoch(start)) + "</td>");
+      output.append("<td>" + dateF.format(Ew.asEpoch(end)) + "</td>");
       output.append("<td>" + line[8] + "</td>");
       output.append("</tr>\n");
     }

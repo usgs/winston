@@ -4,7 +4,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import gov.usgs.util.Time;
+import gov.usgs.volcanoes.core.time.Time;
 
 /**
  *

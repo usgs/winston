@@ -25,7 +25,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import gov.usgs.util.Time;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.winston.PlotHelicorder;
 import gov.usgs.volcanoes.winston.PlotHelicorder.FileType;
 import gov.usgs.volcanoes.winston.tools.FilePanel;

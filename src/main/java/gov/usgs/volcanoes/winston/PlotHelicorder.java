@@ -10,8 +10,7 @@ import gov.usgs.plot.Plot;
 import gov.usgs.plot.PlotException;
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.plot.render.HelicorderRenderer;
-import gov.usgs.util.Arguments;
-import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.legacy.Arguments;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.winston.server.WWSClient;
@@ -23,7 +22,6 @@ import gov.usgs.volcanoes.winston.server.WWSClient;
  *
  * @author Dan Cervelli
  */
-@Deprecated
 public class PlotHelicorder {
   private String host;
   private int port;

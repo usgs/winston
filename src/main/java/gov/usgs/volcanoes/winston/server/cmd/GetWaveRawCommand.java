@@ -8,7 +8,7 @@ import java.nio.channels.SocketChannel;
 
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.Wave;
-import gov.usgs.util.CodeTimer;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;

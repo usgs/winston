@@ -1,14 +1,15 @@
 package gov.usgs.volcanoes.winston.server.cmd.http;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.TimeZone;
 
 import gov.usgs.net.HttpRequest;
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
-import gov.usgs.util.Util;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
@@ -108,11 +109,13 @@ public final class HttpGapsCommand extends AbstractHttpCommand implements HttpBa
 
     } else {
 
+      SimpleDateFormat dateF = new SimpleDateFormat(Time.STANDARD_TIME_FORMAT);
+      dateF.setTimeZone(zone);
       // Finds Gaps
       gaps = data.findGaps(code, startTime, endTime);
       code = code.replace('$', '_');
-      startTimeS = Util.j2KToDateString(startTime, zone);
-      endTimeE = Util.j2KToDateString(endTime, zone);
+      startTimeS = dateF.format(J2kSec.asEpoch(startTime));
+      endTimeE = dateF.format(J2kSec.asEpoch(startTime));
       totalTime = endTime - startTime;
 
       if (writeComputer == 1) {
@@ -189,6 +192,8 @@ public final class HttpGapsCommand extends AbstractHttpCommand implements HttpBa
     // + " seconds</TD>" + "</TR></TABLE></TD>");
 
     // Write Human Data Gaps
+    
+    SimpleDateFormat dateF = new SimpleDateFormat(Time.STANDARD_TIME_FORMAT);
     outputDataGaps.append(
         "<TD VALIGN=top><TABLE CELLSPACING=0 CELLPADDING=5 STYLE=\"border-width: 2; border-style: solid;\" WIDTH=500>"
             + "<THEAD><TR><TH ALIGN=center COLSPAN=3><B>Data Gaps</B></TH></TR></THEAD>");
@@ -205,7 +210,7 @@ public final class HttpGapsCommand extends AbstractHttpCommand implements HttpBa
         continue;
       } else {
         outputDataGaps.append("<TR STYLE=\"background: " + color[colorCount++ % 3] + "\"><TD>"
-            + Util.j2KToDateString(gap[0], zone) + "</TD><TD>" + Util.j2KToDateString(gap[1], zone)
+            + dateF.format(J2kSec.asEpoch(gap[0])) + "</TD><TD>" + dateF.format(J2kSec.asEpoch(gap[1]))
             + "</TD><TD ALIGN=right>" + formatter.format(gapLength) + " seconds</TD></TR>");
         gapCount++;
         totalGapLength = totalGapLength + gapLength;

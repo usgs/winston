@@ -36,12 +36,12 @@ import gov.usgs.earthworm.MessageListener;
 import gov.usgs.earthworm.message.Message;
 import gov.usgs.earthworm.message.MessageType;
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.util.CodeTimer;
-import gov.usgs.util.Util;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.Log;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.volcanoes.winston.db.Admin;
@@ -804,7 +804,7 @@ public class ImportEW extends Thread {
     strings.add("------- ImportEW --------");
     strings.add("Status time: " + dateFormat.format(now));
     strings.add("Start time:  " + dateFormat.format(importStartTime));
-    strings.add("Up time:     " + Util.timeDifferenceToString(uptime));
+    strings.add("Up time:     " + Time.secondsToString(uptime));
 
     long ht = importGeneric.getLastHeartbeatTime();
     double dt = (double) (nowST - ht) / 1000;
@@ -812,14 +812,14 @@ public class ImportEW extends Thread {
       strings.add("Last HB RX:  (never)");
     else
       strings.add("Last HB RX:  " + dateFormat.format(new Date(ht)) + ", "
-          + Util.timeDifferenceToString(dt));
+          + Time.secondsToString(dt));
     ht = importGeneric.getLastHeartbeatSentTime();
     dt = (double) (nowST - ht) / 1000;
     if (ht == 0)
       strings.add("Last HB TX:  (never)");
     else
       strings.add("Last HB TX:  " + dateFormat.format(new Date(ht)) + ", "
-          + Util.timeDifferenceToString(dt));
+          + Time.secondsToString(dt));
 
     final Runtime rt = Runtime.getRuntime();
     strings.add(String.format("Memory (used / max): %.1fMB / %.1fMB",
@@ -838,7 +838,7 @@ public class ImportEW extends Thread {
     // by each filter
     strings.add("---- Timing");
     strings.add(String.format("Total input time:        %s",
-        Util.timeDifferenceToString(inputTimer.getTotalTimeMillis() / 1000)));
+        Time.secondsToString(inputTimer.getTotalTimeMillis() / 1000)));
     strings.add(String.format("Input time per TraceBuf: %.2fms",
         inputTimer.getTotalTimeMillis() / totalTraceBufsWritten));
 

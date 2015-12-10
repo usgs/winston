@@ -12,9 +12,9 @@ import java.util.Set;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.plot.data.Wave;
-import gov.usgs.util.Arguments;
-import gov.usgs.util.CodeTimer;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.legacy.Arguments;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;

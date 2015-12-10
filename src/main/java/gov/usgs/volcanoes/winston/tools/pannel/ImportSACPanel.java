@@ -16,7 +16,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 
-import gov.usgs.util.Arguments;
+import gov.usgs.volcanoes.core.legacy.Arguments;
 import gov.usgs.volcanoes.winston.in.ImportSAC;
 import gov.usgs.volcanoes.winston.in.StaticImporter;
 import gov.usgs.volcanoes.winston.tools.FilePanel;
