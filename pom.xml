@@ -334,6 +334,25 @@
 					</execution>
 				</executions>
 			</plugin>
+   <plugin>
+                <groupId>com.ruleoftech</groupId>
+                <artifactId>markdown-page-generator-plugin</artifactId>
+                <version>0.8</version>
+                <executions>
+                    <execution>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+        <configuration>
+            <recursiveInput>true</recursiveInput>
+		<inputDirectory>${project.basedir}/src/main/resources/docs/</inputDirectory>
+		<outputDirectory>${project.build.directory}/docs/</outputDirectory>
+        </configuration>
+
+            </plugin>
 		</plugins>
 
 		<pluginManagement>
