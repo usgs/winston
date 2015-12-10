@@ -3,28 +3,27 @@
 Winston ships with several applicaions included in the jar file. 
 
 ## Administration
-- [Admin](#Admin) -- A collection of commands for administering a Winston database.
-- [ImportDataless](#ImportDataless) -- Populate winston with station locations from a SEED dataless volume.
-- [ImportHypoinverse](#ImportHypoinverse) -- Populate winston with station location from a Hypoinverse station file.
-- [Merge](#Merge) -- 
-- [Upgrade](#Upgrade) -- Upgrade winston schema. 
+- [Admin](#admin) -- A collection of commands for administering a Winston database.
+- [ImportDataless](#importdataless) -- Populate winston with station locations from a SEED dataless volume.
+- [ImportHypoinverse](#importhypoinverse) -- Populate winston with station location from a Hypoinverse station file.
+- [Merge](#merge) -- 
+- [Upgrade](#upgrade) -- Upgrade winston schema. 
 
 ## Data Import
-- [ImportEW](#ImportEW) -- Ingest waveforms from an Earthworm exportgenereic-style exporter.
-- [ImportSAC](#ImportSAC) -- Ingest waveforms into winston from a SAC file.
-- [ImportSEED](#ImportSEED) -- Ingest waveforms into winston from a miniSEED volulme. 
-- [ImportWS](#ImportWS) -- Import waveforms from another winston.
+- [ImportEW](#importew) -- Ingest waveforms from an Earthworm exportgenereic-style exporter.
+- [ImportSAC](#importsac) -- Ingest waveforms into winston from a SAC file.
+- [ImportSEED](#importseed) -- Ingest waveforms into winston from a miniSEED volulme. 
+- [ImportWS](#importws) -- Import waveforms from another winston.
 
 ## Data Export
-- [PlotHelicorder](#PlotHelicorder) -- Create a PNG helicorder plot. 
-- [WWS](#WWS) -- Winston wave server. 
+- [PlotHelicorder](#plothelicorder) -- Create a PNG helicorder plot. 
+- [WWS](#wws) -- Winston wave server. 
 
 ## Miscellanea
-- [WinstonTools](#WinstonTools) -- A GUI to launch winston accessories.
+- [WinstonTools](#winstontools) -- A GUI to launch winston accessories.
 
 ---
 
-<a name="Admin"></a>
 ### Admin
 
 
@@ -65,13 +64,11 @@ Winston ships with several applicaions included in the jar file.
 	
 	% 
 	
-<a name="ImportDataless"></a>
 ### ImportDataless
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.in.metadata.ImportDataless
 	Usage: ImportDataless [-c <winston.config>] <dataless>
 	% 
 
-<a name="ImportEW"></a>
 ### ImportEW
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.in.ew.ImportEW --help
 	
@@ -132,19 +129,15 @@ Winston ships with several applicaions included in the jar file.
 	
 	% 
 
-<a name="ImportHypoinverse"></a>
 ### ImportHypoinverse
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.in.metadata.ImportHypoinverse 
 	Usage: ImportDataless [-c <winston.config>] <dataless>
 	% 
 	
-<a name="ImportSac"></a>
 ### ImportSac
 
-<a name="ImportSEED"></a>
 ### ImportSEED
 
-<a name="ImportWS"></a>
 ### ImportWS
 	java -cp lib/winston.jar gov.usgs.volcanoes.winston.in.ew.ImportWS --help
 	
@@ -181,7 +174,6 @@ Winston ships with several applicaions included in the jar file.
 	
 	% 
 	
-<a name="Merge"></a>
 ### Merge
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.db.Merge 
 	usage: java gov.usgs.winston.db.Merge [srcURL] [destURL] [table] [date]
@@ -189,7 +181,6 @@ Winston ships with several applicaions included in the jar file.
 	[date] is in YYYY_MM_DD form; example: 2005_03_27
 	localhost [6:19pm] % 
 	
-<a name="PlotHelicorder"></a>
 ### PlotHelicorder
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.PlotHelicorder 
 	Server/station/time options
@@ -212,7 +203,6 @@ Winston ships with several applicaions included in the jar file.
 	-r    show clipped trace as red, 0 or 1 [0]
 	% 
 
-<a name="Upgrade"></a>
 ### Upgrade
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.db.Upgrade
 	2015-12-09 06:23:45  INFO - Connected to database.
@@ -224,10 +214,8 @@ Winston ships with several applicaions included in the jar file.
 	Run with '--upgrade' option to perform an upgrade.
 	% 
 
-<a name="WinstonTools"></a>
 ### WinstonTools
 
-<a name="WWS"</a>
 ### WWS
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.server.WWS --help
 	
