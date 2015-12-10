@@ -16,7 +16,7 @@ ImportEW has several command line switches that can be listed by calling ImportE
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.in.ew.ImportEW --help
 	
 	Usage:
-	  java gov.usgs.winston.in.ew.ImportEW [--help] [(-l|--log-level) <logLevel>]
+	  java gov.usgs.volcanoes.winston.in.ew.ImportEW [--help] [(-l|--log-level) <logLevel>]
 	  [-0|--logoff] [-1|--lognormal] [-2|--loghigh] [-3|--logall] [-i|--noinput]
 	  [<configFilename>]
 	

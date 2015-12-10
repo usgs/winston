@@ -33,7 +33,7 @@ Winston ships with several applications included in the jar file.
 	in Winston.config in the current directory.
 	
 	Usage:
-	  java gov.usgs.winston.db.Admin [options] command [command arguments]
+	  java gov.usgs.volcanoes.winston.db.Admin [options] command [command arguments]
 	
 	Valid options:
 	  --delay seconds                 the delay between each channel for commands
@@ -80,7 +80,7 @@ Winston ships with several applications included in the jar file.
 	java -cp lib/winston.jar gov.usgs.volcanoes.winston.in.ew.ImportWS --help
 	
 	Usage:
-	  java gov.usgs.winston.in.ew.ImportWS [--help] [(-t|--timerange) <timeRange>]
+	  java gov.usgs.volcanoes.winston.in.ew.ImportWS [--help] [(-t|--timerange) <timeRange>]
 	  [(-w|--waveserver) <host:port>] [-i|--noinput] [-l|--SCNL] <configFilename>
 	
 	Winston ImportWS
@@ -114,7 +114,7 @@ Winston ships with several applications included in the jar file.
 
 ### Merge
 	% java -cp lib/winston.jar gov.usgs.volcanoes.winston.db.Merge 
-	usage: java gov.usgs.winston.db.Merge [srcURL] [destURL] [table] [date]
+	usage: java gov.usgs.volcanoes.winston.db.Merge [srcURL] [destURL] [table] [date]
 	[table] is case sensitive; example: CRP_SHZ_AK
 	[date] is in YYYY_MM_DD form; example: 2005_03_27
 	localhost [6:19pm] % 
