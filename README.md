@@ -5,4 +5,5 @@ Winston
 
 A Java application suite used for storing, serving, and plotting seismic data. 
 
+[User documentation](src/main/resources/docs/index.md)
 [Developer documentation](http://usgs.github.io/winston)
