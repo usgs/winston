@@ -211,6 +211,12 @@
 										<include>**</include>
 									</includes>
 								</filter>
+                                                               <filter>
+                                                                        <artifact>org.freemarker:freemarker</artifact>
+                                                                        <includes>
+                                                                                <include>freemarker/**</include>
+                                                                        </includes>
+                                                                </filter>
 							</filters>
 							<artifactSet>
 								<includes>
@@ -227,6 +233,7 @@
 									<include>edu.iris:JavaSeedLite</include>
 									<include>commons-collections:commons-collections</include>
 									<include>mysql:mysql-connector-java</include>
+                                                                        <include>org.freemarker:freemarker</include>
 								</includes>
 							</artifactSet>
 						</configuration>
@@ -507,5 +514,10 @@
 			<version>5.1.6</version>
 			<scope>runtime</scope>
 		</dependency>
+                <dependency>
+                        <groupId>org.freemarker</groupId>
+                        <artifactId>freemarker</artifactId>
+                        <version>2.3.23</version>
+                </dependency>
 	</dependencies>
 </project>

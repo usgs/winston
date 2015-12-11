@@ -1,11 +1,27 @@
 package gov.usgs.volcanoes.winston.server.cmd.http.fdsn.command;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
 
+import freemarker.cache.ClassTemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 import gov.usgs.net.HttpRequest;
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
@@ -19,68 +35,62 @@ import gov.usgs.volcanoes.winston.server.WWS;
  *
  */
 public abstract class FdsnUsageCommand extends FdsnCommand {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(FdsnUsageCommand.class);
+  
   protected String UrlBuillderTemplate;
   protected String InterfaceDescriptionTemplate;
 
+  private Configuration cfg;
+
   public FdsnUsageCommand(final NetTools nt, final WinstonDatabase db, final WWS wws) {
     super(nt, db, wws);
+    initializeTemplateEngine();
+  }
+
+  /**
+   * Initialize FreeMarker.
+   * 
+   * @throws IOException when things go wrong
+   */
+  private void initializeTemplateEngine() {
+    cfg = new Configuration();
+    cfg.setTemplateLoader(new ClassTemplateLoader(getClass(), "/www/fdsnws"));
+    DefaultObjectWrapper obj = new DefaultObjectWrapper();
+    obj.setExposeFields(true);
+    cfg.setObjectWrapper(obj);
+
+    cfg.setDefaultEncoding("UTF-8");
+    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
+    cfg.setIncompatibleImprovements(new freemarker.template.Version(2, 3, 20));
   }
 
   @Override
   protected void sendResponse() {
     final HttpRequest req = new HttpRequest(cmd);
-    final StringBuilder output = new StringBuilder(64000);
-    output.append(
-        "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\" \"http://www.w3.org/TR/html4/loose.dtd\">");
-    output.append("<html><head><link href=\"/style.css\" rel=\"stylesheet\" type=\"text/css\">");
-    output.append("<link href=\"/fdsnws/fdsnws.css\" rel=\"stylesheet\" type=\"text/css\">");
-    output.append("<script>");
-    output.append("function init() {" + "initTabs();" + "buildUrl();" + "}");
-    output.append("</script>");
-    output.append("<title>Winston Wave Server</title></head><body>\n");
+    Map<String, Object> root = new HashMap<String, Object>();
+    root.put("baseUrl", "http://" + req.getHeader("Host") + "/");
+    root.put("UrlBuilderTemplate", getFileAsString(UrlBuillderTemplate));
+    root.put("InterfaceDescriptionTemplate", getFileAsString(InterfaceDescriptionTemplate));
+    root.put("versionString", Version.VERSION_STRING);
+    
+    try {
+      Template template = cfg.getTemplate("usage.ftl");
+      Writer sw = new StringWriter();
+      template.process(root, sw);
+      String html = sw.toString();
+      sw.close();
+      
+      final HttpResponse response = new HttpResponse("text/html; charset=utf-8");
+      response.setLength(html.length());
+      response.setCode("200");
 
-    output.append("<div id=\"wrapper\">\n");
-    output.append(
-        "<div id=\"intro\">I'm a Winston Wave Server. I'm here to service to <A HREF=\"http://volcanoes.usgs.gov/software/swarm\">Swarm</A> and <A HREF=\"http://www.earthwormcentral.org/\">Earthworm's</A> Wave Viewer. I will also provide plots and status info if given a carefully crafted URL. Winston specific usage is described on my <a href=\"http://"
-            + req.getHeader("Host")
-            + "/\">base page</a>. I support a subset of the <a href=\"http://www.fdsn.org/webservices/\">FDSN Web Services</a> spec. See below for more deetails.</div><P><BR><P>\n");
-    output.append("<div id=\"tabContainer\">\n");
-
-    output.append("<div id=\"tabs\">\n");
-    output.append("<ul>\n");
-    int i = 1;
-    output.append("<li id=\"tabHeader_" + i++ + "\">URL Builder</li>\n");
-    output.append("<li id=\"tabHeader_" + i++ + "\">Service Description</li>\n");
-
-    output.append("</ul>\n");
-    output.append("</div>\n");
-
-    output.append("<div id=\"tabscontent\">\n");
-    i = 1;
-
-    output.append("<div class=\"tabpage\" id=\"tabpage_" + i++ + "\">");
-
-    output.append(getFileAsString(UrlBuillderTemplate));
-    output.append("</div>\n");
-
-    output.append("<div class=\"tabpage\" id=\"tabpage_" + i++ + "\">");
-    output.append(getFileAsString(InterfaceDescriptionTemplate));
-    output.append("</div>\n");
-
-    output.append("</div>\n");
-    output.append("</div>\n");
-    output.append("<p><br><p><b>" + Version.VERSION_STRING + "</b>\n");
-    output.append("</div><script src=\"/tabs.js\"></script>\n");
-    output.append("</body></html>\n");
-
-    final String html = output.toString();
-    final HttpResponse response = new HttpResponse("text/html; charset=utf-8");
-    response.setLength(html.length());
-    response.setCode("200");
-
-    netTools.writeString(response.getHeaderString(), socketChannel);
-    netTools.writeString(html, socketChannel);
+      netTools.writeString(response.getHeaderString(), socketChannel);
+      netTools.writeString(html, socketChannel);
+    } catch (IOException e) {
+      LOGGER.error(e.getLocalizedMessage());
+    } catch (TemplateException e) {
+      LOGGER.error(e.getLocalizedMessage());
+    }
   }
 
   protected String getFileAsString(final String file) {

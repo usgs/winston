@@ -15,8 +15,6 @@ import gov.usgs.volcanoes.winston.server.cmd.http.fdsn.FdsnDateFormat;
  *
  * @author Tom Parker
  *
- *         TODO: fix POST argument handling
- *
  */
 abstract public class FdsnCommand extends AbstractHttpCommand {
 
