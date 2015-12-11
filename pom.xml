@@ -334,6 +334,27 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>com.ruleoftech</groupId>
+				<artifactId>markdown-page-generator-plugin</artifactId>
+				<version>0.8</version>
+				<executions>
+					<execution>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<recursiveInput>true</recursiveInput>
+					<inputDirectory>${project.basedir}/src/main/resources/docs/</inputDirectory>
+					<outputDirectory>${project.build.directory}/docs/</outputDirectory>
+					<transformRelativeMarkdownLinks>true</transformRelativeMarkdownLinks>
+					<pegdownExtensions>ANCHORLINKS</pegdownExtensions>
+				</configuration>
+
+			</plugin>
 		</plugins>
 
 		<pluginManagement>
@@ -352,6 +373,20 @@
 										<versionRange>1.4.0</versionRange>
 										<goals>
 											<goal>replace</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute />
+									</action>
+									<comment>source: </comment>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>com.ruleoftech</groupId>
+										<artifactId>markdown-page-generator-plugin</artifactId>
+										<versionRange>0.8</versionRange>
+										<goals>
+											<goal>generate</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
