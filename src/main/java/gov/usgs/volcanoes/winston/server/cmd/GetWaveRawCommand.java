@@ -13,7 +13,6 @@ import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WWS;
-import gov.usgs.volcanoes.winston.server.WWSClient;
 import gov.usgs.volcanoes.winston.server.WWSCommandString;
 
 /**
