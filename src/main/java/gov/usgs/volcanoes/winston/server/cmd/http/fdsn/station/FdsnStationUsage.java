@@ -14,8 +14,8 @@ public class FdsnStationUsage extends FdsnUsageCommand implements FdsnStationSer
 
   public FdsnStationUsage(final NetTools nt, final WinstonDatabase db, final WWS wws) {
     super(nt, db, wws);
-    UrlBuillderTemplate = "www/fdsnws/station_UrlBuilder";
-    InterfaceDescriptionTemplate = "www/fdsnws/station_InterfaceDescription";
+    UrlBuillderTemplate = "station_UrlBuilder";
+    InterfaceDescriptionTemplate = "station_InterfaceDescription";
   }
 
   @Override

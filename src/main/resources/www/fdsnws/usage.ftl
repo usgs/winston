@@ -32,11 +32,11 @@
 			<div id="tabscontent">
 		
     		<div class="tabpage" id="tabpage_1">
-				${UrlBuilderTemplate}
+				<#include UrlBuilderTemplate>
 			</div>
 			
 			<div class="tabpage" id="tabpage_2">
-				${InterfaceDescriptionTemplate}
+				<#include InterfaceDescriptionTemplate>
 			</div>
 
 		</div>

@@ -8,7 +8,7 @@ function getValue(name) {
 	}
 }
 function buildUrl() {
-    var linkUrl = "http://%%HOST%%/fdsnws/dataselect/1/query?";
+    var linkUrl = "${baseUrl}fdsnws/dataselect/1/query?";
     var urlDiv = document.getElementById("url");
 
 	linkUrl += getValue("starttime");
