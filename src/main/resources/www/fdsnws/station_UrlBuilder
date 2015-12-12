@@ -13,7 +13,7 @@ function buildUrl() {
     var windowTimeDiv = document.getElementById("windowTime");
     var urlDiv = document.getElementById("url");
     
-    var linkUrl = "http://%%HOST%%/fdsnws/station/1/query?";
+    var linkUrl = "${baseUrl}fdsnws/station/1/query?";
     if (timeConstraint.checked) {
     	simpleTimeDiv.style.display = "block"; 
     	windowTimeDiv.style.display = "none";

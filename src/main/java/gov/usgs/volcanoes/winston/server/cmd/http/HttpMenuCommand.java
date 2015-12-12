@@ -9,7 +9,6 @@ import java.util.TimeZone;
 import gov.usgs.net.HttpRequest;
 import gov.usgs.net.NetTools;
 import gov.usgs.volcanoes.core.time.Ew;
-import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;

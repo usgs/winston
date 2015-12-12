@@ -13,7 +13,6 @@ import java.util.TimeZone;
 import gov.usgs.net.HttpRequest;
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
-import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.Data;

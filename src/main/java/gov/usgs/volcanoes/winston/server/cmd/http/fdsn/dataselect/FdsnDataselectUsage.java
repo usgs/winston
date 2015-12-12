@@ -14,8 +14,8 @@ public class FdsnDataselectUsage extends FdsnUsageCommand implements FdsnDatasel
 
   public FdsnDataselectUsage(final NetTools nt, final WinstonDatabase db, final WWS wws) {
     super(nt, db, wws);
-    UrlBuillderTemplate = "www/fdsnws/dataselect_UrlBuilder";
-    InterfaceDescriptionTemplate = "www/fdsnws/dataselect_InterfaceDescription";
+    UrlBuillderTemplate = "dataselect_UrlBuilder";
+    InterfaceDescriptionTemplate = "dataselect_InterfaceDescription";
   }
 
   @Override
