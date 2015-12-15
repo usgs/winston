@@ -56,12 +56,13 @@ public class WWSInitializer extends ChannelInitializer<SocketChannel> {
     final ChannelPipeline pipeline = chan.pipeline();
 
     // Decoders
-    pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(READ_TIMEOUT));
-    pipeline.addLast(new HttpRequestDecoder());
-    pipeline.addLast(new HttpRequestHandler("/ws"));
-    pipeline.addLast(new LineBasedFrameDecoder(1024, true, true));
-    pipeline.addLast(new StringDecoder(CharsetUtil.US_ASCII));
-    pipeline.addLast(new EchoServerHandler());
+    pipeline.addLast(new PortUnificationDecoder(configFile));
+//    pipeline.addLast("readTimeoutHandler", new ReadTimeoutHandler(READ_TIMEOUT));
+//    pipeline.addLast(new HttpRequestDecoder());
+//    pipeline.addLast(new HttpRequestHandler("/ws"));
+//    pipeline.addLast(new LineBasedFrameDecoder(1024, true, true));
+//    pipeline.addLast(new StringDecoder(CharsetUtil.US_ASCII));
+//    pipeline.addLast(new EchoServerHandler());
 
 
     // Encoders

@@ -32,6 +32,7 @@ import gov.usgs.volcanoes.winston.server.cmd.StatusCommand;
  *
  * @author Dan Cervelli
  */
+@Deprecated
 public class ServerHandler extends CommandHandler {
   private static final int PROTOCOL_VERSION = 3;
 

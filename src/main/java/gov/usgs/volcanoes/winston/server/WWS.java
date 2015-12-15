@@ -1,15 +1,15 @@
 package gov.usgs.volcanoes.winston.server;
 
 
-import org.apache.log4j.Level;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+
+import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.net.Server;
 import gov.usgs.volcanoes.core.Log;
@@ -18,18 +18,17 @@ import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Version;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.Future;
 
 /**
- * The Winston Wave Server. This program mimics the network protocol of the
- * Earthworm Wave Server.
+ * The Winston Wave Server. This program mimics the network protocol of the Earthworm Wave Server.
  *
- * TODO: either get rid of maxDataSize, etc. comments or reimplement them.
- * TODO: minimal UI?
- * TODO: keystrokes status?
+ * TODO: either get rid of maxDataSize, etc. comments or reimplement them. TODO: minimal UI? TODO:
+ * keystrokes status?
  *
  * @author Dan Cervelli
  */
@@ -39,12 +38,11 @@ public class WWS extends Server {
   /**
    * Launch the WWS.
    *
-   * @param args
-   *          command line arguments
+   * @param args command line arguments
    * @throws Exception when command line cannot be parsed
    */
   public static void main(final String[] args) throws Exception {
-    
+
     Log.addFileAppender("WWS.log");
 
     final WWSArgs config = new WWSArgs(args);
@@ -137,7 +135,7 @@ public class WWS extends Server {
   protected int winstonStatementCacheCap;
 
   protected String winstonURL;
-  
+
   private ConfigFile cf;
 
   /**
@@ -214,39 +212,42 @@ public class WWS extends Server {
     LOGGER.info("Launching WWS. {}", Version.VERSION_STRING);
     NioEventLoopGroup group = new NioEventLoopGroup();
     try {
-      final ChannelHandler handler = new WWSInitializer(cf);
+      // final ChannelHandler handler = new WWSInitializer(cf);
 
-        ServerBootstrap b = new ServerBootstrap();
-        b.group(group)
-         .channel(NioServerSocketChannel.class)
-         .localAddress(new InetSocketAddress(serverIP, serverPort))
-         .childHandler(handler);
-        
-        ChannelFuture f = b.bind();
-        while (!f.isDone()) {
-          try {
-            f.sync();
-          } catch (InterruptedException ignore) {
-            // do nothing
-          }
-        }
-        LOGGER.info("WWS started and listen on {}", f.channel().localAddress());
-        
-        ChannelFuture closeF = f.channel().closeFuture();
-        while (!closeF.isDone()) {
-          try {
-            closeF.sync();
-          } catch (InterruptedException ignore) {
-            // do nothing
-          }
-        }
-    } finally {
-      Future<?> ff = group.shutdownGracefully();
+      ServerBootstrap b = new ServerBootstrap();
+      b.group(group).channel(NioServerSocketChannel.class)
+          .localAddress(new InetSocketAddress(serverIP, serverPort))
+          .childHandler(new ChannelInitializer<SocketChannel>() {
+            @Override
+            public void initChannel(SocketChannel ch) throws Exception {
+              ch.pipeline().addLast(new PortUnificationDecoder(cf));
+            }
+          });
+      ChannelFuture f = b.bind();
+      while (!f.isDone()) {
         try {
-          ff.sync();
+          f.sync();
         } catch (InterruptedException ignore) {
           // do nothing
         }
+      }
+      LOGGER.info("WWS started and listen on {}", f.channel().localAddress());
+
+      ChannelFuture closeF = f.channel().closeFuture();
+      while (!closeF.isDone()) {
+        try {
+          closeF.sync();
+        } catch (InterruptedException ignore) {
+          // do nothing
+        }
+      }
+    } finally {
+      Future<?> ff = group.shutdownGracefully();
+      try {
+        ff.sync();
+      } catch (InterruptedException ignore) {
+        // do nothing
+      }
     }
 
   }
@@ -256,8 +257,8 @@ public class WWS extends Server {
   }
 
   /**
-   * Processes the configuration file (default 'WWS.config'). See the default
-   * file for documentation on the different options.
+   * Processes the configuration file (default 'WWS.config'). See the default file for documentation
+   * on the different options.
    */
   public void processConfigFile() {
     cf = new ConfigFile(configFilename);
