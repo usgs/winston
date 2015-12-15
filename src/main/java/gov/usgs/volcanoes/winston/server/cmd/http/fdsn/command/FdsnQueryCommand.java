@@ -37,6 +37,7 @@ abstract public class FdsnQueryCommand extends FdsnCommand {
 
   protected FdsnQueryCommand(final NetTools nt, final WinstonDatabase db, final WWS wws) {
     super(nt, db, wws);
+    channels = new Channels(db);
   }
 
 

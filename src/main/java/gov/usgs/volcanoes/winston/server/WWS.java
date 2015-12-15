@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import gov.usgs.net.Server;
@@ -15,6 +16,12 @@ import gov.usgs.volcanoes.core.Log;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Version;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.util.concurrent.Future;
 
 /**
  * The Winston Wave Server. This program mimics the network protocol of the
@@ -130,6 +137,8 @@ public class WWS extends Server {
   protected int winstonStatementCacheCap;
 
   protected String winstonURL;
+  
+  private ConfigFile cf;
 
   /**
    * Creates a new WWS.
@@ -203,12 +212,43 @@ public class WWS extends Server {
 
   public void launch() {
     LOGGER.info("Launching WWS. {}", Version.VERSION_STRING);
-    final Thread launchThread = new Thread(new Runnable() {
-      public void run() {
-        startListening();
-      }
-    });
-    launchThread.start();
+    NioEventLoopGroup group = new NioEventLoopGroup();
+    try {
+      final ChannelHandler handler = new WWSInitializer(cf);
+
+        ServerBootstrap b = new ServerBootstrap();
+        b.group(group)
+         .channel(NioServerSocketChannel.class)
+         .localAddress(new InetSocketAddress(serverIP, serverPort))
+         .childHandler(handler);
+        
+        ChannelFuture f = b.bind();
+        while (!f.isDone()) {
+          try {
+            f.sync();
+          } catch (InterruptedException ignore) {
+            // do nothing
+          }
+        }
+        LOGGER.info("WWS started and listen on {}", f.channel().localAddress());
+        
+        ChannelFuture closeF = f.channel().closeFuture();
+        while (!closeF.isDone()) {
+          try {
+            closeF.sync();
+          } catch (InterruptedException ignore) {
+            // do nothing
+          }
+        }
+    } finally {
+      Future<?> ff = group.shutdownGracefully();
+        try {
+          ff.sync();
+        } catch (InterruptedException ignore) {
+          // do nothing
+        }
+    }
+
   }
 
   public int maxDays() {
@@ -220,7 +260,7 @@ public class WWS extends Server {
    * file for documentation on the different options.
    */
   public void processConfigFile() {
-    final ConfigFile cf = new ConfigFile(configFilename);
+    cf = new ConfigFile(configFilename);
     if (!cf.wasSuccessfullyRead()) {
       fatalError(configFilename + ": could not read config file.");
     }
