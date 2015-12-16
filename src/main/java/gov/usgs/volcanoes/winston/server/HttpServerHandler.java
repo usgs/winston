@@ -17,6 +17,7 @@ package gov.usgs.volcanoes.winston.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.winston.server.httpCmd.HttpBaseCommand;
 import gov.usgs.volcanoes.winston.server.httpCmd.HttpCommand;
 import io.netty.buffer.Unpooled;
@@ -35,10 +36,18 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerHandler.class);
 
+  private WinstonDatabasePool winstonDatabasePool;
+  private ConfigFile configFile;
+  
+  public HttpServerHandler(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
+    this.winstonDatabasePool = winstonDatabasePool;
+    this.configFile = configFile;
+  }
+
   @Override
   public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
 
-    final HttpBaseCommand httpWorker = HttpCommand.get(req.getUri());
+    final HttpBaseCommand httpWorker = HttpCommand.get(winstonDatabasePool, req.getUri());
     httpWorker.doCommand(ctx, req);
     // If keep-alive is off, close the connection once the content is fully written.
     ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);

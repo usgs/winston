@@ -16,9 +16,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.CharsetUtil;
 
 /**
- * Return the server menu 
+ * Return the server menu
  * 
- * /^MENU:? \d( SCNL)?$/
+ * request = /^MENU:? \d( SCNL)?$/
  *
  * @author Dan Cervelli
  * @author Tom Parker
@@ -34,7 +34,7 @@ public class MenuCommand extends WwsBaseCommand {
   @Override
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws WwsMalformedCommand {
-    
+
     LOGGER.info("Received command: {}", cmd.getCommandString());
     boolean isScnl = false;
 
@@ -46,7 +46,6 @@ public class MenuCommand extends WwsBaseCommand {
       throw new WwsMalformedCommand("Cannot parse MENU command " + cmd.getCommand());
     }
 
-    final StringBuffer sb = new StringBuffer(4096);
     ctx.write(cmd.getID() + " ");
 
     WinstonDatabase winston = null;
@@ -70,8 +69,8 @@ public class MenuCommand extends WwsBaseCommand {
     if (serverMenu != null) {
       LOGGER.info("sending {} items", serverMenu.size());
       for (String s : serverMenu) {
-      ctx.write(s);
-      LOGGER.info("sending: {}", s);
+        ctx.write(s);
+        LOGGER.info("sending: {}", s);
       }
       ctx.writeAndFlush("\n");
     } else {
@@ -107,7 +106,7 @@ public class MenuCommand extends WwsBaseCommand {
         } else {
           list.add(" " + chan.getSID() + " " + ss[0] + " " + ss[1] + " " + ss[2] + " "
               + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
-              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ");          
+              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ");
         }
       }
     }

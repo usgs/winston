@@ -22,6 +22,8 @@ import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WaveServerEmulator;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
+import gov.usgs.volcanoes.winston.server.BaseCommand;
+import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
@@ -34,7 +36,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
  * @author Tom Parker
  *
  */
-public abstract class HttpBaseCommand {
+public abstract class HttpBaseCommand extends BaseCommand {
   protected static final String INPUT_DATE_FORMAT = "yyyyMMddHHmm";
   protected static final String DISPLAY_DATE_FORMAT = "yyyy-MM-dd HH:mm";
   protected final static int ONE_MINUTE = 60;
@@ -55,6 +57,10 @@ public abstract class HttpBaseCommand {
   protected Map<String, String> arguments;
   protected DecimalFormat decimalFormat;
 
+  public HttpBaseCommand() {
+    super();
+  }
+  
   /**
    * Text used as anchor to navigate usage page
    * 

@@ -18,6 +18,7 @@ import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WaveServerEmulator;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
+import gov.usgs.volcanoes.winston.server.BaseCommand;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -25,7 +26,7 @@ import io.netty.channel.ChannelHandlerContext;
  *
  * @author Dan Cervelli
  */
-abstract public class WwsBaseCommand {
+abstract public class WwsBaseCommand extends BaseCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(WwsBaseCommand.class);
 
   protected final static int ONE_HOUR = 60 * 60;
@@ -39,9 +40,8 @@ abstract public class WwsBaseCommand {
   protected WinstonDatabase winston;
   protected WWS wws;
 
-  protected WinstonDatabasePool databasePool;
-
   public WwsBaseCommand() {
+    super();
     decimalFormat = (DecimalFormat) NumberFormat.getInstance();
     decimalFormat.setMaximumFractionDigits(3);
     decimalFormat.setGroupingUsed(false);
@@ -215,9 +215,5 @@ abstract public class WwsBaseCommand {
     bb.put((byte) '\n');
     bb.flip();
     return netTools.writeByteBuffer(bb, channel);
-  }
-
-  public void databasePool(WinstonDatabasePool databasePool) {
-    this.databasePool = databasePool;
   }
 }

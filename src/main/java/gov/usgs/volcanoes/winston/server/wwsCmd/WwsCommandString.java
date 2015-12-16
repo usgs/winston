@@ -20,11 +20,15 @@ public class WwsCommandString {
   public WwsCommandString(final String commandString) {
     this.commandString = commandString;
     commandSplits = commandString.split(" ");
-    String cmd = commandString.substring(0, commandString.indexOf(' '));
-    if (cmd.endsWith(":")) {
-      cmd = cmd.substring(0, cmd.length()-1);
+    String cmd = commandString;
+    int cmdEnd = cmd.indexOf(' ');
+    if (cmdEnd != -1) {
+      cmd = cmd.substring(0, cmdEnd);
     }
-    
+    if (cmd.endsWith(":")) {
+      cmd = cmd.substring(0, cmd.length() - 1);
+    }
+
     command = cmd;
   }
 
@@ -35,7 +39,7 @@ public class WwsCommandString {
   public String getCommandString() {
     return commandString;
   }
-  
+
   public String[] getCommandSplits() {
     return commandSplits;
   }

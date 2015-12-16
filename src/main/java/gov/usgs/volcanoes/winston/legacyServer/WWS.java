@@ -210,46 +210,46 @@ public class WWS extends Server {
   }
 
   public void launch() {
-    LOGGER.info("Launching WWS. {}", Version.VERSION_STRING);
-    NioEventLoopGroup group = new NioEventLoopGroup();
-    try {
-      // final ChannelHandler handler = new WWSInitializer(cf);
-
-      ServerBootstrap b = new ServerBootstrap();
-      b.group(group).channel(NioServerSocketChannel.class)
-          .localAddress(new InetSocketAddress(serverIP, serverPort))
-          .childHandler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            public void initChannel(SocketChannel ch) throws Exception {
-              ch.pipeline().addLast(new PortUnificationDecoder(cf));
-            }
-          });
-      ChannelFuture f = b.bind();
-      while (!f.isDone()) {
-        try {
-          f.sync();
-        } catch (InterruptedException ignore) {
-          // do nothing
-        }
-      }
-      LOGGER.info("WWS started and listen on {}", f.channel().localAddress());
-
-      ChannelFuture closeF = f.channel().closeFuture();
-      while (!closeF.isDone()) {
-        try {
-          closeF.sync();
-        } catch (InterruptedException ignore) {
-          // do nothing
-        }
-      }
-    } finally {
-      Future<?> ff = group.shutdownGracefully();
-      try {
-        ff.sync();
-      } catch (InterruptedException ignore) {
-        // do nothing
-      }
-    }
+//    LOGGER.info("Launching WWS. {}", Version.VERSION_STRING);
+//    NioEventLoopGroup group = new NioEventLoopGroup();
+//    try {
+//      // final ChannelHandler handler = new WWSInitializer(cf);
+//
+//      ServerBootstrap b = new ServerBootstrap();
+//      b.group(group).channel(NioServerSocketChannel.class)
+//          .localAddress(new InetSocketAddress(serverIP, serverPort))
+//          .childHandler(new ChannelInitializer<SocketChannel>() {
+//            @Override
+//            public void initChannel(SocketChannel ch) throws Exception {
+//              ch.pipeline().addLast(new PortUnificationDecoder(cf));
+//            }
+//          });
+//      ChannelFuture f = b.bind();
+//      while (!f.isDone()) {
+//        try {
+//          f.sync();
+//        } catch (InterruptedException ignore) {
+//          // do nothing
+//        }
+//      }
+//      LOGGER.info("WWS started and listen on {}", f.channel().localAddress());
+//
+//      ChannelFuture closeF = f.channel().closeFuture();
+//      while (!closeF.isDone()) {
+//        try {
+//          closeF.sync();
+//        } catch (InterruptedException ignore) {
+//          // do nothing
+//        }
+//      }
+//    } finally {
+//      Future<?> ff = group.shutdownGracefully();
+//      try {
+//        ff.sync();
+//      } catch (InterruptedException ignore) {
+//        // do nothing
+//      }
+//    }
 
   }
 

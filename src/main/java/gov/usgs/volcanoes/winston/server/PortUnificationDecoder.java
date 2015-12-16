@@ -24,11 +24,10 @@ import io.netty.util.CharsetUtil;
  * Assumptions:
  * <ul>
  * <li>Only WWS and HTTP protocols are used</li>
- * <li>All commands are at least LEN bytes long</li>
  * <li>The first LEN bytes of commands are case insensitive</li>
  * </ul>
  * 
- * Derived from the Netty PortUnification example at:
+ * Derived from the Netty PortUnification example found at:
  * https://github.com/netty/netty/blob/master/example/src/main/java/io/netty/example/portunification
  * /PortUnificationServerHandler.java
  * 
@@ -44,15 +43,18 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
   private static final byte[] POST = {'P', 'O', 'S', 'T', 0};
 
   private ConfigFile configFile;
+  private WinstonDatabasePool winstonDatabasePool;
+
 
   /**
    * Constructor.
    * 
    * @param configFile Our configFile
    */
-  public PortUnificationDecoder(ConfigFile configFile) {
+  public PortUnificationDecoder(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     super();
     this.configFile = configFile;
+    this.winstonDatabasePool = winstonDatabasePool;
   }
 
 
@@ -67,13 +69,13 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
     in.getBytes(0, bytes, 0, LEN);
     for (int idx = 0; idx < LEN; idx++) {
       bytes[idx] = (byte) (bytes[idx] & ~('a' - 'A'));
-      System.out.println((char) bytes[idx]);
     }
 
+    ChannelPipeline p = ctx.pipeline();
     if (startsWith(bytes, GET) || startsWith(bytes, POST)) {
-      switchToHttp(ctx);
+      switchToHttp(p);
     } else {
-      switchToWws(ctx);
+      switchToWws(p);
     }
   }
 
@@ -86,26 +88,25 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
     return true;
   }
 
-  private void switchToHttp(ChannelHandlerContext ctx) {
+  private void switchToHttp(ChannelPipeline p) {
     LOGGER.info("Found HTTP command.");
     
-    ChannelPipeline p = ctx.pipeline();
     p.addLast(new HttpRequestDecoder());
     p.addLast(new HttpObjectAggregator(1048576));
+    p.addLast(new StringEncoder(CharsetUtil.US_ASCII));
     p.addLast(new HttpResponseEncoder());
-    p.addLast(new HttpServerHandler());
+    p.addLast(new HttpServerHandler(configFile, winstonDatabasePool));
     p.remove(this);
   }
 
-  private void switchToWws(ChannelHandlerContext ctx) {
+  private void switchToWws(ChannelPipeline p) {
     LOGGER.info("found WWS command.");
 
-    ChannelPipeline p = ctx.pipeline();
     p.addLast(new LineBasedFrameDecoder(1024, true, true));
     p.addLast(new StringDecoder(CharsetUtil.US_ASCII));
     p.addLast(new StringEncoder(CharsetUtil.US_ASCII));
     p.addLast(new WwsCommandStringDecoder());
-    p.addLast(new WwsServerHandler(configFile));
+    p.addLast(new WwsServerHandler(configFile, winstonDatabasePool));
     p.remove(this);
   }
 }

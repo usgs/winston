@@ -8,8 +8,8 @@ import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 
 public final class WinstonDatabasePool extends GenericObjectPool<WinstonDatabase> {
   
-  public WinstonDatabasePool(ConfigFile configFile, GenericObjectPoolConfig poolConfig) {
-    super(new WinstonDatabaseFactory(configFile), poolConfig);
+  public WinstonDatabasePool(ConfigFile configFile) {
+    super(new WinstonDatabaseFactory(configFile));
   }
 
 }

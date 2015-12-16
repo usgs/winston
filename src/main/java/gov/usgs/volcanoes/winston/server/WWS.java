@@ -52,8 +52,8 @@ public class WWS {
 
     wws.launch();
 
-    final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-    boolean acceptCommands = !(config.isNoInput);
+//    final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+//    boolean acceptCommands = !(config.isNoInput);
 //    if (acceptCommands) {
 //      wws.logger.info("Enter ? for console commands.");
 //    }
@@ -222,7 +222,7 @@ public class WWS {
           .childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) throws Exception {
-              ch.pipeline().addLast(new PortUnificationDecoder(configFile));
+              ch.pipeline().addLast(new PortUnificationDecoder(configFile,   new WinstonDatabasePool(configFile.getSubConfig("winston"))));
             }
           });
       ChannelFuture f = b.bind();

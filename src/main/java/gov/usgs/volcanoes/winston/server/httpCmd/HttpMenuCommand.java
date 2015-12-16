@@ -1,5 +1,9 @@
 package gov.usgs.volcanoes.winston.server.httpCmd;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -15,11 +19,25 @@ import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
+import gov.usgs.volcanoes.winston.server.wwsCmd.MenuCommand;
+import gov.usgs.volcanoes.winston.server.wwsCmd.WwsMalformedCommand;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.DefaultFileRegion;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
+import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.LastHttpContent;
 import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.ssl.SslHandler;
+import io.netty.handler.stream.ChunkedNioFile;
 
 /**
  * Return the wave server menu. Similar to earthworm getmenu command.
@@ -32,13 +50,16 @@ public final class HttpMenuCommand extends HttpBaseCommand {
   private static int DEFAULT_OB = 2;
   private static String DEFAULT_SO = "a";
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(HttpMenuCommand.class);
+  
   public HttpMenuCommand() {
     super();
   }
 
   
   public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request) {
-
+    LOGGER.info("Received command: {}", request.getUri());
+    
     StringBuffer error = new StringBuffer();
     
     Map<String, String> params;
@@ -53,29 +74,70 @@ public final class HttpMenuCommand extends HttpBaseCommand {
     // validate input. Write error and return if bad.
     final int sortCol = StringUtils.stringToInt(params.get("ob"), DEFAULT_OB);
     if (sortCol < 1 || sortCol > 8) {
-      error.append("Error: could not parse ob = " + arguments.get("ob") + "<br>");
+      error.append("Error: could not parse ob = " + params.get("ob") + "<br>");
     }
 
-    final String o = StringUtils.stringToString(arguments.get("so"), DEFAULT_SO);
+    final String o = StringUtils.stringToString(params.get("so"), DEFAULT_SO);
     final char order = o.charAt(0);
     if (order != 'a' && order != 'd') {
-      error.append("Error: could not parse so = " + arguments.get("so") + "<br>");
+      error.append("Error: could not parse so = " + params.get("so") + "<br>");
       return;
     }
 
-    final String tz = StringUtils.stringToString(arguments.get("tz"), DEFAULT_TZ);
+    final String tz = StringUtils.stringToString(params.get("tz"), DEFAULT_TZ);
     final TimeZone timeZone = TimeZone.getTimeZone(tz);
 
     if (error.length() > 0) {
-      // TODO: return a 400 Bad request
+      HttpResponse response = new DefaultHttpResponse(request.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST);
+      response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
+
+      boolean keepAlive = HttpHeaders.isKeepAlive(request);
+
+      if (keepAlive) {
+          response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, error.length());
+          response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+      }
+      ctx.writeAndFlush(error);
     } else {
-      String menu = prepareResponse(sortCol, order, timeZone);
-      ctx.write(menu);
-    }
+      
+      WinstonDatabase winston = null;
+      String response = null;
+
+      try {
+        winston = databasePool.borrowObject();
+        if (!winston.checkConnect()) {
+          LOGGER.error("WinstonDatabase unable to connect to MySQL.");
+        } else {
+          response = prepareResponse(winston, sortCol, order, timeZone);
+        }
+      } catch (Exception e) {
+        LOGGER.error("Unable to fulfill command.", e);
+      } finally {
+        if (winston != null) {
+          databasePool.returnObject(winston);
+        }
+      }
+
+
+      if (response != null) {
+        HttpResponse httpResponse = new DefaultHttpResponse(request.getProtocolVersion(), HttpResponseStatus.OK);
+        httpResponse.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
+
+        boolean keepAlive = HttpHeaders.isKeepAlive(request);
+
+        if (keepAlive) {
+          httpResponse.headers().set(HttpHeaders.Names.CONTENT_LENGTH, response.length());
+          httpResponse.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        }
+        ctx.write(httpResponse);
+        ctx.writeAndFlush(response);
+      } else {
+        LOGGER.error("NULL server menu.");
+      }    }
   }
 
   
-  private String prepareResponse(int sortCol, char order, TimeZone timeZone) {
+  private String prepareResponse(WinstonDatabase winston, int sortCol, char order, TimeZone timeZone) {
     // write header
     final String[] colTitle = {null, "Pin", "S", "C", "N", "L", "Earliest", "Most Recent", "Type"};
     colTitle[sortCol] += order == 'a' ? " &#9652;" : " &#9662;";
@@ -95,7 +157,11 @@ public final class HttpMenuCommand extends HttpBaseCommand {
     output.append("</tr>");
 
     // get and sort menu
-    final List<String> list = emulator.getWaveServerMenu(true, 0, 0, maxDays);
+    MenuCommand menuCmd = new MenuCommand();
+    menuCmd.generateMenu(winston, true);
+//    final List<String> list = emulator.getWaveServerMenu(true, 0, 0, maxDays);
+    final List<String> list = menuCmd.generateMenu(winston, true);
+
     final String[][] menu = new String[list.size()][8];
     int i = 0;
     for (final String s : list)

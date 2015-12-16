@@ -25,15 +25,14 @@ public class WwsServerHandler extends SimpleChannelInboundHandler<WwsCommandStri
   private ConfigFile configFile;
   private WinstonDatabasePool winstonDatabasePool;
   
-  public WwsServerHandler(ConfigFile configFile) {
+  public WwsServerHandler(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     this.configFile = configFile;
+    this.winstonDatabasePool = winstonDatabasePool;
     ConfigFile winstonConfig = configFile.getSubConfig("winston");
  
     // TODO: figure out how much flexability is needed here
     GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
     poolConfig.setMinIdle(DEFAULT_MIN_IDLE);
-    
-    winstonDatabasePool = new WinstonDatabasePool(winstonConfig, poolConfig);
   }
 
   @Override
@@ -46,6 +45,7 @@ public class WwsServerHandler extends SimpleChannelInboundHandler<WwsCommandStri
     ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     } catch (UnsupportedCommandException e) {
       LOGGER.info(e.getLocalizedMessage());
+      ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }
   }
 
