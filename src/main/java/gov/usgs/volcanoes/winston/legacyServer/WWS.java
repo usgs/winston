@@ -1,4 +1,4 @@
-package gov.usgs.volcanoes.winston.server;
+package gov.usgs.volcanoes.winston.legacyServer;
 
 
 import java.io.BufferedReader;
@@ -32,9 +32,8 @@ import io.netty.util.concurrent.Future;
  * keystrokes status?
  *
  * @author Dan Cervelli
- * @author Tom Parker
  */
-public class WWS {
+public class WWS extends Server {
   private static final Logger LOGGER = LoggerFactory.getLogger(WWS.class);
 
   /**
@@ -54,40 +53,40 @@ public class WWS {
 
     final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
     boolean acceptCommands = !(config.isNoInput);
-//    if (acceptCommands) {
-//      wws.logger.info("Enter ? for console commands.");
-//    }
-//
-//    while (acceptCommands) {
-//      String s = in.readLine();
-//      if (s != null) {
-//        s = s.toLowerCase().trim();
-//        if (s.equals("q")) {
-//          acceptCommands = false;
-//          System.exit(0);
-//        } else if (s.startsWith("c")) {
-//          wws.printConnections(s);
-//        } else if (s.startsWith("m")) {
-//          wws.printCommands(s);
-//        } else if (s.equals("d")) {
-//          wws.dropConnections(wws.idleTime);
-//        } else if (s.startsWith("t")) {
-//          wws.toggleTrace(s);
-//        } else if (s.equals("0")) {
-//          Log.setLevel(Level.ERROR);
-//        } else if (s.equals("1")) {
-//          Log.setLevel(Level.WARN);
-//        } else if (s.equals("2")) {
-//          Log.setLevel(Level.INFO);
-//        } else if (s.equals("3")) {
-//          Log.setLevel(Level.DEBUG);
-//        } else if (s.equals("?")) {
-//          WWS.printKeys();
-//        } else {
-//          WWS.printKeys();
-//        }
-//      }
-//    }
+    if (acceptCommands) {
+      wws.logger.info("Enter ? for console commands.");
+    }
+
+    while (acceptCommands) {
+      String s = in.readLine();
+      if (s != null) {
+        s = s.toLowerCase().trim();
+        if (s.equals("q")) {
+          acceptCommands = false;
+          System.exit(0);
+        } else if (s.startsWith("c")) {
+          wws.printConnections(s);
+        } else if (s.startsWith("m")) {
+          wws.printCommands(s);
+        } else if (s.equals("d")) {
+          wws.dropConnections(wws.idleTime);
+        } else if (s.startsWith("t")) {
+          wws.toggleTrace(s);
+        } else if (s.equals("0")) {
+          Log.setLevel(Level.ERROR);
+        } else if (s.equals("1")) {
+          Log.setLevel(Level.WARN);
+        } else if (s.equals("2")) {
+          Log.setLevel(Level.INFO);
+        } else if (s.equals("3")) {
+          Log.setLevel(Level.DEBUG);
+        } else if (s.equals("?")) {
+          WWS.printKeys();
+        } else {
+          WWS.printKeys();
+        }
+      }
+    }
   }
 
   public static void printKeys() {
@@ -138,27 +137,25 @@ public class WWS {
 
   protected String winstonURL;
 
-  private ConfigFile configFile;
-  
-  private int serverPort;
-  
-  private InetAddress serverIp;
+  private ConfigFile cf;
 
-  private boolean keepalive;
-  
   /**
    * Creates a new WWS.
    */
   public WWS(final String cf) {
     super();
+    name = "WWS";
 
     LOGGER.info(Version.VERSION_STRING);
     configFilename = cf;
     processConfigFile();
+    for (int i = 0; i < handlers; i++) {
+      addCommandHandler(new ServerHandler(this));
+    }
   }
-  
+
   protected void fatalError(final String msg) {
-    LOGGER.error(msg);
+    logger.severe(msg);
     System.exit(1);
   }
 
@@ -216,13 +213,15 @@ public class WWS {
     LOGGER.info("Launching WWS. {}", Version.VERSION_STRING);
     NioEventLoopGroup group = new NioEventLoopGroup();
     try {
+      // final ChannelHandler handler = new WWSInitializer(cf);
+
       ServerBootstrap b = new ServerBootstrap();
       b.group(group).channel(NioServerSocketChannel.class)
-          .localAddress(new InetSocketAddress(serverIp, serverPort))
+          .localAddress(new InetSocketAddress(serverIP, serverPort))
           .childHandler(new ChannelInitializer<SocketChannel>() {
             @Override
             public void initChannel(SocketChannel ch) throws Exception {
-              ch.pipeline().addLast(new PortUnificationDecoder(configFile));
+              ch.pipeline().addLast(new PortUnificationDecoder(cf));
             }
           });
       ChannelFuture f = b.bind();
@@ -263,80 +262,80 @@ public class WWS {
    * on the different options.
    */
   public void processConfigFile() {
-    configFile = new ConfigFile(configFilename);
-    if (!configFile.wasSuccessfullyRead()) {
+    cf = new ConfigFile(configFilename);
+    if (!cf.wasSuccessfullyRead()) {
       fatalError(configFilename + ": could not read config file.");
     }
 
-    final String a = configFile.getString("wws.addr");
+    final String a = cf.getString("wws.addr");
     if (a != null) {
       try {
-        serverIp = InetAddress.getByName(a);
+        serverIP = InetAddress.getByName(a);
       } catch (final UnknownHostException e) {
-        LOGGER.info("unknown host {}", a);
+        logger.info("unknown host " + a);
       }
-      LOGGER.info("config: wws.addr={}.", serverIp.getCanonicalHostName());
+      logger.info("config: wws.addr=" + serverIP.getCanonicalHostName() + ".");
     }
 
-    final int p = StringUtils.stringToInt(configFile.getString("wws.port"), -1);
+    final int p = StringUtils.stringToInt(cf.getString("wws.port"), -1);
     if (p < 0 || p > 65535) {
       fatalError(configFilename + ": bad or missing 'wws.port' setting.");
     }
     serverPort = p;
-    LOGGER.info("config: wws.port={}.", serverPort);
+    logger.info("config: wws.port=" + serverPort + ".");
 
-    final boolean k = StringUtils.stringToBoolean(configFile.getString("wws.keepalive"), false);
+    final boolean k = StringUtils.stringToBoolean(cf.getString("wws.keepalive"), false);
     keepalive = k;
-    LOGGER.info("config: wws.keepalive={}.", keepalive);
+    logger.info("config: wws.keepalive=" + keepalive + ".");
 
-//    final int h = StringUtils.stringToInt(cf.getString("wws.handlers"), -1);
-//    if (h < 1 || h > 128) {
-//      fatalError(configFilename + ": bad or missing 'wws.handlers' setting.");
-//    }
-//    handlers = h;
-//    LOGGER.info("config: wws.handlers={}.", handlers);
+    final int h = StringUtils.stringToInt(cf.getString("wws.handlers"), -1);
+    if (h < 1 || h > 128) {
+      fatalError(configFilename + ": bad or missing 'wws.handlers' setting.");
+    }
+    handlers = h;
+    logger.info("config: wws.handlers=" + handlers + ".");
 
-//    final int m = StringUtils.stringToInt(cf.getString("wws.maxConnections"), -1);
-//    if (m < 0) {
-//      fatalError(configFilename + ": bad or missing 'wws.maxConnections' setting.");
-//    }
-//
-//    connections.setMaxConnections(m);
-//    logger.info("config: wws.maxConnections=" + connections.getMaxConnections() + ".");
+    final int m = StringUtils.stringToInt(cf.getString("wws.maxConnections"), -1);
+    if (m < 0) {
+      fatalError(configFilename + ": bad or missing 'wws.maxConnections' setting.");
+    }
 
-//    final long i = 1000 * StringUtils.stringToInt(cf.getString("wws.idleTime"), 7200);
-//    if (i < 0) {
-//      fatalError(configFilename + ": bad or missing 'wws.idleTime' setting.");
-//    }
-//
-//    idleTime = i;
-//    logger.info("config: wws.idleTime=" + idleTime / 1000 + ".");
-//
-//    embargo = 0; // TODO: implement
+    connections.setMaxConnections(m);
+    logger.info("config: wws.maxConnections=" + connections.getMaxConnections() + ".");
 
-    maxDays = StringUtils.stringToInt(configFile.getString("wws.maxDays"), 0);
-    LOGGER.info("config: wws.maxDays={}.", maxDays);
+    final long i = 1000 * StringUtils.stringToInt(cf.getString("wws.idleTime"), 7200);
+    if (i < 0) {
+      fatalError(configFilename + ": bad or missing 'wws.idleTime' setting.");
+    }
 
-    if (configFile.getString("wws.allowHttp") == null) {
+    idleTime = i;
+    logger.info("config: wws.idleTime=" + idleTime / 1000 + ".");
+
+    embargo = 0; // TODO: implement
+
+    maxDays = StringUtils.stringToInt(cf.getString("wws.maxDays"), 0);
+    logger.info("config: wws.maxDays=" + maxDays + ".");
+
+    if (cf.getString("wws.allowHttp") == null) {
       fatalError(configFilename + ": missing 'wws.allowHttp' setting.");
     } else {
-      allowHttp = StringUtils.stringToBoolean(configFile.getString("wws.allowHttp"));
+      allowHttp = StringUtils.stringToBoolean(cf.getString("wws.allowHttp"));
     }
-    LOGGER.info("config: wws.allowHttp=" + allowHttp + ".");
+    logger.info("config: wws.allowHttp=" + allowHttp + ".");
 
-    httpMaxSize = StringUtils.stringToInt(configFile.getString("wws.httpMaxSize"), 10000000);
-    LOGGER.info("config: wws.httpMaxSize=" + httpMaxSize + ".");
+    httpMaxSize = StringUtils.stringToInt(cf.getString("wws.httpMaxSize"), 10000000);
+    logger.info("config: wws.httpMaxSize=" + httpMaxSize + ".");
 
-    slowCommandTime = StringUtils.stringToInt(configFile.getString("wws.slowCommandTime"), 1500);
-    LOGGER.info("config: wws.slowCommandTime=" + slowCommandTime + ".");
+    slowCommandTime = StringUtils.stringToInt(cf.getString("wws.slowCommandTime"), 1500);
+    logger.info("config: wws.slowCommandTime=" + slowCommandTime + ".");
 
-    httpRefreshInterval = StringUtils.stringToInt(configFile.getString("wws.httpRefreshInterval"), 0);
-    LOGGER.info("config: wws.httpRefreshInterval=" + httpRefreshInterval + ".");
+    httpRefreshInterval = StringUtils.stringToInt(cf.getString("wws.httpRefreshInterval"), 0);
+    logger.info("config: wws.httpRefreshInterval=" + httpRefreshInterval + ".");
 
-    winstonDriver = configFile.getString("winston.driver");
-    winstonURL = configFile.getString("winston.url");
-    winstonPrefix = configFile.getString("winston.prefix");
+    winstonDriver = cf.getString("winston.driver");
+    winstonURL = cf.getString("winston.url");
+    winstonPrefix = cf.getString("winston.prefix");
     winstonStatementCacheCap =
-        StringUtils.stringToInt(configFile.getString("winston.statementCacheCap"), 100);
+        StringUtils.stringToInt(cf.getString("winston.statementCacheCap"), 100);
   }
 }

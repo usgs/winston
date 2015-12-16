@@ -13,7 +13,7 @@ import gov.usgs.plot.render.HelicorderRenderer;
 import gov.usgs.volcanoes.core.legacy.Arguments;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
-import gov.usgs.volcanoes.winston.server.WWSClient;
+import gov.usgs.volcanoes.winston.legacyServer.WWSClient;
 
 /**
  * A command line driven program that connects to a WWS and plots a helicorder.

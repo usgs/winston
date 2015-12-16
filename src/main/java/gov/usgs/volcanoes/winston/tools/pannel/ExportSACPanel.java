@@ -19,7 +19,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import gov.usgs.volcanoes.core.time.Time;
-import gov.usgs.volcanoes.winston.server.WWSClient;
+import gov.usgs.volcanoes.winston.legacyServer.WWSClient;
 import gov.usgs.volcanoes.winston.tools.FilePanel;
 import gov.usgs.volcanoes.winston.tools.ScnlPanel;
 import gov.usgs.volcanoes.winston.tools.WinstonToolsRunnablePanel;
