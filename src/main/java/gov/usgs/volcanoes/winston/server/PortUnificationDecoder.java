@@ -103,9 +103,9 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
     ChannelPipeline p = ctx.pipeline();
     p.addLast(new LineBasedFrameDecoder(1024, true, true));
     p.addLast(new StringDecoder(CharsetUtil.US_ASCII));
+    p.addLast(new StringEncoder(CharsetUtil.US_ASCII));
     p.addLast(new WwsCommandStringDecoder());
     p.addLast(new WwsServerHandler(configFile));
-    p.addLast(new StringEncoder(CharsetUtil.US_ASCII));
     p.remove(this);
   }
 }

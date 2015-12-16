@@ -1,5 +1,6 @@
 package gov.usgs.volcanoes.winston.server;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +20,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public class WwsServerHandler extends SimpleChannelInboundHandler<WwsCommandString> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WwsServerHandler.class);
+  private static final int DEFAULT_MIN_IDLE = 2;
   
   private ConfigFile configFile;
   private WinstonDatabasePool winstonDatabasePool;
@@ -26,7 +28,12 @@ public class WwsServerHandler extends SimpleChannelInboundHandler<WwsCommandStri
   public WwsServerHandler(ConfigFile configFile) {
     this.configFile = configFile;
     ConfigFile winstonConfig = configFile.getSubConfig("winston");
-    winstonDatabasePool = new WinstonDatabasePool(winstonConfig);
+ 
+    // TODO: figure out how much flexability is needed here
+    GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
+    poolConfig.setMinIdle(DEFAULT_MIN_IDLE);
+    
+    winstonDatabasePool = new WinstonDatabasePool(winstonConfig, poolConfig);
   }
 
   @Override

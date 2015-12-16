@@ -16,7 +16,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.CharsetUtil;
 
 /**
- * Return the server menu /^MENU:? \d( SCNL)?$/
+ * Return the server menu 
+ * 
+ * /^MENU:? \d( SCNL)?$/
  *
  * @author Dan Cervelli
  * @author Tom Parker
@@ -45,8 +47,7 @@ public class MenuCommand extends WwsBaseCommand {
     }
 
     final StringBuffer sb = new StringBuffer(4096);
-    sb.append(cmd.getID() + " ");
-    // final List<String> menu = emulator.getWaveServerMenu(scnl, 0, 0, maxDays);
+    ctx.write(cmd.getID() + " ");
 
     WinstonDatabase winston = null;
     List<String> serverMenu = null;
@@ -69,9 +70,10 @@ public class MenuCommand extends WwsBaseCommand {
     if (serverMenu != null) {
       LOGGER.info("sending {} items", serverMenu.size());
       for (String s : serverMenu) {
-        ctx.write(Unpooled.copiedBuffer(s, CharsetUtil.UTF_8));
+      ctx.write(s);
+      LOGGER.info("sending: {}", s);
       }
-      ctx.writeAndFlush(Unpooled.copiedBuffer("\n", CharsetUtil.UTF_8));
+      ctx.writeAndFlush("\n");
     } else {
       LOGGER.error("NULL server menu.");
     }
