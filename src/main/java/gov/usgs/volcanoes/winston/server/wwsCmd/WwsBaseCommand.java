@@ -1,14 +1,19 @@
+/**
+ * I waive copyright and related rights in the this work worldwide
+ * through the CC0 1.0 Universal public domain dedication.
+ * https://creativecommons.org/publicdomain/zero/1.0/legalcode
+ */
+
 package gov.usgs.volcanoes.winston.server.wwsCmd;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import gov.usgs.net.Command;
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
@@ -19,7 +24,6 @@ import gov.usgs.volcanoes.winston.db.WaveServerEmulator;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
 import gov.usgs.volcanoes.winston.server.BaseCommand;
-import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
@@ -32,13 +36,13 @@ abstract public class WwsBaseCommand extends BaseCommand {
   protected final static int ONE_HOUR = 60 * 60;
   protected final static int ONE_DAY = 24 * ONE_HOUR;
 
-  protected Data data;
+  private Data data;
   protected DecimalFormat decimalFormat;
-  protected WaveServerEmulator emulator;
+  private WaveServerEmulator emulator;
   protected int maxDays;
-  protected NetTools netTools;
-  protected WinstonDatabase winston;
-  protected WWS wws;
+  private NetTools netTools;
+  private WinstonDatabase winston;
+  private WWS wws;
 
   public WwsBaseCommand() {
     super();
@@ -47,23 +51,11 @@ abstract public class WwsBaseCommand extends BaseCommand {
     decimalFormat.setGroupingUsed(false);
   }
 
-  // public WwsBaseCommand(final NetTools nt, final WinstonDatabase db, final WWS wws) {
-  // netTools = nt;
-  // winston = db;
-  // this.wws = wws;
-  // maxDays = wws.getMaxDays();
-  // emulator = new WaveServerEmulator(db);
-  // data = new Data(db);
-  // decimalFormat = (DecimalFormat) NumberFormat.getInstance();
-  // decimalFormat.setMaximumFractionDigits(3);
-  // decimalFormat.setGroupingUsed(false);
-  // }
-
-  protected boolean allowTransaction(final double[] d) {
+  private boolean allowTransaction(final double[] d) {
     return !(d == null || d.length != 2 || Double.isNaN(d[0]) || Double.isNaN(d[1]));
   }
 
-  protected double[] checkTimes(final int sid, double t1, double t2) {
+  private double[] checkTimes(final int sid, double t1, double t2) {
     if (t1 >= t2) {
       return new double[] {Double.NaN, Double.NaN};
     }
@@ -100,7 +92,7 @@ abstract public class WwsBaseCommand extends BaseCommand {
   public abstract void doCommand(ChannelHandlerContext ctx, WwsCommandString req)
       throws WwsMalformedCommand;
 
-  protected String getError(final double[] d) {
+  private String getError(final double[] d) {
     if (d == null || d.length != 2) {
       return "";
     }
@@ -120,7 +112,7 @@ abstract public class WwsBaseCommand extends BaseCommand {
     return "OK";
   }
 
-  protected void sendNoChannelResponse(final String id, final int pin, final String s,
+  private void sendNoChannelResponse(final String id, final int pin, final String s,
       final String c, final String n, final String l, final SocketChannel channel) {
     String loc = "";
     if (l != null) {
@@ -136,7 +128,7 @@ abstract public class WwsBaseCommand extends BaseCommand {
    * @param t time
    * @return greater of t or now less maxDays
    */
-  double timeOrMaxDays(final double t) {
+  private double timeOrMaxDays(final double t) {
     if (maxDays == 0) {
       return t;
     } else {
@@ -144,7 +136,7 @@ abstract public class WwsBaseCommand extends BaseCommand {
     }
   }
 
-  protected int writeByteBuffer(final String id, ByteBuffer bb, final boolean compress,
+  private int writeByteBuffer(final String id, ByteBuffer bb, final boolean compress,
       final SocketChannel channel) {
     if (bb == null) {
       netTools.writeString(id + " 0\n", channel);
@@ -158,7 +150,7 @@ abstract public class WwsBaseCommand extends BaseCommand {
     return netTools.writeByteBuffer(bb, channel);
   }
 
-  public int writeWaveAsAscii(final Wave wave, final int sid, final String id, final String s,
+  private int writeWaveAsAscii(final Wave wave, final int sid, final String id, final String s,
       final String c, final String n, final String l, final double t1, final double t2,
       final String fill, final SocketChannel channel) {
     final NumberFormat numberFormat = new DecimalFormat("#.######");

@@ -24,34 +24,36 @@ import gov.usgs.volcanoes.core.args.decorator.VerboseArg;
  * @author Tom Parker
  */
 public class WWSArgs {
-  private static final Logger LOGGER = LoggerFactory.getLogger(WWSArgs.class);
-
   private static final String DEFAULT_CONFIG_FILENAME = "WWS.config";
 
-  private static final String PROGRAM_NAME = "java -jar gov.usgs.volcanoes.winston.server.WWS";
   private static final String EXPLANATION = "I am the Winston wave server\n";
-  
+
   /** format of time on cmd line */
   public static final String INPUT_TIME_FORMAT = "yyyyMMddHHmm";
+  private static final Logger LOGGER = LoggerFactory.getLogger(WWSArgs.class);
 
-  private static final Parameter[] PARAMETERS = new Parameter[] {new Switch("noInput", 'i', "noinput", "Do not poll keyboard for input.")};
+  private static final Parameter[] PARAMETERS =
+      new Parameter[] {new Switch("noInput", 'i', "noinput", "Do not poll keyboard for input.")};
 
-  /** if true be verbose */
-  public final boolean isVerbose;
-  
-  /** if true don't poll console for input */
-  public final boolean isNoInput;
+  private static final String PROGRAM_NAME = "java -jar gov.usgs.volcanoes.winston.server.WWS";
 
   /** my config file. */
   public final String configFileName;
 
+  /** if true don't poll console for input */
+  public final boolean isNoInput;
+
+  /** if true be verbose */
+  public final boolean isVerbose;
+
   /**
    * Class constructor.
+   * 
    * @param commandLineArgs the command line arguments
    * @throws Exception when things go wrong
    */
   public WWSArgs(final String[] commandLineArgs) throws Exception {
-    
+
     Arguments args = null;
     args = new Args(PROGRAM_NAME, EXPLANATION, PARAMETERS);
     args = new ConfigFileArg(DEFAULT_CONFIG_FILENAME, args);

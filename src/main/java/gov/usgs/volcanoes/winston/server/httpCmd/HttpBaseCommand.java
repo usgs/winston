@@ -1,3 +1,9 @@
+/**
+ * I waive copyright and related rights in the this work worldwide
+ * through the CC0 1.0 Universal public domain dedication.
+ * https://creativecommons.org/publicdomain/zero/1.0/legalcode
+ */
+
 package gov.usgs.volcanoes.winston.server.httpCmd;
 
 import java.nio.channels.SocketChannel;
@@ -37,25 +43,25 @@ import io.netty.handler.codec.http.QueryStringDecoder;
  *
  */
 public abstract class HttpBaseCommand extends BaseCommand {
-  protected static final String INPUT_DATE_FORMAT = "yyyyMMddHHmm";
-  protected static final String DISPLAY_DATE_FORMAT = "yyyy-MM-dd HH:mm";
-  protected final static int ONE_MINUTE = 60;
-  protected final static int ONE_HOUR = 60 * ONE_MINUTE;
-  protected final static int ONE_DAY = 24 * ONE_HOUR;
+  private static final String INPUT_DATE_FORMAT = "yyyyMMddHHmm";
+  private static final String DISPLAY_DATE_FORMAT = "yyyy-MM-dd HH:mm";
+  private final static int ONE_MINUTE = 60;
+  private final static int ONE_HOUR = 60 * ONE_MINUTE;
+  private final static int ONE_DAY = 24 * ONE_HOUR;
   protected static final String DEFAULT_TZ = "UTC";
 
 
-  protected SocketChannel socketChannel;
-  protected NetTools netTools;
-  protected WinstonDatabase winston;
-  protected WWS wws;
-  protected Data data;
-  protected WaveServerEmulator emulator;
-  protected int maxDays;
-  protected HttpRequest request;
-  protected String cmd;
-  protected Map<String, String> arguments;
-  protected DecimalFormat decimalFormat;
+  private SocketChannel socketChannel;
+  private NetTools netTools;
+  private WinstonDatabase winston;
+  private WWS wws;
+  private Data data;
+  private WaveServerEmulator emulator;
+  private int maxDays;
+  private HttpRequest request;
+  private String cmd;
+  private Map<String, String> arguments;
+  private DecimalFormat decimalFormat;
 
   public HttpBaseCommand() {
     super();

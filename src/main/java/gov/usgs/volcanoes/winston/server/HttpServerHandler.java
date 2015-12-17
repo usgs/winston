@@ -1,17 +1,9 @@
-/*
- * Copyright 2012 The Netty Project
- *
- * The Netty Project licenses this file to you under the Apache License, version 2.0 (the
- * "License"); you may not use this file except in compliance with the License. You may obtain a
- * copy of the License at:
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+/**
+ * I waive copyright and related rights in the this work worldwide
+ * through the CC0 1.0 Universal public domain dedication.
+ * https://creativecommons.org/publicdomain/zero/1.0/legalcode
  */
+
 package gov.usgs.volcanoes.winston.server;
 
 import org.slf4j.Logger;
@@ -25,6 +17,7 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpHeaders;
 
 /**
  * Derived from HttpSnoopServerHandler
@@ -36,12 +29,10 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerHandler.class);
 
-  private WinstonDatabasePool winstonDatabasePool;
-  private ConfigFile configFile;
-  
+  private final WinstonDatabasePool winstonDatabasePool;
+
   public HttpServerHandler(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     this.winstonDatabasePool = winstonDatabasePool;
-    this.configFile = configFile;
   }
 
   @Override
@@ -49,8 +40,11 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
 
     final HttpBaseCommand httpWorker = HttpCommand.get(winstonDatabasePool, req.getUri());
     httpWorker.doCommand(ctx, req);
-    // If keep-alive is off, close the connection once the content is fully written.
-    ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+
+    // If keep-alive is not set, close the connection once the content is fully written.
+    if (!HttpHeaders.isKeepAlive(req)) {
+      ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
+    }
   }
 
   @Override
