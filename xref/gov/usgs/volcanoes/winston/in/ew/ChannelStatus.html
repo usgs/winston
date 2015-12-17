@@ -13,9 +13,9 @@
 <a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> java.util.TimeZone;
 <a class="jxr_linenumber" name="L6" href="#L6">6</a>   
 <a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.message.TraceBuf;
-<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> gov.usgs.util.Util;
-<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.J2kSec;
-<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> gov.usgs.winston.db.InputEW;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.J2kSec;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.Time;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.InputEW;
 <a class="jxr_linenumber" name="L11" href="#L11">11</a>  
 <a class="jxr_linenumber" name="L12" href="#L12">12</a>  <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L13" href="#L13">13</a>  <em class="jxr_javadoccomment"> *</em>
@@ -88,7 +88,7 @@
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>    @Override
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>    <strong class="jxr_keyword">public</strong> String toString() {
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>      <strong class="jxr_keyword">return</strong> String.format(<span class="jxr_string">"%-13s %-12s %-24s %-24s %-12s"</span>, channel,
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>          Util.timeDifferenceToString(timeSinceLast()), dateFormat.format(J2kSec.asDate(minBufTime)),
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>          Time.secondsToString(timeSinceLast()), dateFormat.format(J2kSec.asDate(minBufTime)),
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>          dateFormat.format(J2kSec.asDate(maxBufTime)), successes + <span class="jxr_string">"/"</span> + failures);
 <a class="jxr_linenumber" name="L85" href="#L85">85</a>    }
 <a class="jxr_linenumber" name="L86" href="#L86">86</a>  

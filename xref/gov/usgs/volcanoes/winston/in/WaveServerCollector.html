@@ -17,12 +17,12 @@
 <a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.SCN;
 <a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.WaveServer;
 <a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.message.TraceBuf;
-<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> gov.usgs.util.CurrentTime;
-<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> gov.usgs.util.Util;
-<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> gov.usgs.winston.db.Channels;
-<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> gov.usgs.winston.db.Data;
-<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> gov.usgs.winston.db.Input;
-<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> gov.usgs.winston.db.WinstonDatabase;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.Ew;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.Time;
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.Channels;
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.Data;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.Input;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.WinstonDatabase;
 <a class="jxr_linenumber" name="L18" href="#L18">18</a>  
 <a class="jxr_linenumber" name="L19" href="#L19">19</a>  <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L20" href="#L20">20</a>  <em class="jxr_javadoccomment"> *</em>
@@ -32,10 +32,10 @@
 <a class="jxr_linenumber" name="L24" href="#L24">24</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> COLLECT = 1;
 <a class="jxr_linenumber" name="L25" href="#L25">25</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> FILL_GAPS = 2;
 <a class="jxr_linenumber" name="L26" href="#L26">26</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> mode;
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> WinstonDatabase winston;
-<a class="jxr_linenumber" name="L28" href="#L28">28</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Channels winstonStations;
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Input input;
-<a class="jxr_linenumber" name="L30" href="#L30">30</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Data data;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/WinstonDatabase.html">WinstonDatabase</a> winston;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Channels.html">Channels</a> winstonStations;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Input.html">Input</a> input;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Data.html">Data</a> data;
 <a class="jxr_linenumber" name="L31" href="#L31">31</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> interval; <em class="jxr_comment">// seconds</em>
 <a class="jxr_linenumber" name="L32" href="#L32">32</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> maxSize; <em class="jxr_comment">// seconds</em>
 <a class="jxr_linenumber" name="L33" href="#L33">33</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> delay;
@@ -44,13 +44,13 @@
 <a class="jxr_linenumber" name="L36" href="#L36">36</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> String name;
 <a class="jxr_linenumber" name="L37" href="#L37">37</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> WaveServer waveServer;
 <a class="jxr_linenumber" name="L38" href="#L38">38</a>  
-<a class="jxr_linenumber" name="L39" href="#L39">39</a>    <strong class="jxr_keyword">public</strong> <a href="../../../../../gov/usgs/volcanoes/winston/in/WaveServerCollector.html">WaveServerCollector</a>(<strong class="jxr_keyword">final</strong> String n, <strong class="jxr_keyword">final</strong> WinstonDatabase w, <strong class="jxr_keyword">final</strong> WaveServer ws,
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>    <strong class="jxr_keyword">public</strong> <a href="../../../../../gov/usgs/volcanoes/winston/in/WaveServerCollector.html">WaveServerCollector</a>(<strong class="jxr_keyword">final</strong> String n, <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/WinstonDatabase.html">WinstonDatabase</a> w, <strong class="jxr_keyword">final</strong> WaveServer ws,
 <a class="jxr_linenumber" name="L40" href="#L40">40</a>        <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> i, <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> m, <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> d, <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> md) {
 <a class="jxr_linenumber" name="L41" href="#L41">41</a>      name = n;
 <a class="jxr_linenumber" name="L42" href="#L42">42</a>      winston = w;
-<a class="jxr_linenumber" name="L43" href="#L43">43</a>      input = <strong class="jxr_keyword">new</strong> Input(winston);
-<a class="jxr_linenumber" name="L44" href="#L44">44</a>      winstonStations = <strong class="jxr_keyword">new</strong> Channels(winston);
-<a class="jxr_linenumber" name="L45" href="#L45">45</a>      data = <strong class="jxr_keyword">new</strong> Data(winston);
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>      input = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Input.html">Input</a>(winston);
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>      winstonStations = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Channels.html">Channels</a>(winston);
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>      data = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Data.html">Data</a>(winston);
 <a class="jxr_linenumber" name="L46" href="#L46">46</a>      interval = i;
 <a class="jxr_linenumber" name="L47" href="#L47">47</a>      maxSize = m;
 <a class="jxr_linenumber" name="L48" href="#L48">48</a>      delay = d;
@@ -78,12 +78,12 @@
 <a class="jxr_linenumber" name="L70" href="#L70">70</a>        <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">long</strong> ts = System.currentTimeMillis();
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>        List&lt;TraceBuf&gt; tbs = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>        <strong class="jxr_keyword">if</strong> (t2 - ct &gt; maxSize) {
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>          tbs = waveServer.getTraceBufs(scn.station, scn.channel, scn.network, Util.j2KToEW(ct - 5),
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>              Util.j2KToEW(ct + maxSize + 5));
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>          tbs = waveServer.getTraceBufs(scn.station, scn.channel, scn.network, Time.j2kToEw(ct - 5),
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>              Time.j2kToEw(ct + maxSize + 5));
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>          ct += maxSize;
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>        } <strong class="jxr_keyword">else</strong> {
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>          tbs = waveServer.getTraceBufs(scn.station, scn.channel, scn.network, Util.j2KToEW(ct - 5),
-<a class="jxr_linenumber" name="L78" href="#L78">78</a>              Util.j2KToEW(t2 + 5));
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>          tbs = waveServer.getTraceBufs(scn.station, scn.channel, scn.network, Time.j2kToEw(ct - 5),
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>              Time.j2kToEw(t2 + 5));
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>          ct = t2;
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>        }
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>        <strong class="jxr_keyword">if</strong> (tbs != <strong class="jxr_keyword">null</strong> &amp;&amp; tbs.size() &gt; 0) {
@@ -107,17 +107,17 @@
 <a class="jxr_linenumber" name="L99" href="#L99">99</a>        <strong class="jxr_keyword">final</strong> String code = scn.toString().replace('_', '$');
 <a class="jxr_linenumber" name="L100" href="#L100">100</a>       System.out.println(<span class="jxr_string">"["</span> + name + <span class="jxr_string">"/"</span> + code + <span class="jxr_string">"]: "</span>);
 <a class="jxr_linenumber" name="L101" href="#L101">101</a> 
-<a class="jxr_linenumber" name="L102" href="#L102">102</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> now = CurrentTime.getInstance().nowEW();
+<a class="jxr_linenumber" name="L102" href="#L102">102</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> now = Ew.now();
 <a class="jxr_linenumber" name="L103" href="#L103">103</a> 
 <a class="jxr_linenumber" name="L104" href="#L104">104</a>       <strong class="jxr_keyword">final</strong> MenuItem mi = menu.getItem(scn);
 <a class="jxr_linenumber" name="L105" href="#L105">105</a>       <strong class="jxr_keyword">if</strong> (mi == <strong class="jxr_keyword">null</strong>)
 <a class="jxr_linenumber" name="L106" href="#L106">106</a>         <strong class="jxr_keyword">continue</strong>;
 <a class="jxr_linenumber" name="L107" href="#L107">107</a> 
-<a class="jxr_linenumber" name="L108" href="#L108">108</a>       <strong class="jxr_keyword">final</strong> List&lt;<strong class="jxr_keyword">double</strong>[]&gt; gaps = data.findGaps(code, Util.ewToJ2K(mi.startTime), now);
+<a class="jxr_linenumber" name="L108" href="#L108">108</a>       <strong class="jxr_keyword">final</strong> List&lt;<strong class="jxr_keyword">double</strong>[]&gt; gaps = data.findGaps(code, Time.ewToj2k(mi.startTime), now);
 <a class="jxr_linenumber" name="L109" href="#L109">109</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong>[] span = data.getTimeSpan(code);
 <a class="jxr_linenumber" name="L110" href="#L110">110</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> fdt = span[0];
-<a class="jxr_linenumber" name="L111" href="#L111">111</a>       <strong class="jxr_keyword">if</strong> (fdt &gt; Util.ewToJ2K(mi.startTime)) {
-<a class="jxr_linenumber" name="L112" href="#L112">112</a>         gaps.add(<strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">double</strong>[] {Util.ewToJ2K(mi.startTime), fdt});
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>       <strong class="jxr_keyword">if</strong> (fdt &gt; Time.ewToj2k(mi.startTime)) {
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>         gaps.add(<strong class="jxr_keyword">new</strong> <strong class="jxr_keyword">double</strong>[] {Time.ewToj2k(mi.startTime), fdt});
 <a class="jxr_linenumber" name="L113" href="#L113">113</a>       }
 <a class="jxr_linenumber" name="L114" href="#L114">114</a>       <strong class="jxr_keyword">if</strong> (gaps != <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L115" href="#L115">115</a>         <strong class="jxr_keyword">final</strong> Iterator&lt;<strong class="jxr_keyword">double</strong>[]&gt; it2 = gaps.iterator();
@@ -147,8 +147,8 @@
 <a class="jxr_linenumber" name="L139" href="#L139">139</a>         <strong class="jxr_keyword">continue</strong>;
 <a class="jxr_linenumber" name="L140" href="#L140">140</a> 
 <a class="jxr_linenumber" name="L141" href="#L141">141</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong>[] span = data.getTimeSpan(code);
-<a class="jxr_linenumber" name="L142" href="#L142">142</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> now = CurrentTime.getInstance().nowEW();
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>       <strong class="jxr_keyword">double</strong> last = Util.j2KToEW(span[1]);
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>       <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> now = Ew.now();
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>       <strong class="jxr_keyword">double</strong> last = Time.j2kToEw(span[1]);
 <a class="jxr_linenumber" name="L144" href="#L144">144</a>       <strong class="jxr_keyword">if</strong> (last == -1E300)
 <a class="jxr_linenumber" name="L145" href="#L145">145</a>         last = now - 10 * 60;
 <a class="jxr_linenumber" name="L146" href="#L146">146</a> 

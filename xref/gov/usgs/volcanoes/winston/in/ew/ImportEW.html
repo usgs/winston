@@ -17,45 +17,45 @@
 <a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> com.martiansoftware.jsap.UnflaggedOption;
 <a class="jxr_linenumber" name="L10" href="#L10">10</a>  
 <a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> org.apache.log4j.Level;
-<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> org.apache.log4j.LogManager;
-<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> org.slf4j.Logger;
-<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> org.slf4j.LoggerFactory;
-<a class="jxr_linenumber" name="L15" href="#L15">15</a>  
-<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> java.io.BufferedReader;
-<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> java.io.IOException;
-<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> java.io.InputStreamReader;
-<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> java.text.DateFormat;
-<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> java.text.SimpleDateFormat;
-<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> java.util.ArrayList;
-<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> java.util.Collections;
-<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> java.util.Date;
-<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> java.util.HashMap;
-<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> java.util.HashSet;
-<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> java.util.List;
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> java.util.Map;
-<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> java.util.Set;
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> java.util.TimeZone;
-<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> java.util.concurrent.ConcurrentHashMap;
-<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> java.util.concurrent.ConcurrentLinkedQueue;
-<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> java.util.concurrent.ExecutorService;
-<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> java.util.concurrent.Executors;
-<a class="jxr_linenumber" name="L34" href="#L34">34</a>  
-<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.ImportGeneric;
-<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.MessageListener;
-<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.message.Message;
-<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.message.MessageType;
-<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.message.TraceBuf;
-<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <strong class="jxr_keyword">import</strong> gov.usgs.util.CodeTimer;
-<a class="jxr_linenumber" name="L41" href="#L41">41</a>  <strong class="jxr_keyword">import</strong> gov.usgs.util.Util;
-<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.configfile.ConfigFile;
-<a class="jxr_linenumber" name="L43" href="#L43">43</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.CurrentTime;
-<a class="jxr_linenumber" name="L44" href="#L44">44</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.J2kSec;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> org.slf4j.Logger;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> org.slf4j.LoggerFactory;
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> java.io.BufferedReader;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> java.io.IOException;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> java.io.InputStreamReader;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> java.text.DateFormat;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> java.text.SimpleDateFormat;
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> java.util.ArrayList;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> java.util.Collections;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> java.util.Date;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> java.util.HashMap;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> java.util.HashSet;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> java.util.Map;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> java.util.Set;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> java.util.TimeZone;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> java.util.concurrent.ConcurrentHashMap;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> java.util.concurrent.ConcurrentLinkedQueue;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> java.util.concurrent.ExecutorService;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> java.util.concurrent.Executors;
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.ImportGeneric;
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.MessageListener;
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.message.Message;
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.message.MessageType;
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.message.TraceBuf;
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.CodeTimer;
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.Log;
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.configfile.ConfigFile;
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.CurrentTime;
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.J2kSec;
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.Time;
 <a class="jxr_linenumber" name="L45" href="#L45">45</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.util.StringUtils;
 <a class="jxr_linenumber" name="L46" href="#L46">46</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.Version;
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>  <strong class="jxr_keyword">import</strong> gov.usgs.winston.db.Admin;
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>  <strong class="jxr_keyword">import</strong> gov.usgs.winston.db.Channels;
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>  <strong class="jxr_keyword">import</strong> gov.usgs.winston.db.InputEW;
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>  <strong class="jxr_keyword">import</strong> gov.usgs.winston.db.WinstonDatabase;
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.Admin;
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.Channels;
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.InputEW;
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.WinstonDatabase;
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>  
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>  <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>  <em class="jxr_javadoccomment"> * The new ImportEW.</em>
@@ -99,7 +99,7 @@
 <a class="jxr_linenumber" name="L91" href="#L91">91</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> DEFAULT_REPAIR_RETRY_INTERVAL = 10 * 60;
 <a class="jxr_linenumber" name="L92" href="#L92">92</a>  
 <a class="jxr_linenumber" name="L93" href="#L93">93</a>    <em class="jxr_comment">// JSAP related stuff.</em>
-<a class="jxr_linenumber" name="L94" href="#L94">94</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> String JSAP_PROGRAM_NAME = <span class="jxr_string">"java gov.usgs.winston.in.ew.ImportEW"</span>;
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> String JSAP_PROGRAM_NAME = <span class="jxr_string">"java gov.usgs.volcanoes.winston.in.ew.ImportEW"</span>;
 <a class="jxr_linenumber" name="L95" href="#L95">95</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> String JSAP_EXPLANATION_PREFACE = <span class="jxr_string">"Winston ImportEW\n"</span> + <span class="jxr_string">"\n"</span>
 <a class="jxr_linenumber" name="L96" href="#L96">96</a>        + <span class="jxr_string">"This program gets data from an Earthworm export process and imports\n"</span>
 <a class="jxr_linenumber" name="L97" href="#L97">97</a>        + <span class="jxr_string">"it into a Winston database. See 'ImportEW.config' for more options.\n"</span> + <span class="jxr_string">"\n"</span>;
@@ -133,9 +133,9 @@
 <a class="jxr_linenumber" name="L125" href="#L125">125</a>   <strong class="jxr_keyword">protected</strong> String configFilename;
 <a class="jxr_linenumber" name="L126" href="#L126">126</a>   <strong class="jxr_keyword">protected</strong> ConfigFile config;
 <a class="jxr_linenumber" name="L127" href="#L127">127</a> 
-<a class="jxr_linenumber" name="L128" href="#L128">128</a>   <strong class="jxr_keyword">private</strong> WinstonDatabase winston;
-<a class="jxr_linenumber" name="L129" href="#L129">129</a>   <strong class="jxr_keyword">private</strong> Channels channels;
-<a class="jxr_linenumber" name="L130" href="#L130">130</a>   <strong class="jxr_keyword">private</strong> InputEW input;
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>   <strong class="jxr_keyword">private</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/WinstonDatabase.html">WinstonDatabase</a> winston;
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>   <strong class="jxr_keyword">private</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/Channels.html">Channels</a> channels;
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>   <strong class="jxr_keyword">private</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputEW</a> input;
 <a class="jxr_linenumber" name="L131" href="#L131">131</a> 
 <a class="jxr_linenumber" name="L132" href="#L132">132</a>   <strong class="jxr_keyword">protected</strong> ImportGeneric importGeneric;
 <a class="jxr_linenumber" name="L133" href="#L133">133</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Set&lt;String&gt; existingChannels;
@@ -146,9 +146,9 @@
 <a class="jxr_linenumber" name="L138" href="#L138">138</a>   <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">int</strong> logSize;
 <a class="jxr_linenumber" name="L139" href="#L139">139</a> 
 <a class="jxr_linenumber" name="L140" href="#L140">140</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> ExecutorService fixer;
-<a class="jxr_linenumber" name="L141" href="#L141">141</a>   <strong class="jxr_keyword">private</strong> WinstonDatabase fixerWinston;
-<a class="jxr_linenumber" name="L142" href="#L142">142</a>   <strong class="jxr_keyword">private</strong> Admin fixerAdmin;
-<a class="jxr_linenumber" name="L143" href="#L143">143</a>   <strong class="jxr_keyword">private</strong> InputEW fixerInput;
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>   <strong class="jxr_keyword">private</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/WinstonDatabase.html">WinstonDatabase</a> fixerWinston;
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>   <strong class="jxr_keyword">private</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/Admin.html">Admin</a> fixerAdmin;
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>   <strong class="jxr_keyword">private</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputEW</a> fixerInput;
 <a class="jxr_linenumber" name="L144" href="#L144">144</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Set&lt;String&gt; underRepair;
 <a class="jxr_linenumber" name="L145" href="#L145">145</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Map&lt;String, Double&gt; attemptedRepair;
 <a class="jxr_linenumber" name="L146" href="#L146">146</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> repairRetryInterval;
@@ -346,18 +346,18 @@
 <a class="jxr_linenumber" name="L338" href="#L338">338</a>         StringUtils.stringToInt(config.getString(<span class="jxr_string">"winston.statementCacheCap"</span>), 100);
 <a class="jxr_linenumber" name="L339" href="#L339">339</a>     LOGGER.info(<span class="jxr_string">"config: winston.statementCacheCap="</span> + winstonStatementCacheCap);
 <a class="jxr_linenumber" name="L340" href="#L340">340</a> 
-<a class="jxr_linenumber" name="L341" href="#L341">341</a>     winston = <strong class="jxr_keyword">new</strong> WinstonDatabase(winstonDriver, winstonURL, winstonPrefix, winstonTableEngine,
+<a class="jxr_linenumber" name="L341" href="#L341">341</a>     winston = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/WinstonDatabase.html">WinstonDatabase</a>(winstonDriver, winstonURL, winstonPrefix, winstonTableEngine,
 <a class="jxr_linenumber" name="L342" href="#L342">342</a>         winstonStatementCacheCap);
 <a class="jxr_linenumber" name="L343" href="#L343">343</a>     <strong class="jxr_keyword">if</strong> (!winston.checkDatabase())
 <a class="jxr_linenumber" name="L344" href="#L344">344</a>       fatalError(<span class="jxr_string">"Winston database does not exist."</span>);
-<a class="jxr_linenumber" name="L345" href="#L345">345</a>     fixerWinston = <strong class="jxr_keyword">new</strong> WinstonDatabase(winstonDriver, winstonURL, winstonPrefix, winstonTableEngine,
+<a class="jxr_linenumber" name="L345" href="#L345">345</a>     fixerWinston = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/WinstonDatabase.html">WinstonDatabase</a>(winstonDriver, winstonURL, winstonPrefix, winstonTableEngine,
 <a class="jxr_linenumber" name="L346" href="#L346">346</a>         winstonStatementCacheCap);
-<a class="jxr_linenumber" name="L347" href="#L347">347</a>     fixerInput = <strong class="jxr_keyword">new</strong> InputEW(fixerWinston);
+<a class="jxr_linenumber" name="L347" href="#L347">347</a>     fixerInput = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputEW</a>(fixerWinston);
 <a class="jxr_linenumber" name="L348" href="#L348">348</a>     fixerInput.setEnableValarmView(enableValarmView);
-<a class="jxr_linenumber" name="L349" href="#L349">349</a>     fixerAdmin = <strong class="jxr_keyword">new</strong> Admin(fixerWinston);
+<a class="jxr_linenumber" name="L349" href="#L349">349</a>     fixerAdmin = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/Admin.html">Admin</a>(fixerWinston);
 <a class="jxr_linenumber" name="L350" href="#L350">350</a> 
-<a class="jxr_linenumber" name="L351" href="#L351">351</a>     channels = <strong class="jxr_keyword">new</strong> Channels(winston);
-<a class="jxr_linenumber" name="L352" href="#L352">352</a>     input = <strong class="jxr_keyword">new</strong> InputEW(winston);
+<a class="jxr_linenumber" name="L351" href="#L351">351</a>     channels = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/Channels.html">Channels</a>(winston);
+<a class="jxr_linenumber" name="L352" href="#L352">352</a>     input = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputEW</a>(winston);
 <a class="jxr_linenumber" name="L353" href="#L353">353</a>     input.setEnableValarmView(enableValarmView);
 <a class="jxr_linenumber" name="L354" href="#L354">354</a> 
 <a class="jxr_linenumber" name="L355" href="#L355">355</a>     repairRetryInterval = DEFAULT_REPAIR_RETRY_INTERVAL;
@@ -566,7 +566,7 @@
 <a class="jxr_linenumber" name="L558" href="#L558">558</a> 
 <a class="jxr_linenumber" name="L559" href="#L559">559</a>     <strong class="jxr_keyword">final</strong> Double lastRepair = attemptedRepair.get(table);
 <a class="jxr_linenumber" name="L560" href="#L560">560</a>     <strong class="jxr_keyword">if</strong> (lastRepair != <strong class="jxr_keyword">null</strong>) {
-<a class="jxr_linenumber" name="L561" href="#L561">561</a>       <strong class="jxr_keyword">if</strong> (CurrentTime.getInstance().nowJ2k() - lastRepair.doubleValue() &gt; repairRetryInterval)
+<a class="jxr_linenumber" name="L561" href="#L561">561</a>       <strong class="jxr_keyword">if</strong> (J2kSec.now() - lastRepair.doubleValue() &gt; repairRetryInterval)
 <a class="jxr_linenumber" name="L562" href="#L562">562</a>         attemptedRepair.remove(table);
 <a class="jxr_linenumber" name="L563" href="#L563">563</a>       <strong class="jxr_keyword">else</strong>
 <a class="jxr_linenumber" name="L564" href="#L564">564</a>         <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">null</strong>;
@@ -579,7 +579,7 @@
 <a class="jxr_linenumber" name="L571" href="#L571">571</a>           <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> healthy = fixerAdmin.repairTable(database, table);
 <a class="jxr_linenumber" name="L572" href="#L572">572</a>           LOGGER.info(<span class="jxr_string">"After repair attempt, table {} appears to {}."</span>, table,
 <a class="jxr_linenumber" name="L573" href="#L573">573</a>               (healthy ? <span class="jxr_string">"be healthy"</span> : <span class="jxr_string">"still be broken"</span>));
-<a class="jxr_linenumber" name="L574" href="#L574">574</a>           attemptedRepair.put(table, CurrentTime.getInstance().nowJ2k());
+<a class="jxr_linenumber" name="L574" href="#L574">574</a>           attemptedRepair.put(table, J2kSec.now());
 <a class="jxr_linenumber" name="L575" href="#L575">575</a>           underRepair.remove(table);
 <a class="jxr_linenumber" name="L576" href="#L576">576</a>         } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> OutOfMemoryError e) {
 <a class="jxr_linenumber" name="L577" href="#L577">577</a>           handleOutOfMemoryError(e);
@@ -812,7 +812,7 @@
 <a class="jxr_linenumber" name="L804" href="#L804">804</a>     strings.add(<span class="jxr_string">"------- ImportEW --------"</span>);
 <a class="jxr_linenumber" name="L805" href="#L805">805</a>     strings.add(<span class="jxr_string">"Status time: "</span> + dateFormat.format(now));
 <a class="jxr_linenumber" name="L806" href="#L806">806</a>     strings.add(<span class="jxr_string">"Start time:  "</span> + dateFormat.format(importStartTime));
-<a class="jxr_linenumber" name="L807" href="#L807">807</a>     strings.add(<span class="jxr_string">"Up time:     "</span> + Util.timeDifferenceToString(uptime));
+<a class="jxr_linenumber" name="L807" href="#L807">807</a>     strings.add(<span class="jxr_string">"Up time:     "</span> + Time.secondsToString(uptime));
 <a class="jxr_linenumber" name="L808" href="#L808">808</a> 
 <a class="jxr_linenumber" name="L809" href="#L809">809</a>     <strong class="jxr_keyword">long</strong> ht = importGeneric.getLastHeartbeatTime();
 <a class="jxr_linenumber" name="L810" href="#L810">810</a>     <strong class="jxr_keyword">double</strong> dt = (<strong class="jxr_keyword">double</strong>) (nowST - ht) / 1000;
@@ -820,14 +820,14 @@
 <a class="jxr_linenumber" name="L812" href="#L812">812</a>       strings.add(<span class="jxr_string">"Last HB RX:  (never)"</span>);
 <a class="jxr_linenumber" name="L813" href="#L813">813</a>     <strong class="jxr_keyword">else</strong>
 <a class="jxr_linenumber" name="L814" href="#L814">814</a>       strings.add(<span class="jxr_string">"Last HB RX:  "</span> + dateFormat.format(<strong class="jxr_keyword">new</strong> Date(ht)) + <span class="jxr_string">", "</span>
-<a class="jxr_linenumber" name="L815" href="#L815">815</a>           + Util.timeDifferenceToString(dt));
+<a class="jxr_linenumber" name="L815" href="#L815">815</a>           + Time.secondsToString(dt));
 <a class="jxr_linenumber" name="L816" href="#L816">816</a>     ht = importGeneric.getLastHeartbeatSentTime();
 <a class="jxr_linenumber" name="L817" href="#L817">817</a>     dt = (<strong class="jxr_keyword">double</strong>) (nowST - ht) / 1000;
 <a class="jxr_linenumber" name="L818" href="#L818">818</a>     <strong class="jxr_keyword">if</strong> (ht == 0)
 <a class="jxr_linenumber" name="L819" href="#L819">819</a>       strings.add(<span class="jxr_string">"Last HB TX:  (never)"</span>);
 <a class="jxr_linenumber" name="L820" href="#L820">820</a>     <strong class="jxr_keyword">else</strong>
 <a class="jxr_linenumber" name="L821" href="#L821">821</a>       strings.add(<span class="jxr_string">"Last HB TX:  "</span> + dateFormat.format(<strong class="jxr_keyword">new</strong> Date(ht)) + <span class="jxr_string">", "</span>
-<a class="jxr_linenumber" name="L822" href="#L822">822</a>           + Util.timeDifferenceToString(dt));
+<a class="jxr_linenumber" name="L822" href="#L822">822</a>           + Time.secondsToString(dt));
 <a class="jxr_linenumber" name="L823" href="#L823">823</a> 
 <a class="jxr_linenumber" name="L824" href="#L824">824</a>     <strong class="jxr_keyword">final</strong> Runtime rt = Runtime.getRuntime();
 <a class="jxr_linenumber" name="L825" href="#L825">825</a>     strings.add(String.format(<span class="jxr_string">"Memory (used / max): %.1fMB / %.1fMB"</span>,
@@ -846,7 +846,7 @@
 <a class="jxr_linenumber" name="L838" href="#L838">838</a>     <em class="jxr_comment">// by each filter</em>
 <a class="jxr_linenumber" name="L839" href="#L839">839</a>     strings.add(<span class="jxr_string">"---- Timing"</span>);
 <a class="jxr_linenumber" name="L840" href="#L840">840</a>     strings.add(String.format(<span class="jxr_string">"Total input time:        %s"</span>,
-<a class="jxr_linenumber" name="L841" href="#L841">841</a>         Util.timeDifferenceToString(inputTimer.getTotalTimeMillis() / 1000)));
+<a class="jxr_linenumber" name="L841" href="#L841">841</a>         Time.secondsToString(inputTimer.getTotalTimeMillis() / 1000)));
 <a class="jxr_linenumber" name="L842" href="#L842">842</a>     strings.add(String.format(<span class="jxr_string">"Input time per TraceBuf: %.2fms"</span>,
 <a class="jxr_linenumber" name="L843" href="#L843">843</a>         inputTimer.getTotalTimeMillis() / totalTraceBufsWritten));
 <a class="jxr_linenumber" name="L844" href="#L844">844</a> 
@@ -952,13 +952,13 @@
 <a class="jxr_linenumber" name="L944" href="#L944">944</a>           <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (s.startsWith(<span class="jxr_string">"c"</span>))
 <a class="jxr_linenumber" name="L945" href="#L945">945</a>             im.printChannels(s);
 <a class="jxr_linenumber" name="L946" href="#L946">946</a>           <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (s.equals(<span class="jxr_string">"0"</span>))
-<a class="jxr_linenumber" name="L947" href="#L947">947</a>             LogManager.getRootLogger().setLevel(Level.OFF);
+<a class="jxr_linenumber" name="L947" href="#L947">947</a>             Log.setLevel(Level.OFF);
 <a class="jxr_linenumber" name="L948" href="#L948">948</a>           <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (s.equals(<span class="jxr_string">"1"</span>))
-<a class="jxr_linenumber" name="L949" href="#L949">949</a>             LogManager.getRootLogger().setLevel(Level.ERROR);
+<a class="jxr_linenumber" name="L949" href="#L949">949</a>             Log.setLevel(Level.ERROR);
 <a class="jxr_linenumber" name="L950" href="#L950">950</a>           <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (s.equals(<span class="jxr_string">"2"</span>))
-<a class="jxr_linenumber" name="L951" href="#L951">951</a>             LogManager.getRootLogger().setLevel(Level.INFO);
+<a class="jxr_linenumber" name="L951" href="#L951">951</a>             Log.setLevel(Level.INFO);
 <a class="jxr_linenumber" name="L952" href="#L952">952</a>           <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (s.equals(<span class="jxr_string">"3"</span>))
-<a class="jxr_linenumber" name="L953" href="#L953">953</a>             LogManager.getRootLogger().setLevel(Level.TRACE);
+<a class="jxr_linenumber" name="L953" href="#L953">953</a>             Log.setLevel(Level.TRACE);
 <a class="jxr_linenumber" name="L954" href="#L954">954</a>           <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (s.equals(<span class="jxr_string">"i"</span>)) {
 <a class="jxr_linenumber" name="L955" href="#L955">955</a>             acceptCommands = false;
 <a class="jxr_linenumber" name="L956" href="#L956">956</a>             LOGGER.error(<span class="jxr_string">"No longer accepting console commands."</span>);
@@ -973,24 +973,25 @@
 <a class="jxr_linenumber" name="L965" href="#L965">965</a>     }
 <a class="jxr_linenumber" name="L966" href="#L966">966</a>   }
 <a class="jxr_linenumber" name="L967" href="#L967">967</a> 
-<a class="jxr_linenumber" name="L968" href="#L968">968</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> main(<strong class="jxr_keyword">final</strong> String[] args) {
-<a class="jxr_linenumber" name="L969" href="#L969">969</a>     <strong class="jxr_keyword">final</strong> JSAPResult config = getArguments(args);
-<a class="jxr_linenumber" name="L970" href="#L970">970</a> 
-<a class="jxr_linenumber" name="L971" href="#L971">971</a>     <strong class="jxr_keyword">final</strong> String fn =
-<a class="jxr_linenumber" name="L972" href="#L972">972</a>         StringUtils.stringToString(config.getString(<span class="jxr_string">"configFilename"</span>), DEFAULT_CONFIG_FILENAME);
-<a class="jxr_linenumber" name="L973" href="#L973">973</a> 
+<a class="jxr_linenumber" name="L968" href="#L968">968</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> main(<strong class="jxr_keyword">final</strong> String[] args) <strong class="jxr_keyword">throws</strong> IOException {
+<a class="jxr_linenumber" name="L969" href="#L969">969</a>     Log.addFileAppender(<span class="jxr_string">"ImportEW.log"</span>);
+<a class="jxr_linenumber" name="L970" href="#L970">970</a>     <strong class="jxr_keyword">final</strong> JSAPResult config = getArguments(args);
+<a class="jxr_linenumber" name="L971" href="#L971">971</a> 
+<a class="jxr_linenumber" name="L972" href="#L972">972</a>     <strong class="jxr_keyword">final</strong> String fn =
+<a class="jxr_linenumber" name="L973" href="#L973">973</a>         StringUtils.stringToString(config.getString(<span class="jxr_string">"configFilename"</span>), DEFAULT_CONFIG_FILENAME);
 <a class="jxr_linenumber" name="L974" href="#L974">974</a> 
-<a class="jxr_linenumber" name="L975" href="#L975">975</a>     <strong class="jxr_keyword">final</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/in/ew/ImportEW.html">ImportEW</a> im = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/in/ew/ImportEW.html">ImportEW</a>(fn);
-<a class="jxr_linenumber" name="L976" href="#L976">976</a> 
-<a class="jxr_linenumber" name="L977" href="#L977">977</a>     <em class="jxr_comment">// Start the importer. start() automatically calls run()</em>
-<a class="jxr_linenumber" name="L978" href="#L978">978</a>     im.start();
-<a class="jxr_linenumber" name="L979" href="#L979">979</a> 
-<a class="jxr_linenumber" name="L980" href="#L980">980</a>     <em class="jxr_comment">// Decide if we're accepting commands based on the args parsed by jsap</em>
-<a class="jxr_linenumber" name="L981" href="#L981">981</a>     <em class="jxr_comment">// and pass the importer to the consoleInputManager if we are.</em>
-<a class="jxr_linenumber" name="L982" href="#L982">982</a>     <strong class="jxr_keyword">if</strong> (!(config.getBoolean(<span class="jxr_string">"noinput"</span>)))
-<a class="jxr_linenumber" name="L983" href="#L983">983</a>       consoleInputManager(im);
-<a class="jxr_linenumber" name="L984" href="#L984">984</a>   }
-<a class="jxr_linenumber" name="L985" href="#L985">985</a> }
+<a class="jxr_linenumber" name="L975" href="#L975">975</a> 
+<a class="jxr_linenumber" name="L976" href="#L976">976</a>     <strong class="jxr_keyword">final</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/in/ew/ImportEW.html">ImportEW</a> im = <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/in/ew/ImportEW.html">ImportEW</a>(fn);
+<a class="jxr_linenumber" name="L977" href="#L977">977</a> 
+<a class="jxr_linenumber" name="L978" href="#L978">978</a>     <em class="jxr_comment">// Start the importer. start() automatically calls run()</em>
+<a class="jxr_linenumber" name="L979" href="#L979">979</a>     im.start();
+<a class="jxr_linenumber" name="L980" href="#L980">980</a> 
+<a class="jxr_linenumber" name="L981" href="#L981">981</a>     <em class="jxr_comment">// Decide if we're accepting commands based on the args parsed by jsap</em>
+<a class="jxr_linenumber" name="L982" href="#L982">982</a>     <em class="jxr_comment">// and pass the importer to the consoleInputManager if we are.</em>
+<a class="jxr_linenumber" name="L983" href="#L983">983</a>     <strong class="jxr_keyword">if</strong> (!(config.getBoolean(<span class="jxr_string">"noinput"</span>)))
+<a class="jxr_linenumber" name="L984" href="#L984">984</a>       consoleInputManager(im);
+<a class="jxr_linenumber" name="L985" href="#L985">985</a>   }
+<a class="jxr_linenumber" name="L986" href="#L986">986</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2015. All rights reserved.</div>

@@ -9,7 +9,7 @@
 <a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> gov.usgs.volcanoes.winston.in.ew;
 <a class="jxr_linenumber" name="L2" href="#L2">2</a>   
 <a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.configfile.ConfigFile;
-<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.CurrentTime;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.J2kSec;
 <a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.util.StringUtils;
 <a class="jxr_linenumber" name="L6" href="#L6">6</a>   
 <a class="jxr_linenumber" name="L7" href="#L7">7</a>   <em class="jxr_javadoccomment">/**</em>
@@ -45,7 +45,7 @@
 <a class="jxr_linenumber" name="L37" href="#L37">37</a>  
 <a class="jxr_linenumber" name="L38" href="#L38">38</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> thresholdExceeded(<strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> time, <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> size) {
 <a class="jxr_linenumber" name="L39" href="#L39">39</a>      <strong class="jxr_keyword">if</strong> (timeThreshold != -1) {
-<a class="jxr_linenumber" name="L40" href="#L40">40</a>        <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> dt = CurrentTime.getInstance().nowJ2k() - time;
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>        <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> dt = J2kSec.now() - time;
 <a class="jxr_linenumber" name="L41" href="#L41">41</a>        <strong class="jxr_keyword">if</strong> (dt &gt; timeThreshold)
 <a class="jxr_linenumber" name="L42" href="#L42">42</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">true</strong>;
 <a class="jxr_linenumber" name="L43" href="#L43">43</a>      }

@@ -34,7 +34,7 @@
 <a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> java.util.zip.Deflater;
 <a class="jxr_linenumber" name="L27" href="#L27">27</a>  
 <a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> gov.usgs.earthworm.message.TraceBuf;
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> gov.usgs.util.Util;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.Zip;
 <a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.CurrentTime;
 <a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.J2kSec;
 <a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.time.Time;
@@ -277,7 +277,7 @@
 <a class="jxr_linenumber" name="L269" href="#L269">269</a>       insert.setDouble(3, tb.samplingRate());
 <a class="jxr_linenumber" name="L270" href="#L270">270</a>       insert.setString(4, tb.dataType());
 <a class="jxr_linenumber" name="L271" href="#L271">271</a>       <strong class="jxr_keyword">final</strong> byte[] compressed =
-<a class="jxr_linenumber" name="L272" href="#L272">272</a>           Util.compress(tb.bytes, Deflater.BEST_SPEED, 0, tb.bytes.length - 1);
+<a class="jxr_linenumber" name="L272" href="#L272">272</a>           Zip.compress(tb.bytes, Deflater.BEST_SPEED, 0, tb.bytes.length - 1);
 <a class="jxr_linenumber" name="L273" href="#L273">273</a>       insert.setBytes(5, compressed);
 <a class="jxr_linenumber" name="L274" href="#L274">274</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> SQLException e) {
 <a class="jxr_linenumber" name="L275" href="#L275">275</a>       LOGGER.error(<span class="jxr_string">"Could not create prepared statement: {}.({})"</span>, tb, e);

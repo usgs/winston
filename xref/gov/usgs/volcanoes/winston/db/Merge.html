@@ -17,8 +17,8 @@
 <a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> java.util.Iterator;
 <a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> java.util.Set;
 <a class="jxr_linenumber" name="L11" href="#L11">11</a>  
-<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> gov.usgs.util.CodeTimer;
-<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> gov.usgs.util.Util;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.CodeTimer;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.core.DataUtils;
 <a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.in.ew.ImportWSJob;
 <a class="jxr_linenumber" name="L15" href="#L15">15</a>  
 <a class="jxr_linenumber" name="L16" href="#L16">16</a>  <em class="jxr_javadoccomment">/**</em>
@@ -117,7 +117,7 @@
 <a class="jxr_linenumber" name="L109" href="#L109">109</a>           source.getStatement().executeQuery(<span class="jxr_string">"SELECT st FROM `"</span> + code + <span class="jxr_string">"$$"</span> + date + <span class="jxr_string">"`"</span>);
 <a class="jxr_linenumber" name="L110" href="#L110">110</a>       <strong class="jxr_keyword">while</strong> (srs.next()) {
 <a class="jxr_linenumber" name="L111" href="#L111">111</a>         total++;
-<a class="jxr_linenumber" name="L112" href="#L112">112</a>         sourceTimes.add(Util.register(srs.getDouble(1), EPSILON));
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>         sourceTimes.add(DataUtils.register(srs.getDouble(1), EPSILON));
 <a class="jxr_linenumber" name="L113" href="#L113">113</a>       }
 <a class="jxr_linenumber" name="L114" href="#L114">114</a> 
 <a class="jxr_linenumber" name="L115" href="#L115">115</a>       LOGGER.info(<span class="jxr_string">"Getting destination times."</span>);
@@ -127,7 +127,7 @@
 <a class="jxr_linenumber" name="L119" href="#L119">119</a>       total = 0;
 <a class="jxr_linenumber" name="L120" href="#L120">120</a>       <strong class="jxr_keyword">while</strong> (drs.next()) {
 <a class="jxr_linenumber" name="L121" href="#L121">121</a>         total++;
-<a class="jxr_linenumber" name="L122" href="#L122">122</a>         sourceTimes.remove(<strong class="jxr_keyword">new</strong> Double(Util.register(drs.getDouble(1), EPSILON)));
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>         sourceTimes.remove(<strong class="jxr_keyword">new</strong> Double(DataUtils.register(drs.getDouble(1), EPSILON)));
 <a class="jxr_linenumber" name="L123" href="#L123">123</a>       }
 <a class="jxr_linenumber" name="L124" href="#L124">124</a> 
 <a class="jxr_linenumber" name="L125" href="#L125">125</a>       total = 0;
@@ -178,15 +178,16 @@
 <a class="jxr_linenumber" name="L170" href="#L170">170</a> 
 <a class="jxr_linenumber" name="L171" href="#L171">171</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">void</strong> main(<strong class="jxr_keyword">final</strong> String[] args) {
 <a class="jxr_linenumber" name="L172" href="#L172">172</a>     <strong class="jxr_keyword">if</strong> (args.length != 4) {
-<a class="jxr_linenumber" name="L173" href="#L173">173</a>       System.err.println(<span class="jxr_string">"usage: java gov.usgs.winston.db.Merge [srcURL] [destURL] [table] [date]"</span>);
-<a class="jxr_linenumber" name="L174" href="#L174">174</a>       System.err.println(<span class="jxr_string">"[table] is case sensitive; example: CRP_SHZ_AK"</span>);
-<a class="jxr_linenumber" name="L175" href="#L175">175</a>       System.err.println(<span class="jxr_string">"[date] is in YYYY_MM_DD form; example: 2005_03_27"</span>);
-<a class="jxr_linenumber" name="L176" href="#L176">176</a>       System.exit(1);
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>     }
-<a class="jxr_linenumber" name="L178" href="#L178">178</a>     <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Merge.html">Merge</a> merge = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Merge.html">Merge</a>(args[0], args[1]);
-<a class="jxr_linenumber" name="L179" href="#L179">179</a>     merge.merge(args[2], args[3]);
-<a class="jxr_linenumber" name="L180" href="#L180">180</a>   }
-<a class="jxr_linenumber" name="L181" href="#L181">181</a> }
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>       System.err.println(
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>           <span class="jxr_string">"usage: java gov.usgs.volcanoes.winston.db.Merge [srcURL] [destURL] [table] [date]"</span>);
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>       System.err.println(<span class="jxr_string">"[table] is case sensitive; example: CRP_SHZ_AK"</span>);
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>       System.err.println(<span class="jxr_string">"[date] is in YYYY_MM_DD form; example: 2005_03_27"</span>);
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>       System.exit(1);
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>     }
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>     <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Merge.html">Merge</a> merge = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Merge.html">Merge</a>(args[0], args[1]);
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>     merge.merge(args[2], args[3]);
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>   }
+<a class="jxr_linenumber" name="L182" href="#L182">182</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2015. All rights reserved.</div>
