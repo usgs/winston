@@ -94,7 +94,7 @@ public class MenuCommand extends WwsBaseCommand {
 
 
       if (maxDays > 0) {
-        ts[0] = Math.max(ts[0], J2kSec.now() - (maxDays * ONE_DAY));
+        ts[0] = Math.max(ts[0], J2kSec.now() - (maxDays * ONE_DAY_S));
       }
 
       if (ts != null && ts[0] < ts[1]) {

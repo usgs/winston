@@ -22,11 +22,14 @@ import io.netty.channel.SimpleChannelInboundHandler;
 public class WwsServerHandler extends SimpleChannelInboundHandler<WwsCommandString> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WwsServerHandler.class);
+  private static final int DEFAULT_MAX_DAYS = 20000;
 
   private final WinstonDatabasePool winstonDatabasePool;
-
+  private final ConfigFile configFile;
+  
   public WwsServerHandler(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     this.winstonDatabasePool = winstonDatabasePool;
+    this.configFile = configFile;
   }
 
   @Override
@@ -34,6 +37,12 @@ public class WwsServerHandler extends SimpleChannelInboundHandler<WwsCommandStri
 
     try {
       final WwsBaseCommand wwsWorker = WwsCommandFactory.get(winstonDatabasePool, request);
+      
+      int maxDays = configFile.getInt("wws.maxDays", DEFAULT_MAX_DAYS);
+      if (maxDays == 0) {
+        maxDays = DEFAULT_MAX_DAYS;
+      }
+      wwsWorker.setMaxDays(maxDays);
       wwsWorker.respond(ctx, request);
     } catch (final UnsupportedCommandException e) {
       LOGGER.info(e.getLocalizedMessage());

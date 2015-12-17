@@ -28,7 +28,10 @@ public class Channels {
   private static final Logger LOGGER = LoggerFactory.getLogger(InputEW.class);
 
   private final WinstonDatabase winston;
-
+  
+  // exposed retention time in seconds
+  private int aparentRetention = Integer.MAX_VALUE;
+  
   /**
    * Constructor
    * 
@@ -66,6 +69,10 @@ public class Channels {
     return null;
   }
 
+  public void setAparentRetention(int i) {
+    aparentRetention = i;
+  }
+  
   /**
    * Get List of channels
    * 
@@ -114,9 +121,12 @@ public class Channels {
       final Map<Integer, Channel> channelsMap = new HashMap<Integer, Channel>();
       final List<Channel> channels = new ArrayList<Channel>();
       while (rs.next()) {
-        final Channel ch = new Channel(rs);
-        channelsMap.put(ch.getSID(), ch);
-        channels.add(ch);
+        final Channel ch = new Channel(rs, aparentRetention);
+        
+        if (ch.getMaxTime() > ch.getMinTime()) {
+          channelsMap.put(ch.getSID(), ch);
+          channels.add(ch);
+        }
       }
       rs.close();
       final Map<Integer, GroupNode> nodes = getGroupNodes();
@@ -152,31 +162,10 @@ public class Channels {
 
       return channels;
     } catch (final Exception e) {
-      LOGGER.error("Could not get channels.");
+      LOGGER.error("Could not get channels.", e);
     }
     return null;
   }
-
-  // public Map<String, Channel[]> getChannelsByNet(boolean fullMetadata) {
-  // Map<String, Deque<Channel>> chansByNet = new HashMap<String, Deque<Channel>>();
-  //
-  // for (Channel c : getChannels(fullMetadata)) {
-  // String net = c.getNetwork();
-  // Deque<Channel> chans = chansByNet.get(net);
-  // if (chans == null) {
-  // chans = new ArrayDeque<Channel>();
-  // chansByNet.put(net, chans);
-  // }
-  //
-  // chans.add(c);
-  // }
-  //
-  // Map<String, Channel[]> chans = new HashMap<String, Channel[]>();
-  // for (String net : chansByNet.keySet())
-  // chans.put(net, (Channel[])chansByNet.get(net).toArray());
-  //
-  // return chans;
-  // }
 
   /**
    * Get channel ID from code

@@ -31,7 +31,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * Return Channel details.
  * 
- * request = /^GC:? (METADATA)?$/
+ * request = /^GETCHANNELS:? GC( METADATA)?$/
  *
  * @author Dan Cervelli
  * @author Tom Parker
@@ -53,8 +53,9 @@ public class GetChannelsCommand extends WwsBaseCommand {
     }
 
     boolean metadata = false;
-    if (cmd.getString(2) != null && cmd.getString(2).equals("METADATA"))
+    if ("METADATA".equals(cmd.getString(2))) {
       metadata = true;
+    }
 
     WinstonDatabase winston = null;
     List<Channel> chs = null;
@@ -64,7 +65,9 @@ public class GetChannelsCommand extends WwsBaseCommand {
         LOGGER.error("WinstonDatabase unable to connect to MySQL.");
       } else {
         Channels channels = new Channels(winston);
-        chs = channels.getChannels();
+        channels.setAparentRetention(maxDays * ONE_DAY_S); 
+        chs = channels.getChannels(metadata);
+        LOGGER.info("got {} channels", chs.size());
       }
     } catch (Exception e) {
       LOGGER.error("Unable to fulfill command.", e);
@@ -78,11 +81,11 @@ public class GetChannelsCommand extends WwsBaseCommand {
     sb.append(String.format("%s %d\n", cmd.getID(), chs.size()));
     for (final Channel ch : chs) {
       if (metadata)
-        sb.append(ch.toMetadataString(maxDays) + "\n");
+        sb.append(ch.toMetadataString() + "\n");
       else
-        sb.append(ch.toPV2String(maxDays) + "\n");
+        sb.append(ch.toPV2String() + "\n");
     }
-
+    LOGGER.info("maxDays = {}", maxDays);
     ctx.writeAndFlush(sb.toString());
   }
 }

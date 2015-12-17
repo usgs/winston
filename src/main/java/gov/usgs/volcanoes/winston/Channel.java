@@ -103,10 +103,18 @@ public class Channel implements Comparable<Channel> {
    * @throws SQLException
    */
   public Channel(final ResultSet rs) throws SQLException {
+    this(rs, Integer.MAX_VALUE);
+  }
+  
+  public Channel(final ResultSet rs, int aparentRetention) throws SQLException {
     sid = rs.getInt("sid");
     code = rs.getString("code");
-    minTime = rs.getDouble("st");
+    
+    
+    double mt = rs.getDouble("st");
+    minTime = Double.max(mt, J2kSec.now() - aparentRetention);
     maxTime = rs.getDouble("et");
+
     instrument = new Instrument(rs);
     linearA = rs.getDouble("linearA");
     if (linearA == 1e300)
