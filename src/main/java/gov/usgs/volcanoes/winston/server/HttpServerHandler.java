@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.winston.server.httpCmd.HttpBaseCommand;
-import gov.usgs.volcanoes.winston.server.httpCmd.HttpCommand;
+import gov.usgs.volcanoes.winston.server.httpCmd.HttpCommandFactory;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -38,7 +38,7 @@ public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpReque
   @Override
   public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
 
-    final HttpBaseCommand httpWorker = HttpCommand.get(winstonDatabasePool, req.getUri());
+    final HttpBaseCommand httpWorker = HttpCommandFactory.get(winstonDatabasePool, req.getUri());
     httpWorker.doCommand(ctx, req);
 
     // If keep-alive is not set, close the connection once the content is fully written.

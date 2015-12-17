@@ -7,12 +7,14 @@
 package gov.usgs.volcanoes.winston.server;
 
 import org.slf4j.Logger;
+
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ByteToMessageDecoder;
@@ -23,7 +25,7 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.CharsetUtil;
-
+import io.netty.channel.*;
 /**
  * Classifies requests by protocol and rejiggers pipeline accordingly.
  *

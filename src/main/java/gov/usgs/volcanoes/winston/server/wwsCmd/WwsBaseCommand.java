@@ -30,18 +30,18 @@ import io.netty.channel.ChannelHandlerContext;
  *
  * @author Dan Cervelli
  */
-abstract public class WwsBaseCommand extends BaseCommand {
+abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(WwsBaseCommand.class);
 
   protected final static int ONE_HOUR = 60 * 60;
   protected final static int ONE_DAY = 24 * ONE_HOUR;
 
-  private Data data;
   protected DecimalFormat decimalFormat;
-  private WaveServerEmulator emulator;
   protected int maxDays;
+
+  private Data data;
+  private WaveServerEmulator emulator;
   private NetTools netTools;
-  private WinstonDatabase winston;
   private WWS wws;
 
   public WwsBaseCommand() {
@@ -89,8 +89,11 @@ abstract public class WwsBaseCommand extends BaseCommand {
    * 
    * @throws WwsMalformedCommand
    */
-  public abstract void doCommand(ChannelHandlerContext ctx, WwsCommandString req)
-      throws WwsMalformedCommand;
+  public void respond(ChannelHandlerContext ctx, WwsCommandString req)
+      throws WwsMalformedCommand {
+    LOGGER.info("Recieved command: {}", req.getCommand());
+    doCommand(ctx, req);
+  }
 
   private String getError(final double[] d) {
     if (d == null || d.length != 2) {

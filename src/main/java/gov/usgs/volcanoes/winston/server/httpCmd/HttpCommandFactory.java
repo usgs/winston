@@ -11,16 +11,16 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 
-public enum HttpCommand {
+public enum HttpCommandFactory {
 
   MENU("/menu", HttpMenuCommand.class);
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(HttpCommand.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HttpCommandFactory.class);
 
   private String command;
   private Class<? extends HttpBaseCommand> clazz;
 
-  private HttpCommand(String command, Class<? extends HttpBaseCommand> clazz) {
+  private HttpCommandFactory(String command, Class<? extends HttpBaseCommand> clazz) {
     this.command = command;
     this.clazz = clazz;
   }
@@ -31,7 +31,7 @@ public enum HttpCommand {
     if (cmdEnd != -1) {
       command = command.substring(0, cmdEnd);
     }
-    for (HttpCommand cmd : HttpCommand.values()) {
+    for (HttpCommandFactory cmd : HttpCommandFactory.values()) {
       if (cmd.command.equals(command)) {
         HttpBaseCommand baseCommand = cmd.clazz.newInstance();
         baseCommand.databasePool(databasePool);

@@ -35,11 +35,9 @@ public class MenuCommand extends WwsBaseCommand {
     super();
   }
 
-  @Override
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws WwsMalformedCommand {
 
-    LOGGER.info("Received command: {}", cmd.getCommandString());
     boolean isScnl = false;
 
     if (cmd.length() == 3) {

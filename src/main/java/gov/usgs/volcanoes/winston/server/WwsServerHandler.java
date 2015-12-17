@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.winston.server.wwsCmd.UnsupportedCommandException;
 import gov.usgs.volcanoes.winston.server.wwsCmd.WwsBaseCommand;
-import gov.usgs.volcanoes.winston.server.wwsCmd.WwsCommand;
+import gov.usgs.volcanoes.winston.server.wwsCmd.WwsCommandFactory;
 import gov.usgs.volcanoes.winston.server.wwsCmd.WwsCommandString;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
@@ -33,8 +33,8 @@ public class WwsServerHandler extends SimpleChannelInboundHandler<WwsCommandStri
   public void channelRead0(ChannelHandlerContext ctx, WwsCommandString request) throws Exception {
 
     try {
-      final WwsBaseCommand wwsWorker = WwsCommand.get(winstonDatabasePool, request);
-      wwsWorker.doCommand(ctx, request);
+      final WwsBaseCommand wwsWorker = WwsCommandFactory.get(winstonDatabasePool, request);
+      wwsWorker.respond(ctx, request);
     } catch (final UnsupportedCommandException e) {
       LOGGER.info(e.getLocalizedMessage());
       ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
