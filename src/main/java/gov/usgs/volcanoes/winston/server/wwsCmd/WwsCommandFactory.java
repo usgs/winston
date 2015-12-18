@@ -16,28 +16,25 @@ import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
  *
  */
 public enum WwsCommandFactory {
-  MENU("MENU", MenuCommand.class), 
-  VERSION("VERSION", VersionCommand.class), 
-  GETCHANNELS("GETCHANNELS", GetChannelsCommand.class), 
-  GETMETADATA("GETMETADATA", GetMetadataCommand.class),
-  
+  MENU(MenuCommand.class), 
+  VERSION(VersionCommand.class), 
+  GETCHANNELS(GetChannelsCommand.class), 
+  GETMETADATA(GetMetadataCommand.class),
+  GETSCNLHELIRAW(GetScnlHeliRawCommand.class),
       // STATUS("STATUS", StatusCommand.class),
       // GETSCNRAW("GETSCNRAW", StatusCommand.class),
       // GETSCNLRAW("GETSCNLRAW", StatusCommand.class),
       // GETSCN("GETSCN", StatusCommand.class),
       // GETSCNL("GETSCNL", StatusCommand.class),
-      // GETSCNLHELIRAW("GETSCNLHELIRAW", StatusCommand.class),
       // GETSCNLRSAMRAW("GETSCNLRSAMRAW", StatusCommand.class),
       // GETWAVERAW("GETWAVERAW", StatusCommand.class),
   ;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WwsCommandFactory.class);
 
-  private String command;
   private Class<? extends WwsBaseCommand> clazz;
 
-  private WwsCommandFactory(String command, Class<? extends WwsBaseCommand> clazz) {
-    this.command = command;
+  private WwsCommandFactory(Class<? extends WwsBaseCommand> clazz) {
     this.clazz = clazz;
   }
 
@@ -53,7 +50,7 @@ public enum WwsCommandFactory {
   public static WwsBaseCommand get(WinstonDatabasePool databasePool, WwsCommandString command)
       throws InstantiationException, IllegalAccessException, UnsupportedCommandException {
     for (WwsCommandFactory cmd : WwsCommandFactory.values()) {
-      if (cmd.command.equals(command.getCommand())) {
+      if (cmd.toString().equals(command.getCommand())) {
         WwsBaseCommand baseCommand = cmd.clazz.newInstance();
         baseCommand.databasePool(databasePool);
         return baseCommand;

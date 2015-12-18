@@ -39,7 +39,7 @@ public class VersionCommand extends WwsBaseCommand {
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
-      throws WwsMalformedCommand {
+      throws MalformedCommandException {
 
     ctx.write("PROTOCOL_VERSION: " + PROTOCOL_VERSION + "\n");
   }

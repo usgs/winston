@@ -1,16 +1,19 @@
 /**
- * I waive copyright and related rights in the this work worldwide
- * through the CC0 1.0 Universal public domain dedication.
- * https://creativecommons.org/publicdomain/zero/1.0/legalcode
+ * I waive copyright and related rights in the this work worldwide through the CC0 1.0 Universal
+ * public domain dedication. https://creativecommons.org/publicdomain/zero/1.0/legalcode
  */
 
 package gov.usgs.volcanoes.winston.server;
 
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.apache.log4j.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Console;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -21,10 +24,12 @@ import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Version;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 
 /**
@@ -53,45 +58,46 @@ public class WWS {
     final WWS wws = new WWS(config.configFileName);
 
     wws.launch();
-    
-    
 
-    // final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-    // boolean acceptCommands = !(config.isNoInput);
-    // if (acceptCommands) {
-    // wws.logger.info("Enter ? for console commands.");
-    // }
-    //
-    // while (acceptCommands) {
-    // String s = in.readLine();
-    // if (s != null) {
-    // s = s.toLowerCase().trim();
-    // if (s.equals("q")) {
-    // acceptCommands = false;
-    // System.exit(0);
-    // } else if (s.startsWith("c")) {
-    // wws.printConnections(s);
-    // } else if (s.startsWith("m")) {
-    // wws.printCommands(s);
-    // } else if (s.equals("d")) {
-    // wws.dropConnections(wws.idleTime);
-    // } else if (s.startsWith("t")) {
-    // wws.toggleTrace(s);
-    // } else if (s.equals("0")) {
-    // Log.setLevel(Level.ERROR);
-    // } else if (s.equals("1")) {
-    // Log.setLevel(Level.WARN);
-    // } else if (s.equals("2")) {
-    // Log.setLevel(Level.INFO);
-    // } else if (s.equals("3")) {
-    // Log.setLevel(Level.DEBUG);
-    // } else if (s.equals("?")) {
-    // WWS.printKeys();
-    // } else {
-    // WWS.printKeys();
-    // }
-    // }
-    // }
+    boolean run = true;
+    Console console = System.console();
+    if (console != null) {
+      while (run) {
+        System.out.println("Enter ? for console commands.");
+        String s = console.readLine();
+
+        if (s == null)
+          continue;
+
+        s = s.toLowerCase().trim();
+        if (s.equals("q")) {
+          run = false;
+          wws.shutdownGracefully();
+          // } else if (s.startsWith("c")) {
+          // wws.printConnections(s);
+          // } else if (s.startsWith("m")) {
+          // wws.printCommands(s);
+          // } else if (s.equals("d")) {
+          // wws.dropConnections(wws.idleTime);
+          // } else if (s.startsWith("t")) {
+          // wws.toggleTrace(s);
+        } else if (s.equals("0")) {
+          org.apache.log4j.Logger.getRootLogger().setLevel(Level.ERROR);
+        } else if (s.equals("1")) {
+          org.apache.log4j.Logger.getRootLogger().setLevel(Level.WARN);
+        } else if (s.equals("2")) {
+          org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
+        } else if (s.equals("3")) {
+          org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+        } else if (s.equals("?")) {
+          WWS.printKeys();
+        } else {
+          WWS.printKeys();
+        }
+      }
+    } else {
+      System.out.println("No console present. Unable to accept console commands.");
+    }
   }
 
   public static void printKeys() {
@@ -149,6 +155,8 @@ public class WWS {
   protected int winstonStatementCacheCap;
 
   protected String winstonURL;
+  protected NioEventLoopGroup group;
+  private boolean acceptCommands;
 
   /**
    * Creates a new WWS.
@@ -156,6 +164,7 @@ public class WWS {
   public WWS(final String cf) {
     super();
 
+    acceptCommands = true;
     LOGGER.info(Version.VERSION_STRING);
     configFilename = cf;
     processConfigFile();
@@ -164,10 +173,6 @@ public class WWS {
   protected void fatalError(final String msg) {
     LOGGER.error(msg);
     System.exit(1);
-  }
-
-  public int getEmbargo() {
-    return embargo;
   }
 
   public int getMaxDays() {
@@ -218,52 +223,78 @@ public class WWS {
 
   public void launch() {
     LOGGER.info("Launching WWS. {}", Version.VERSION_STRING);
-    final NioEventLoopGroup group = new NioEventLoopGroup();
-    try {
-      final ServerBootstrap b = new ServerBootstrap();
-      b.group(group).channel(NioServerSocketChannel.class)
-          .localAddress(new InetSocketAddress(serverIp, serverPort))
-          .childHandler(new ChannelInitializer<SocketChannel>() {
-            @Override
-            public void initChannel(SocketChannel ch) throws Exception {
-              // TODO: figure out how much flexibility is needed here
-              final GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
-              poolConfig.setMinIdle(1);
+    group = new NioEventLoopGroup();
 
-              final ConfigFile winstonConfig = configFile.getSubConfig("winston");
-              final WinstonDatabasePool databasePool =
-                  new WinstonDatabasePool(winstonConfig, poolConfig);
+    // TODO: figure out how much flexibility is needed here
+    final GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
+    poolConfig.setMinIdle(1);
 
-              ch.pipeline().addLast(new PortUnificationDecoder(configFile, databasePool));
-            }
-          });
-      final ChannelFuture f = b.bind();
-      while (!f.isDone()) {
-        try {
-          f.sync();
-        } catch (final InterruptedException ignore) {
-          // do nothing
-        }
-      }
-      LOGGER.info("WWS started and listen on {}", f.channel().localAddress());
+    final ConfigFile winstonConfig = configFile.getSubConfig("winston");
+    final WinstonDatabasePool databasePool = new WinstonDatabasePool(winstonConfig, poolConfig);
 
-      final ChannelFuture closeF = f.channel().closeFuture();
-      while (!closeF.isDone()) {
-        try {
-          closeF.sync();
-        } catch (final InterruptedException ignore) {
-          // do nothing
-        }
-      }
-    } finally {
-      final Future<?> ff = group.shutdownGracefully();
+    final AttributeKey<ConnectionStatistics> connectionStatsKey =
+        AttributeKey.valueOf("connectionStatistics");
+    final ConnectionStatistics connectionStatistics = new ConnectionStatistics();
+
+    final AttributeKey<DatabaseStatistics> databaseStatsKey =
+        AttributeKey.valueOf("databaseStatistics");
+    final DatabaseStatistics databaseStatistics = new DatabaseStatistics();
+
+    final ServerBootstrap b = new ServerBootstrap();
+    b.group(group).channel(NioServerSocketChannel.class)
+        .localAddress(new InetSocketAddress(serverIp, serverPort))
+        .childHandler(new ChannelInitializer<SocketChannel>() {
+          @Override
+          public void initChannel(SocketChannel ch) throws Exception {
+            connectionStatistics.incrCount();
+            connectionStatistics.incrActiveCount();
+            ch.attr(connectionStatsKey).set(connectionStatistics);
+            ch.attr(databaseStatsKey).set(databaseStatistics);
+
+            ch.pipeline().addLast(new PortUnificationDecoder(configFile, databasePool));
+          }
+
+
+          @Override
+          public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+            connectionStatistics.decrActiveCount();
+          }
+        });
+
+    final ChannelFuture f = b.bind();
+    while (!f.isDone())
+
+    {
       try {
-        ff.sync();
+        f.sync();
       } catch (final InterruptedException ignore) {
         // do nothing
       }
+
+    }
+    if (f.isSuccess())
+
+    {
+      LOGGER.info("WWS started and listen on {}", f.channel().localAddress());
+    } else
+
+    {
+      LOGGER.error("Unable to start server.");
+      shutdownGracefully();
     }
 
+  }
+
+  public void shutdownGracefully() {
+    LOGGER.warn("shutting down");
+
+    acceptCommands = false;
+    final Future<?> ff = group.shutdownGracefully();
+    try {
+      ff.sync();
+    } catch (final InterruptedException ignore) {
+      // do nothing
+    }
   }
 
   public int maxDays() {

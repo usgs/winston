@@ -48,10 +48,10 @@ public class GetMetadataCommand extends WwsBaseCommand {
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
-      throws WwsMalformedCommand {
+      throws MalformedCommandException {
     final String[] ss = cmd.getCommandSplits();
     if (ss.length <= 2) {
-      throw new WwsMalformedCommand("Malformed Command");
+      throw new MalformedCommandException();
     }
 
     WinstonDatabase winston = null;

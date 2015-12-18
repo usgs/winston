@@ -24,6 +24,7 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 import io.netty.channel.*;
 /**
@@ -66,6 +67,16 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
 
   private final WinstonDatabasePool winstonDatabasePool;
 
+private ConnectionStatistics connectionStatistics;
+private DatabaseStatistics databaseStatistics;
+
+private static final AttributeKey<ConnectionStatistics> connectionStatsKey;
+private static final AttributeKey<DatabaseStatistics> databaseStatsKey;
+
+static {
+  connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
+  databaseStatsKey = AttributeKey.valueOf("databaseStatistics");
+}
 
   /**
    * Constructor.
@@ -75,11 +86,13 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
   public PortUnificationDecoder(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     super();
     this.configFile = configFile;
-    this.winstonDatabasePool = winstonDatabasePool;
+    this.winstonDatabasePool = winstonDatabasePool;    
   }
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+    connectionStatistics = ctx.channel().attr(connectionStatsKey).get();
+    
     // Will use the first five bytes to detect a protocol.
     if (in.readableBytes() < LEN) {
       return;
@@ -101,7 +114,8 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
 
   private void switchToHttp(ChannelPipeline p) {
     LOGGER.info("Found HTTP command.");
-
+    connectionStatistics.incrHttpCount();
+    
     p.addLast(new HttpRequestDecoder());
     p.addLast(new HttpObjectAggregator(1048576));
     p.addLast(new StringEncoder(CharsetUtil.US_ASCII));
@@ -112,6 +126,7 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
 
   private void switchToWws(ChannelPipeline p) {
     LOGGER.info("found WWS command.");
+    connectionStatistics.incrWwsCount();
 
     p.addLast(new LineBasedFrameDecoder(1024, true, true));
     p.addLast(new StringDecoder(CharsetUtil.US_ASCII));

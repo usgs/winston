@@ -36,7 +36,7 @@ public class MenuCommand extends WwsBaseCommand {
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
-      throws WwsMalformedCommand {
+      throws MalformedCommandException {
 
     boolean isScnl = false;
 
@@ -45,7 +45,7 @@ public class MenuCommand extends WwsBaseCommand {
         isScnl = true;
       }
     } else if (cmd.length() != 2) {
-      throw new WwsMalformedCommand("Cannot parse MENU command " + cmd.getCommand());
+      throw new MalformedCommandException();
     }
 
     ctx.write(cmd.getID() + " ");

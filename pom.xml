@@ -217,6 +217,12 @@
                                                                                 <include>freemarker/**</include>
                                                                         </includes>
                                                                 </filter>
+                                                               <filter>
+                                                                        <artifact>org.apache.commons</artifact>
+                                                                        <includes>
+                                                                                <include>**</include>
+                                                                        </includes>
+                                                                </filter>
 							</filters>
 							<artifactSet>
 								<includes>

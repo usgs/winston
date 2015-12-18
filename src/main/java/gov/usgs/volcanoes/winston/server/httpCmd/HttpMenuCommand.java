@@ -26,7 +26,8 @@ import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
 import gov.usgs.volcanoes.winston.server.wwsCmd.MenuCommand;
-import gov.usgs.volcanoes.winston.server.wwsCmd.WwsMalformedCommand;
+import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
+import gov.usgs.volcanoes.winston.server.wwsCmd.MalformedCommandException;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -44,6 +45,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.handler.stream.ChunkedNioFile;
+import io.netty.util.AttributeKey;
 
 /**
  * Return the wave server menu. Similar to earthworm getmenu command.
@@ -136,6 +138,8 @@ public final class HttpMenuCommand extends HttpBaseCommand {
           httpResponse.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         }
         ctx.write(httpResponse);
+        ctx.write("::ACTIVE:: " + ((ConnectionStatistics) ctx.channel().attr(AttributeKey.valueOf("connectionStatistics")).get()).getActive() + ":\n");
+        ctx.write("::COUNT:: " + ((ConnectionStatistics) ctx.channel().attr(AttributeKey.valueOf("connectionStatistics")).get()).getCount() + ":\n");
         ctx.writeAndFlush(response);
       } else {
         LOGGER.error("NULL server menu.");

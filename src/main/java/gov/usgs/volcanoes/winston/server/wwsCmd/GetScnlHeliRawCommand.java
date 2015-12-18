@@ -8,6 +8,7 @@ package gov.usgs.volcanoes.winston.server.wwsCmd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,11 +18,16 @@ import java.util.logging.Level;
 
 import gov.usgs.net.ConnectionStatistics;
 import gov.usgs.net.NetTools;
+import gov.usgs.plot.data.HelicorderData;
+import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
+import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
 import gov.usgs.volcanoes.winston.legacyServer.WWSCommandString;
@@ -31,43 +37,38 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * Return Channel details.
  * 
- * request = /^GETCHANNELS:? GC( METADATA)?$/
- *
  * @author Dan Cervelli
  * @author Tom Parker
  */
-public class GetChannelsCommand extends WwsBaseCommand {
-  private static final int PROTOCOL_VERSION = 3;
+public class GetScnlHeliRawCommand extends WwsBaseCommand {
+  private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlHeliRawCommand.class);
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(GetChannelsCommand.class);
-
-  public GetChannelsCommand() {
+  public GetScnlHeliRawCommand() {
     super();
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException {
-
-    if (!cmd.isLegal(2) && !cmd.isLegal(3)) {
+    if (!cmd.isLegalSCNLTT(9)) {
       throw new MalformedCommandException();
     }
 
-    boolean metadata = false;
-    if ("METADATA".equals(cmd.getString(2))) {
-      metadata = true;
+    double et = cmd.getT2(true);
+    double st = cmd.getT1(true);
+
+    if (et <= st) {
+      throw new MalformedCommandException();
     }
 
     WinstonDatabase winston = null;
-    List<Channel> chs = null;
+    HelicorderData heli = null;
     try {
       winston = databasePool.borrowObject();
       if (!winston.checkConnect()) {
         LOGGER.error("WinstonDatabase unable to connect to MySQL.");
       } else {
-        Channels channels = new Channels(winston);
-        channels.setAparentRetention(maxDays * ONE_DAY_S); 
-        chs = channels.getChannels(metadata);
-        LOGGER.info("got {} channels", chs.size());
+        Data data = new Data(winston);
+        heli = data.getHelicorderData(cmd.getWinstonSCNL(), st, et, 0);
       }
     } catch (Exception e) {
       LOGGER.error("Unable to fulfill command.", e);
@@ -76,16 +77,19 @@ public class GetChannelsCommand extends WwsBaseCommand {
         databasePool.returnObject(winston);
       }
     }
+    
+    String id = cmd.getID();
+    ctx.write(id + " 0\n");
+    
+    ByteBuffer bb = null;
+    if (heli != null && heli.rows() > 0) {
+      bb = (ByteBuffer) heli.toBinary().flip();
 
-    final StringBuilder sb = new StringBuilder(chs.size() * 60);
-    sb.append(String.format("%s %d\n", cmd.getID(), chs.size()));
-    for (final Channel ch : chs) {
-      if (metadata)
-        sb.append(ch.toMetadataString() + "\n");
-      else
-        sb.append(ch.toPV2String() + "\n");
+      if (cmd.getInt(8) == 1)
+        bb = ByteBuffer.wrap(Zip.compress(bb.array()));
+      
+      ctx.write(id + " " + bb.limit() + "\n");
+      ctx.writeAndFlush(bb);
     }
-    LOGGER.info("maxDays = {}", maxDays);
-    ctx.writeAndFlush(sb.toString());
   }
 }

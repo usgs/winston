@@ -57,10 +57,10 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
   /**
    * Do the work. Return response to the browser.
    * 
-   * @throws WwsMalformedCommand
+   * @throws MalformedCommandException
    */
   public void respond(ChannelHandlerContext ctx, WwsCommandString req)
-      throws WwsMalformedCommand {
+      throws MalformedCommandException {
     LOGGER.info("Recieved command: {}", req.getCommandString());
     doCommand(ctx, req);
   }

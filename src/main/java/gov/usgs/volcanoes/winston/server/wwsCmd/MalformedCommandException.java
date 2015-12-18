@@ -8,10 +8,10 @@ package gov.usgs.volcanoes.winston.server.wwsCmd;
 
 import java.io.IOException;
 
-public class WwsMalformedCommand extends IOException {
+public class MalformedCommandException extends IOException {
   private static final long serialVersionUID = 1L;
 
-  public WwsMalformedCommand(String msg) {
-    super(msg);
+  public MalformedCommandException() {
+    super();
   }
 }
