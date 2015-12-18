@@ -234,6 +234,8 @@
 									<include>commons-collections:commons-collections</include>
 									<include>mysql:mysql-connector-java</include>
                                                                         <include>org.freemarker:freemarker</include>
+                                                                        <include>io.netty:netty-all</include>
+                                                                        <include>org.apache.commons:commons-pool2</include>
 								</includes>
 							</artifactSet>
 						</configuration>
