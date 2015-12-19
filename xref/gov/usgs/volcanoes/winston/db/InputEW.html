@@ -58,7 +58,7 @@
 <a class="jxr_linenumber" name="L50" href="#L50">50</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> WEIGHTED_RSAM = 7; <em class="jxr_comment">// DC offset removed</em>
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>    }
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>  
-<a class="jxr_linenumber" name="L53" href="#L53">53</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Input.html">InputResult</a> {
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputResult</a> {
 <a class="jxr_linenumber" name="L54" href="#L54">54</a>      <strong class="jxr_keyword">public</strong> enum <a href="../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">Code</a> {
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>        ERROR_CHANNEL, ERROR_DATABASE, ERROR_DUPLICATE, ERROR_HELICORDER, ERROR_INPUT, ERROR_NO_WINSTON, ERROR_NULL_TRACEBUF, ERROR_TIME_SPAN, ERROR_UNKNOWN, NO_CODE, SUCCESS, SUCCESS_CREATED_TABLE, SUCCESS_HELICORDER, SUCCESS_TIME_SPAN
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>      }
@@ -67,7 +67,7 @@
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">double</strong> failedHeliJ2K;
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>      <strong class="jxr_keyword">public</strong> TraceBuf traceBuf;
 <a class="jxr_linenumber" name="L61" href="#L61">61</a>  
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Input.html">InputResult</a>(<strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">Code</a> c, <strong class="jxr_keyword">final</strong> TraceBuf tb) {
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputResult</a>(<strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">Code</a> c, <strong class="jxr_keyword">final</strong> TraceBuf tb) {
 <a class="jxr_linenumber" name="L63" href="#L63">63</a>        code = c;
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>        traceBuf = tb;
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>      }
@@ -443,7 +443,7 @@
 <a class="jxr_linenumber" name="L435" href="#L435">435</a>     <strong class="jxr_keyword">while</strong> (it.hasNext()) {
 <a class="jxr_linenumber" name="L436" href="#L436">436</a>       <strong class="jxr_keyword">boolean</strong> tableCreated = false;
 <a class="jxr_linenumber" name="L437" href="#L437">437</a>       <strong class="jxr_keyword">final</strong> TraceBuf tb = it.next();
-<a class="jxr_linenumber" name="L438" href="#L438">438</a>       <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Input.html">InputResult</a> result = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Input.html">InputResult</a>(InputResult.Code.NO_CODE, tb);
+<a class="jxr_linenumber" name="L438" href="#L438">438</a>       <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputResult</a> result = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputResult</a>(InputResult.Code.NO_CODE, tb);
 <a class="jxr_linenumber" name="L439" href="#L439">439</a>       <strong class="jxr_keyword">if</strong> (tb == <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L440" href="#L440">440</a>         result.code = InputResult.Code.ERROR_NULL_TRACEBUF;
 <a class="jxr_linenumber" name="L441" href="#L441">441</a>       } <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (!tb.toWinstonString().equals(channel)) {
@@ -505,7 +505,7 @@
 <a class="jxr_linenumber" name="L497" href="#L497">497</a>       tableCreated = false;
 <a class="jxr_linenumber" name="L498" href="#L498">498</a>     }
 <a class="jxr_linenumber" name="L499" href="#L499">499</a> 
-<a class="jxr_linenumber" name="L500" href="#L500">500</a>     <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Input.html">InputResult</a> heliResult = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Input.html">InputResult</a>(InputResult.Code.SUCCESS_HELICORDER, <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L500" href="#L500">500</a>     <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputResult</a> heliResult = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputResult</a>(InputResult.Code.SUCCESS_HELICORDER, <strong class="jxr_keyword">null</strong>);
 <a class="jxr_linenumber" name="L501" href="#L501">501</a>     <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> failed = writeHelicorderData(channel, modifiedHeliRows);
 <a class="jxr_linenumber" name="L502" href="#L502">502</a>     <strong class="jxr_keyword">if</strong> (!Double.isNaN(failed)) {
 <a class="jxr_linenumber" name="L503" href="#L503">503</a>       heliResult.code = InputResult.Code.ERROR_HELICORDER;
@@ -514,7 +514,7 @@
 <a class="jxr_linenumber" name="L506" href="#L506">506</a> 
 <a class="jxr_linenumber" name="L507" href="#L507">507</a>     results.add(heliResult);
 <a class="jxr_linenumber" name="L508" href="#L508">508</a> 
-<a class="jxr_linenumber" name="L509" href="#L509">509</a>     <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Input.html">InputResult</a> spanResult = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/Input.html">InputResult</a>(InputResult.Code.ERROR_TIME_SPAN, <strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L509" href="#L509">509</a>     <strong class="jxr_keyword">final</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputResult</a> spanResult = <strong class="jxr_keyword">new</strong> <a href="../../../../../gov/usgs/volcanoes/winston/db/InputEW.html">InputResult</a>(InputResult.Code.ERROR_TIME_SPAN, <strong class="jxr_keyword">null</strong>);
 <a class="jxr_linenumber" name="L510" href="#L510">510</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L511" href="#L511">511</a>       <strong class="jxr_keyword">if</strong> (span[0] == stBefore) {
 <a class="jxr_linenumber" name="L512" href="#L512">512</a>         setTimeSpan(channel, Double.NaN, span[1]);

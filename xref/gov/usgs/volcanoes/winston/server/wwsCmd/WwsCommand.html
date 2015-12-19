@@ -6,58 +6,13 @@
 </head>
 <body>
 <div id="overview"><a href="../../../../../../../apidocs/gov/usgs/volcanoes/winston/server/wwsCmd/WwsCommand.html">View Javadoc</a></div><pre>
-<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L2" href="#L2">2</a>   <em class="jxr_javadoccomment"> * I waive copyright and related rights in the this work worldwide</em>
-<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <em class="jxr_javadoccomment"> * through the CC0 1.0 Universal public domain dedication.</em>
-<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <em class="jxr_javadoccomment"> * https://creativecommons.org/publicdomain/zero/1.0/legalcode</em>
-<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="L6" href="#L6">6</a>   
-<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">package</strong> gov.usgs.volcanoes.winston.server.wwsCmd;
-<a class="jxr_linenumber" name="L8" href="#L8">8</a>   
-<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> org.slf4j.Logger;
-<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> org.slf4j.LoggerFactory;
-<a class="jxr_linenumber" name="L11" href="#L11">11</a>  
-<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
-<a class="jxr_linenumber" name="L13" href="#L13">13</a>  
-<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <em class="jxr_javadoccomment"> * </em>
-<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <em class="jxr_javadoccomment"> * @author Tom Parker</em>
-<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <em class="jxr_javadoccomment"> *</em>
-<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">public</strong> enum <a href="../../../../../../gov/usgs/volcanoes/winston/server/wwsCmd/WwsCommand.html">WwsCommand</a> {
-<a class="jxr_linenumber" name="L20" href="#L20">20</a>    MENU(<span class="jxr_string">"MENU"</span>, MenuCommand.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="L21" href="#L21">21</a>  
-<a class="jxr_linenumber" name="L22" href="#L22">22</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Logger LOGGER = LoggerFactory.getLogger(WwsCommand.<strong class="jxr_keyword">class</strong>);
-<a class="jxr_linenumber" name="L23" href="#L23">23</a>  
-<a class="jxr_linenumber" name="L24" href="#L24">24</a>    <strong class="jxr_keyword">private</strong> String command;
-<a class="jxr_linenumber" name="L25" href="#L25">25</a>    <strong class="jxr_keyword">private</strong> Class&lt;? <strong class="jxr_keyword">extends</strong> WwsBaseCommand&gt; clazz;
-<a class="jxr_linenumber" name="L26" href="#L26">26</a>  
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>    <strong class="jxr_keyword">private</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/server/wwsCmd/WwsCommand.html">WwsCommand</a>(String command, Class&lt;? <strong class="jxr_keyword">extends</strong> WwsBaseCommand&gt; clazz) {
-<a class="jxr_linenumber" name="L28" href="#L28">28</a>      <strong class="jxr_keyword">this</strong>.command = command;
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>      <strong class="jxr_keyword">this</strong>.clazz = clazz;
-<a class="jxr_linenumber" name="L30" href="#L30">30</a>    }
-<a class="jxr_linenumber" name="L31" href="#L31">31</a>  
-<a class="jxr_linenumber" name="L32" href="#L32">32</a>    <em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <em class="jxr_javadoccomment">   * </em>
-<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <em class="jxr_javadoccomment">   * @param winstonDatabasePool </em>
-<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <em class="jxr_javadoccomment">   * @param command</em>
-<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <em class="jxr_javadoccomment">   * @return</em>
-<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <em class="jxr_javadoccomment">   * @throws InstantiationException</em>
-<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <em class="jxr_javadoccomment">   * @throws IllegalAccessException</em>
-<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <em class="jxr_javadoccomment">   * @throws UnsupportedCommandException </em>
-<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <em class="jxr_javadoccomment">   */</em>
-<a class="jxr_linenumber" name="L41" href="#L41">41</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/server/wwsCmd/WwsBaseCommand.html">WwsBaseCommand</a> get(<a href="../../../../../../gov/usgs/volcanoes/winston/server/WinstonDatabasePool.html">WinstonDatabasePool</a> databasePool, <a href="../../../../../../gov/usgs/volcanoes/winston/server/wwsCmd/WwsCommandString.html">WwsCommandString</a> command)
-<a class="jxr_linenumber" name="L42" href="#L42">42</a>        <strong class="jxr_keyword">throws</strong> InstantiationException, IllegalAccessException, <a href="../../../../../../gov/usgs/volcanoes/winston/server/wwsCmd/UnsupportedCommandException.html">UnsupportedCommandException</a> {
-<a class="jxr_linenumber" name="L43" href="#L43">43</a>      <strong class="jxr_keyword">for</strong> (WwsCommand cmd : WwsCommand.values()) {
-<a class="jxr_linenumber" name="L44" href="#L44">44</a>        <strong class="jxr_keyword">if</strong> (cmd.command.equals(command.getCommand())) {
-<a class="jxr_linenumber" name="L45" href="#L45">45</a>          <a href="../../../../../../gov/usgs/volcanoes/winston/server/wwsCmd/WwsBaseCommand.html">WwsBaseCommand</a> baseCommand = cmd.clazz.newInstance();
-<a class="jxr_linenumber" name="L46" href="#L46">46</a>          baseCommand.databasePool(databasePool);
-<a class="jxr_linenumber" name="L47" href="#L47">47</a>          <strong class="jxr_keyword">return</strong> baseCommand;
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>        }
-<a class="jxr_linenumber" name="L49" href="#L49">49</a>      }
-<a class="jxr_linenumber" name="L50" href="#L50">50</a>      <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/server/wwsCmd/UnsupportedCommandException.html">UnsupportedCommandException</a>(<span class="jxr_string">"Unknown WWS command "</span> + command.getCommand());
-<a class="jxr_linenumber" name="L51" href="#L51">51</a>    }
-<a class="jxr_linenumber" name="L52" href="#L52">52</a>  }
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> gov.usgs.volcanoes.winston.server.wwsCmd;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> io.netty.channel.ChannelHandlerContext;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">interface</strong> <a href="../../../../../../gov/usgs/volcanoes/winston/server/wwsCmd/WwsCommand.html">WwsCommand</a> {
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>     <strong class="jxr_keyword">abstract</strong> <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> doCommand(ChannelHandlerContext ctx, <a href="../../../../../../gov/usgs/volcanoes/winston/server/wwsCmd/WwsCommandString.html">WwsCommandString</a> req) <strong class="jxr_keyword">throws</strong> MalformedCommandException;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2015. All rights reserved.</div>
