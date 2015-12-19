@@ -15,6 +15,7 @@ import java.io.Console;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 
 import gov.usgs.volcanoes.core.Log;
@@ -27,8 +28,10 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.SocketChannelConfig;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 import io.netty.handler.traffic.GlobalChannelTrafficShapingHandler;
@@ -104,7 +107,7 @@ public class WWS {
   }
 
   public void printConnections(String s) {
-    System.out.println(connectionStatistics);
+    System.out.println(connectionStatistics.printConnections(s));
   }
   public static void printKeys() {
     final StringBuffer sb = new StringBuffer();
@@ -243,8 +246,6 @@ public class WWS {
 
     final AttributeKey<ConnectionStatistics> connectionStatsKey =
         AttributeKey.valueOf("connectionStatistics");
-//    final ConnectionStatistics connectionStatistics = new ConnectionStatistics();
-
 
 //    new Thread() {
 //      public void run() {
@@ -266,6 +267,7 @@ public class WWS {
     final ServerBootstrap b = new ServerBootstrap();
     b.group(group).channel(NioServerSocketChannel.class)
         .localAddress(new InetSocketAddress(serverIp, serverPort))
+        .option(ChannelOption.SO_KEEPALIVE, true)
         .childHandler(new ChannelInitializer<SocketChannel>() {
           @Override
           public void initChannel(SocketChannel ch) throws Exception {

@@ -19,6 +19,7 @@ import java.util.logging.Level;
 import gov.usgs.net.ConnectionStatistics;
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.HelicorderData;
+import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.Ew;
@@ -40,35 +41,35 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Dan Cervelli
  * @author Tom Parker
  */
-public class GetScnlHeliRawCommand extends WwsBaseCommand {
-  private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlHeliRawCommand.class);
+public class GetWaveRawCommand extends WwsBaseCommand {
+  private static final Logger LOGGER = LoggerFactory.getLogger(GetWaveRawCommand.class);
 
-  public GetScnlHeliRawCommand() {
+  public GetWaveRawCommand() {
     super();
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException {
-    if (!cmd.isLegalSCNLTT(9)) {
-      throw new MalformedCommandException();
-    }
+
+    if (!cmd.isLegalSCNLTT(9))
+      return; // malformed command
 
     double et = cmd.getT2(true);
     double st = cmd.getT1(true);
 
-    if (et <= st) {
+    if (st >= et) {
       throw new MalformedCommandException();
     }
 
     WinstonDatabase winston = null;
-    HelicorderData heli = null;
+    Wave wave = null;
     try {
       winston = databasePool.borrowObject();
       if (!winston.checkConnect()) {
         LOGGER.error("WinstonDatabase unable to connect to MySQL.");
       } else {
         Data data = new Data(winston);
-        heli = data.getHelicorderData(cmd.getWinstonSCNL(), st, et, 0);
+        wave = data.getWave(cmd.getWinstonSCNL(), st, et, 0);
       }
     } catch (Exception e) {
       LOGGER.error("Unable to fulfill command.", e);
@@ -77,21 +78,22 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
         databasePool.returnObject(winston);
       }
     }
-    
-    String id = cmd.getID();
-    
-    ByteBuffer bb = null;
-    if (heli != null && heli.rows() > 0) {
-      bb = (ByteBuffer) heli.toBinary().flip();
 
-      if (cmd.getInt(8) == 1)
-        bb = ByteBuffer.wrap(Zip.compress(bb.array()));
-      
-      LOGGER.warn("returning {} heli bytes", bb.limit());      
-      ctx.write(id + " " + bb.limit() + "\n");
-      ctx.writeAndFlush(bb.array());
-    } else {
-      LOGGER.warn("no heli data");
-    }
+    ByteBuffer bb = null;
+    if (wave != null && wave.numSamples() > 0)
+      bb = (ByteBuffer) wave.toBinary().flip();
+
+    final boolean compress = cmd.getInt(8) == 1;
+
+    // final int bytes = writeByteBuffer(cmd.getID(), bb, compress, channel);
+
+    String id = cmd.getID();
+
+    if (cmd.getInt(8) == 1)
+      bb = ByteBuffer.wrap(Zip.compress(bb.array()));
+
+    LOGGER.warn("returning {} heli bytes", bb.limit());
+    ctx.write(id + " " + bb.limit() + "\n");
+    ctx.writeAndFlush(bb.array());
   }
 }

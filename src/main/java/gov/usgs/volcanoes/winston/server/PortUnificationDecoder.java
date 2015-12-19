@@ -19,6 +19,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.LineBasedFrameDecoder;
+import io.netty.handler.codec.bytes.ByteArrayDecoder;
+import io.netty.handler.codec.bytes.ByteArrayEncoder;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
@@ -129,6 +131,7 @@ static {
     p.addLast(new LineBasedFrameDecoder(1024, true, true));
     p.addLast(new StringDecoder(CharsetUtil.US_ASCII));
     p.addLast(new StringEncoder(CharsetUtil.US_ASCII));
+    p.addLast(new ByteArrayEncoder());
     p.addLast(new WwsCommandStringDecoder());
     p.addLast(new WwsCommandHandler(configFile, winstonDatabasePool));
     p.remove(this);
