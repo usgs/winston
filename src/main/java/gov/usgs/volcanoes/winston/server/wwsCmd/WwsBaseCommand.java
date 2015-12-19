@@ -54,8 +54,9 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
   public void setMaxDays(int maxDays) {
     this.maxDays = maxDays;
   }
+
   /**
-   * Do the work. Return response to the browser.
+   * Do the work. Return response to the client.
    * 
    * @throws MalformedCommandException
    */

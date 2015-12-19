@@ -6,6 +6,9 @@
 
 package gov.usgs.volcanoes.winston.server.httpCmd;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.nio.channels.SocketChannel;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
@@ -30,6 +33,8 @@ import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
 import gov.usgs.volcanoes.winston.server.BaseCommand;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
+import gov.usgs.volcanoes.winston.server.wwsCmd.MalformedCommandException;
+import gov.usgs.volcanoes.winston.server.wwsCmd.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
@@ -42,7 +47,9 @@ import io.netty.handler.codec.http.QueryStringDecoder;
  * @author Tom Parker
  *
  */
-public abstract class HttpBaseCommand extends BaseCommand {
+public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand {
+  private static final Logger LOGGER = LoggerFactory.getLogger(HttpBaseCommand.class);
+
   private static final String INPUT_DATE_FORMAT = "yyyyMMddHHmm";
   private static final String DISPLAY_DATE_FORMAT = "yyyy-MM-dd HH:mm";
   private final static int ONE_MINUTE = 60;
@@ -66,7 +73,7 @@ public abstract class HttpBaseCommand extends BaseCommand {
   public HttpBaseCommand() {
     super();
   }
-  
+
   /**
    * Text used as anchor to navigate usage page
    * 
@@ -99,44 +106,52 @@ public abstract class HttpBaseCommand extends BaseCommand {
 
   /**
    * Do the work. Return response to the browser.
+   * 
+   * @throws MalformedCommandException
    */
-  public abstract void doCommand(ChannelHandlerContext ctx, FullHttpRequest req);
+  public void respond(ChannelHandlerContext ctx, FullHttpRequest request)
+      throws MalformedCommandException {
+    LOGGER.info("Recieved command: {}", request.getUri());
+    doCommand(ctx, request);
+  }
 
-  protected Map<String, List<String>> getParams(FullHttpRequest request) throws UnsupportedMethodException {
+  protected Map<String, List<String>> getParams(FullHttpRequest request)
+      throws UnsupportedMethodException {
     Map<String, List<String>> params = null;
     HttpMethod method = request.getMethod();
-    
+
     if (method == HttpMethod.GET) {
       QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.getUri());
       params = queryStringDecoder.parameters();
-//    } else if (method == HttpMethod.POST) {
+      // } else if (method == HttpMethod.POST) {
       // TODO: support post
       // HttpPostRequestDecoder queryStringDecoder = new HttpPostRequestDecoder(request);
       // Map<String, List<String>> params = queryStringDecoder.;
     } else {
       throw new UnsupportedMethodException("Unsupported HTTP method " + method);
     }
-    
+
     return params;
   }
 
-  protected Map<String, String> getUnaryParams(FullHttpRequest request) throws UnsupportedMethodException {
+  protected Map<String, String> getUnaryParams(FullHttpRequest request)
+      throws UnsupportedMethodException {
     Map<String, String> params = new HashMap<String, String>();
     HttpMethod method = request.getMethod();
-    
+
     if (method == HttpMethod.GET) {
       QueryStringDecoder queryStringDecoder = new QueryStringDecoder(request.getUri());
       for (String param : queryStringDecoder.parameters().keySet()) {
         params.put(param, queryStringDecoder.parameters().get(param).get(0));
       }
-//    } else if (method == HttpMethod.POST) {
+      // } else if (method == HttpMethod.POST) {
       // TODO: support post
       // HttpPostRequestDecoder queryStringDecoder = new HttpPostRequestDecoder(request);
       // Map<String, List<String>> params = queryStringDecoder.;
     } else {
       throw new UnsupportedMethodException("Unsupported HTTP method " + method);
     }
-    
+
     return params;
   }
 
@@ -145,7 +160,7 @@ public abstract class HttpBaseCommand extends BaseCommand {
    * @param t1 start time String
    * @param endTime end time
    * @param mult number of seconds per interval used for relative times. 60 for minutes, 60*60 for
-   *        hours, 60*60*24 for days
+   *          hours, 60*60*24 for days
    * @return
    * @throws ParseException
    */

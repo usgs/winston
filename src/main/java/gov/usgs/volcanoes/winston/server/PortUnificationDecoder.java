@@ -45,11 +45,11 @@ import io.netty.channel.*;
  *
  */
 public class PortUnificationDecoder extends ByteToMessageDecoder {
-
-  private static final byte[] GET = {'G', 'E', 'T', 0};
+  private static final Logger LOGGER = LoggerFactory.getLogger(PortUnificationDecoder.class);
 
   private static final int LEN = 5;
-  private static final Logger LOGGER = LoggerFactory.getLogger(PortUnificationDecoder.class);
+
+  private static final byte[] GET = {'G', 'E', 'T', 0};
   private static final byte[] POST = {'P', 'O', 'S', 'T', 0};
 
   private static boolean startsWith(byte[] array1, byte[] array2) {
@@ -113,26 +113,24 @@ static {
   }
 
   private void switchToHttp(ChannelPipeline p) {
-    LOGGER.info("Found HTTP command.");
-    connectionStatistics.incrHttpCount();
+    LOGGER.debug("Detected HTTP connection.");
     
     p.addLast(new HttpRequestDecoder());
     p.addLast(new HttpObjectAggregator(1048576));
     p.addLast(new StringEncoder(CharsetUtil.US_ASCII));
     p.addLast(new HttpResponseEncoder());
-    p.addLast(new HttpServerHandler(configFile, winstonDatabasePool));
+    p.addLast(new HttpCommandHandler(configFile, winstonDatabasePool));
     p.remove(this);
   }
 
   private void switchToWws(ChannelPipeline p) {
-    LOGGER.info("found WWS command.");
-    connectionStatistics.incrWwsCount();
-
+    LOGGER.debug("Detected WWS connection");
+    
     p.addLast(new LineBasedFrameDecoder(1024, true, true));
     p.addLast(new StringDecoder(CharsetUtil.US_ASCII));
     p.addLast(new StringEncoder(CharsetUtil.US_ASCII));
     p.addLast(new WwsCommandStringDecoder());
-    p.addLast(new WwsServerHandler(configFile, winstonDatabasePool));
+    p.addLast(new WwsCommandHandler(configFile, winstonDatabasePool));
     p.remove(this);
   }
 }

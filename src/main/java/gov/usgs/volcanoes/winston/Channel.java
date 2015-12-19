@@ -112,7 +112,7 @@ public class Channel implements Comparable<Channel> {
     
     
     double mt = rs.getDouble("st");
-    minTime = Double.max(mt, J2kSec.now() - aparentRetention);
+    minTime = Math.max(mt, J2kSec.now() - aparentRetention);
     maxTime = rs.getDouble("et");
 
     instrument = new Instrument(rs);

@@ -12,23 +12,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Console;
-import java.io.Reader;
-import java.io.Writer;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.Executors;
 
 import gov.usgs.volcanoes.core.Log;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Version;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.traffic.ChannelTrafficShapingHandler;
+import io.netty.handler.traffic.GlobalChannelTrafficShapingHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 
@@ -231,14 +234,29 @@ public class WWS {
 
     final ConfigFile winstonConfig = configFile.getSubConfig("winston");
     final WinstonDatabasePool databasePool = new WinstonDatabasePool(winstonConfig, poolConfig);
+//    final GlobalChannelTrafficShapingHandler trafficCounter = new GlobalChannelTrafficShapingHandler(Executors.newScheduledThreadPool(1));
 
     final AttributeKey<ConnectionStatistics> connectionStatsKey =
         AttributeKey.valueOf("connectionStatistics");
     final ConnectionStatistics connectionStatistics = new ConnectionStatistics();
 
-    final AttributeKey<DatabaseStatistics> databaseStatsKey =
-        AttributeKey.valueOf("databaseStatistics");
-    final DatabaseStatistics databaseStatistics = new DatabaseStatistics();
+
+    new Thread() {
+      public void run() {
+        while (true) {
+          System.out.println(connectionStatistics);
+          try {
+            Thread.sleep(2 * 1000);
+          } catch (InterruptedException ignored) {
+            // TODO Auto-generated catch block
+          }
+        }
+      }
+    }.start();
+
+    // final AttributeKey<DatabaseStatistics> databaseStatsKey =
+    // AttributeKey.valueOf("databaseStatistics");
+    // final DatabaseStatistics databaseStatistics = new DatabaseStatistics();
 
     final ServerBootstrap b = new ServerBootstrap();
     b.group(group).channel(NioServerSocketChannel.class)
@@ -246,18 +264,22 @@ public class WWS {
         .childHandler(new ChannelInitializer<SocketChannel>() {
           @Override
           public void initChannel(SocketChannel ch) throws Exception {
-            connectionStatistics.incrCount();
-            connectionStatistics.incrActiveCount();
+            connectionStatistics.incrOpenCount();
+            final ChannelTrafficShapingHandler trafficCounter = new ChannelTrafficShapingHandler(1000);
+            InetSocketAddress remoteAddress = ch.remoteAddress();
+            connectionStatistics.mapChannel(remoteAddress, trafficCounter.trafficCounter());
+            
             ch.attr(connectionStatsKey).set(connectionStatistics);
-            ch.attr(databaseStatsKey).set(databaseStatistics);
-
+            // ch.attr(databaseStatsKey).set(databaseStatistics);
+            ch.closeFuture().addListener(new ChannelFutureListener() {
+              public void operationComplete(ChannelFuture future) throws Exception {
+                connectionStatistics.decrOpenCount();
+                System.out.println("Total: " + trafficCounter.trafficCounter().cumulativeWrittenBytes());
+              }
+            });
+            
+            ch.pipeline().addLast(trafficCounter);
             ch.pipeline().addLast(new PortUnificationDecoder(configFile, databasePool));
-          }
-
-
-          @Override
-          public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-            connectionStatistics.decrActiveCount();
           }
         });
 

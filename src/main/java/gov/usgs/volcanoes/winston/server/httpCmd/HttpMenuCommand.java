@@ -66,10 +66,13 @@ public final class HttpMenuCommand extends HttpBaseCommand {
 
   
   public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request) {
-    LOGGER.info("Received command: {}", request.getUri());
-    
     StringBuffer error = new StringBuffer();
     
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e1) {
+      // TODO Auto-generated catch block
+    }
     Map<String, String> params;
     try {
       params = getUnaryParams(request);
@@ -138,8 +141,6 @@ public final class HttpMenuCommand extends HttpBaseCommand {
           httpResponse.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         }
         ctx.write(httpResponse);
-        ctx.write("::ACTIVE:: " + ((ConnectionStatistics) ctx.channel().attr(AttributeKey.valueOf("connectionStatistics")).get()).getActive() + ":\n");
-        ctx.write("::COUNT:: " + ((ConnectionStatistics) ctx.channel().attr(AttributeKey.valueOf("connectionStatistics")).get()).getCount() + ":\n");
         ctx.writeAndFlush(response);
       } else {
         LOGGER.error("NULL server menu.");
@@ -158,6 +159,8 @@ public final class HttpMenuCommand extends HttpBaseCommand {
       colOrd[sortCol] = 'd';
 
     final StringBuilder output = new StringBuilder();
+    
+    output.append("<HTML><HEAD><TITLE>Winston Server Menu</TITLE></HEAD><BODY>");
 
     output.append("<table CELLPADDING=\"5\"><tr>");
     for (int i = 1; i < colTitle.length; i++)
@@ -168,8 +171,6 @@ public final class HttpMenuCommand extends HttpBaseCommand {
 
     // get and sort menu
     MenuCommand menuCmd = new MenuCommand();
-    menuCmd.generateMenu(winston, true);
-//    final List<String> list = emulator.getWaveServerMenu(true, 0, 0, maxDays);
     final List<String> list = menuCmd.generateMenu(winston, true);
 
     final String[][] menu = new String[list.size()][8];
@@ -205,6 +206,7 @@ public final class HttpMenuCommand extends HttpBaseCommand {
     }
 
     output.append("</table>");
+    output.append("</BODY></HTML>");
     return output.toString();
   }
 

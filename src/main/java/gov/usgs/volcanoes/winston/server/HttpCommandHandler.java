@@ -18,6 +18,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.util.AttributeKey;
 
 /**
  * Derived from HttpSnoopServerHandler
@@ -25,22 +26,31 @@ import io.netty.handler.codec.http.HttpHeaders;
  * @author Tom Parker
  *
  */
-public class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(HttpServerHandler.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HttpCommandHandler.class);
 
   private final WinstonDatabasePool winstonDatabasePool;
+  private ConnectionStatistics connectionStatistics;
+  
+  private static final AttributeKey<ConnectionStatistics> connectionStatsKey;
 
-  public HttpServerHandler(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
+  static {
+    connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
+  }
+
+  public HttpCommandHandler(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     this.winstonDatabasePool = winstonDatabasePool;
   }
 
   @Override
   public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
+    connectionStatistics = ctx.channel().attr(connectionStatsKey).get();
 
     final HttpBaseCommand httpWorker = HttpCommandFactory.get(winstonDatabasePool, req.getUri());
-    httpWorker.doCommand(ctx, req);
-
+    httpWorker.respond(ctx, req);
+    connectionStatistics.incrHttpCount();
+    
     // If keep-alive is not set, close the connection once the content is fully written.
     if (!HttpHeaders.isKeepAlive(req)) {
       ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);

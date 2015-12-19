@@ -86,7 +86,7 @@ public class MenuCommand extends WwsBaseCommand {
       return null;
     }
 
-    LOGGER.info("channels count {}", channels.size());
+    LOGGER.debug("channels count {}", channels.size());
     final List<String> list = new ArrayList<String>(channels.size());
     for (final Channel chan : channels) {
       final String[] ss = chan.getCode().split("\\$");
@@ -112,7 +112,7 @@ public class MenuCommand extends WwsBaseCommand {
         }
       }
     }
-    LOGGER.info("returning {} items.", list.size());
+    LOGGER.debug("returning {} items.", list.size());
     return list;
   }
 }
