@@ -100,4 +100,8 @@ public class ConnectionStatistics {
   public void mapChannel(InetSocketAddress remoteAddress, TrafficCounter trafficCounter2) {
     connectionMap.put(remoteAddress, trafficCounter2);
   }
+
+  public void unmapChannel(InetSocketAddress remoteAddress) {
+    connectionMap.remove(remoteAddress);
+  }
 }

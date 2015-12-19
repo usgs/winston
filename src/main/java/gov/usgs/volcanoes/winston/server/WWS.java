@@ -266,7 +266,7 @@ public class WWS {
           public void initChannel(SocketChannel ch) throws Exception {
             connectionStatistics.incrOpenCount();
             final ChannelTrafficShapingHandler trafficCounter = new ChannelTrafficShapingHandler(1000);
-            InetSocketAddress remoteAddress = ch.remoteAddress();
+            final InetSocketAddress remoteAddress = ch.remoteAddress();
             connectionStatistics.mapChannel(remoteAddress, trafficCounter.trafficCounter());
             
             ch.attr(connectionStatsKey).set(connectionStatistics);
@@ -274,6 +274,8 @@ public class WWS {
             ch.closeFuture().addListener(new ChannelFutureListener() {
               public void operationComplete(ChannelFuture future) throws Exception {
                 connectionStatistics.decrOpenCount();
+                connectionStatistics.unmapChannel(remoteAddress);
+
                 System.out.println("Total: " + trafficCounter.trafficCounter().cumulativeWrittenBytes());
               }
             });
