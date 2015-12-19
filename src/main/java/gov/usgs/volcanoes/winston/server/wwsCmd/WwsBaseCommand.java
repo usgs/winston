@@ -19,6 +19,7 @@ import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WaveServerEmulator;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -59,9 +60,10 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
    * Do the work. Return response to the client.
    * 
    * @throws MalformedCommandException
+   * @throws UtilException 
    */
   public void respond(ChannelHandlerContext ctx, WwsCommandString req)
-      throws MalformedCommandException {
+      throws MalformedCommandException, UtilException {
     LOGGER.info("Recieved command: {}", req.getCommandString());
     doCommand(ctx, req);
   }

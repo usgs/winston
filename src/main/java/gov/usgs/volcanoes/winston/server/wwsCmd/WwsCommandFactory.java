@@ -22,7 +22,7 @@ public enum WwsCommandFactory {
   GETMETADATA(GetMetadataCommand.class),
   GETSCNLHELIRAW(GetScnlHeliRawCommand.class),
   GETWAVERAW(GetWaveRawCommand.class),
-      // STATUS("STATUS", StatusCommand.class),
+  STATUS(StatusCommand.class),
       // GETSCNRAW("GETSCNRAW", StatusCommand.class),
       // GETSCNLRAW("GETSCNLRAW", StatusCommand.class),
       // GETSCN("GETSCN", StatusCommand.class),

@@ -86,7 +86,7 @@ public class WWSClient extends WaveServer {
 
           writeString(req);
           final String info = readString();
-
+System.out.println("Got info: " + info);
           if (info.startsWith("ERROR")) {
             logger.warning("Sent: " + req);
             logger.warning("Got: " + info);
@@ -97,8 +97,10 @@ public class WWSClient extends WaveServer {
           final int bytes = Integer.parseInt(ss[1]);
           if (bytes == 0)
             return true;
+          
+System.out.println("start read: " + bytes);
           byte[] buf = readBinary(bytes, readListener);
-
+System.out.println("Got bytes: " + buf.length);
           if (compressed)
             buf = Zip.decompress(buf);
 
