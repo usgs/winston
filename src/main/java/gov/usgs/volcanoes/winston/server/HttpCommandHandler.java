@@ -49,7 +49,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
     final HttpBaseCommand httpWorker = HttpCommandFactory.get(winstonDatabasePool, req.getUri());
     httpWorker.respond(ctx, req);
-    connectionStatistics.incrHttpCount();
+    connectionStatistics.incrHttpCount(ctx.channel().remoteAddress());
     
     // If keep-alive is not set, close the connection once the content is fully written.
     if (!HttpHeaders.isKeepAlive(req)) {

@@ -49,7 +49,7 @@ public class WwsCommandHandler extends SimpleChannelInboundHandler<WwsCommandStr
 
     try {
       final WwsBaseCommand wwsWorker = WwsCommandFactory.get(winstonDatabasePool, request);
-      connectionStatistics.incrWwsCount();
+      connectionStatistics.incrWwsCount(ctx.channel().remoteAddress());
       int maxDays = configFile.getInt("wws.maxDays", DEFAULT_MAX_DAYS);
       if (maxDays == 0) {
         maxDays = DEFAULT_MAX_DAYS;

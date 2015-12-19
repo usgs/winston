@@ -76,8 +76,8 @@ public class WWS {
         if (s.equals("q")) {
           run = false;
           wws.shutdownGracefully();
-          // } else if (s.startsWith("c")) {
-          // wws.printConnections(s);
+           } else if (s.startsWith("c")) {
+           wws.printConnections(s);
           // } else if (s.startsWith("m")) {
           // wws.printCommands(s);
           // } else if (s.equals("d")) {
@@ -103,6 +103,9 @@ public class WWS {
     }
   }
 
+  public void printConnections(String s) {
+    System.out.println(connectionStatistics);
+  }
   public static void printKeys() {
     final StringBuffer sb = new StringBuffer();
     sb.append(Version.VERSION_STRING + "\n");
@@ -161,12 +164,14 @@ public class WWS {
   protected NioEventLoopGroup group;
   private boolean acceptCommands;
 
+  private final ConnectionStatistics connectionStatistics;
   /**
    * Creates a new WWS.
    */
   public WWS(final String cf) {
     super();
 
+    connectionStatistics = new ConnectionStatistics();
     acceptCommands = true;
     LOGGER.info(Version.VERSION_STRING);
     configFilename = cf;
@@ -238,21 +243,21 @@ public class WWS {
 
     final AttributeKey<ConnectionStatistics> connectionStatsKey =
         AttributeKey.valueOf("connectionStatistics");
-    final ConnectionStatistics connectionStatistics = new ConnectionStatistics();
+//    final ConnectionStatistics connectionStatistics = new ConnectionStatistics();
 
 
-    new Thread() {
-      public void run() {
-        while (true) {
-          System.out.println(connectionStatistics);
-          try {
-            Thread.sleep(2 * 1000);
-          } catch (InterruptedException ignored) {
-            // TODO Auto-generated catch block
-          }
-        }
-      }
-    }.start();
+//    new Thread() {
+//      public void run() {
+//        while (true) {
+//          System.out.println(connectionStatistics);
+//          try {
+//            Thread.sleep(2 * 1000);
+//          } catch (InterruptedException ignored) {
+//            // TODO Auto-generated catch block
+//          }
+//        }
+//      }
+//    }.start();
 
     // final AttributeKey<DatabaseStatistics> databaseStatsKey =
     // AttributeKey.valueOf("databaseStatistics");
@@ -267,8 +272,11 @@ public class WWS {
             connectionStatistics.incrOpenCount();
             final ChannelTrafficShapingHandler trafficCounter = new ChannelTrafficShapingHandler(1000);
             final InetSocketAddress remoteAddress = ch.remoteAddress();
-            connectionStatistics.mapChannel(remoteAddress, trafficCounter.trafficCounter());
-            
+            connectionStatistics.mapChannel(remoteAddress, trafficCounter);
+ 
+            ch.pipeline().addLast(trafficCounter);
+            ch.pipeline().addLast(new PortUnificationDecoder(configFile, databasePool));
+
             ch.attr(connectionStatsKey).set(connectionStatistics);
             // ch.attr(databaseStatsKey).set(databaseStatistics);
             ch.closeFuture().addListener(new ChannelFutureListener() {
@@ -280,8 +288,6 @@ public class WWS {
               }
             });
             
-            ch.pipeline().addLast(trafficCounter);
-            ch.pipeline().addLast(new PortUnificationDecoder(configFile, databasePool));
           }
         });
 
