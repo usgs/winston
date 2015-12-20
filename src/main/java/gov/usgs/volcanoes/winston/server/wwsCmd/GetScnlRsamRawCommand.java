@@ -16,10 +16,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 
+import gov.usgs.math.DownsamplingType;
 import gov.usgs.net.ConnectionStatistics;
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.HelicorderData;
-import gov.usgs.plot.data.Wave;
+import gov.usgs.plot.data.RSAMData;
 import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.Ew;
@@ -41,69 +42,47 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Dan Cervelli
  * @author Tom Parker
  */
-public class GetWaveRawCommand extends WwsBaseCommand {
-  private static final Logger LOGGER = LoggerFactory.getLogger(GetWaveRawCommand.class);
+public class GetScnlRsamRawCommand extends WwsBaseCommand {
+  private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRsamRawCommand.class);
 
-  public GetWaveRawCommand() {
+  public GetScnlRsamRawCommand() {
     super();
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    if (!cmd.isLegalSCNLTT(9))
-      return; // malformed command
-
-    final double et = cmd.getT2(true);
-    final double st = cmd.getT1(true);
-    final String scnl = cmd.getWinstonSCNL();
-    
-    if (st >= et) {
+    if (!cmd.isLegalSCNLTT(10) || Double.isNaN(cmd.getDouble(8))
+        || cmd.getInt(9) == Integer.MIN_VALUE) {
       throw new MalformedCommandException();
     }
+    final double t1 = cmd.getT1(true);
+    final double t2 = cmd.getT2(true);
+    final int ds = (int) cmd.getDouble(8);
+    final String scnl = cmd.getWinstonSCNL();
+    final DownsamplingType dst = (ds < 2) ? DownsamplingType.NONE : DownsamplingType.MEAN;
 
-    WinstonDatabase winston = null;
-    Wave wave;
+    RSAMData rsam;
     try {
-      wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
-
-        public Wave execute(WinstonDatabase winston) throws UtilException {
-          Data data = new Data(winston);
-          return data.getWave(scnl, st, et, 0);
+      rsam = databasePool.doCommand(new WinstonConsumer<RSAMData>() {
+        public RSAMData execute(WinstonDatabase winston) throws UtilException {
+          return new Data(winston).getRSAMData(scnl, t1, t2, 0, dst, ds);
         }
+
       });
-    } catch (Exception e1) {
-      throw new UtilException(e1.getMessage());
-    }
-
-
-    try {
-      winston = databasePool.borrowObject();
-      if (!winston.checkConnect()) {
-        LOGGER.error("WinstonDatabase unable to connect to MySQL.");
-      } else {
-        Data data = new Data(winston);
-        wave = data.getWave(cmd.getWinstonSCNL(), st, et, 0);
-      }
     } catch (Exception e) {
-      LOGGER.error("Unable to fulfill command.", e);
-    } finally {
-      if (winston != null) {
-        databasePool.returnObject(winston);
-      }
+      throw new UtilException(e.getMessage());
     }
 
     ByteBuffer bb = null;
-    if (wave != null && wave.numSamples() > 0)
-      bb = (ByteBuffer) wave.toBinary().flip();
-
-    String id = cmd.getID();
-
-    if (cmd.getInt(8) == 1)
+    if (rsam != null && rsam.rows() > 0)
+      bb = (ByteBuffer) rsam.toBinary().flip();
+    
+    if (cmd.getInt(9) == 1)
       bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
-    LOGGER.warn("returning {} heli bytes", bb.limit());
-    ctx.write(id + " " + bb.limit() + "\n");
+    LOGGER.warn("returning {} rsam bytes", bb.limit());
+    ctx.write(cmd.getID() + " " + bb.limit() + '\n');
     ctx.writeAndFlush(bb.array());
   }
 }

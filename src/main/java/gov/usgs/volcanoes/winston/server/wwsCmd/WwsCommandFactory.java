@@ -23,11 +23,11 @@ public enum WwsCommandFactory {
   GETSCNLHELIRAW(GetScnlHeliRawCommand.class),
   GETWAVERAW(GetWaveRawCommand.class),
   STATUS(StatusCommand.class),
+  GETSCNLRSAMRAW(GetScnlRsamRawCommand.class),
       // GETSCNRAW("GETSCNRAW", StatusCommand.class),
       // GETSCNLRAW("GETSCNLRAW", StatusCommand.class),
       // GETSCN("GETSCN", StatusCommand.class),
       // GETSCNL("GETSCNL", StatusCommand.class),
-      // GETSCNLRSAMRAW("GETSCNLRSAMRAW", StatusCommand.class),
   ;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WwsCommandFactory.class);

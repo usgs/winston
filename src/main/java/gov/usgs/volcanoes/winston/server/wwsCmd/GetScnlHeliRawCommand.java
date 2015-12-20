@@ -75,8 +75,6 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
       throw new UtilException(e1.getMessage());
     }
 
-    String id = cmd.getID();
-
     ByteBuffer bb = null;
     if (heli != null && heli.rows() > 0) {
       bb = (ByteBuffer) heli.toBinary().flip();
@@ -85,7 +83,7 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
         bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
       LOGGER.warn("returning {} heli bytes", bb.limit());
-      ctx.write(id + " " + bb.limit() + "\n");
+      ctx.write(cmd.getID() + " " + bb.limit() + "\n");
       ctx.writeAndFlush(bb.array());
     } else {
       LOGGER.warn("no heli data");
