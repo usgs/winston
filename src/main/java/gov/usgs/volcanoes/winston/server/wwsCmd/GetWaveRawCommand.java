@@ -49,20 +49,34 @@ public class GetWaveRawCommand extends WwsBaseCommand {
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
-      throws MalformedCommandException {
+      throws MalformedCommandException, UtilException {
 
     if (!cmd.isLegalSCNLTT(9))
       return; // malformed command
 
-    double et = cmd.getT2(true);
-    double st = cmd.getT1(true);
-
+    final double et = cmd.getT2(true);
+    final double st = cmd.getT1(true);
+    final String scnl = cmd.getWinstonSCNL();
+    
     if (st >= et) {
       throw new MalformedCommandException();
     }
 
     WinstonDatabase winston = null;
-    Wave wave = null;
+    Wave wave;
+    try {
+      wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
+
+        public Wave execute(WinstonDatabase winston) throws UtilException {
+          Data data = new Data(winston);
+          return data.getWave(scnl, st, et, 0);
+        }
+      });
+    } catch (Exception e1) {
+      throw new UtilException(e1.getMessage());
+    }
+
+
     try {
       winston = databasePool.borrowObject();
       if (!winston.checkConnect()) {

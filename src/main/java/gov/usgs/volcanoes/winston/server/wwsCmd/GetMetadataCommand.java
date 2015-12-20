@@ -21,6 +21,7 @@ import gov.usgs.net.NetTools;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.Instrument;
 import gov.usgs.volcanoes.winston.db.Channels;
@@ -48,43 +49,52 @@ public class GetMetadataCommand extends WwsBaseCommand {
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
-      throws MalformedCommandException {
+      throws MalformedCommandException, UtilException {
     final String[] ss = cmd.getCommandSplits();
     if (ss.length <= 2) {
       throw new MalformedCommandException();
     }
 
-    WinstonDatabase winston = null;
-    String metadata = null;
-
+    StringBuilder sb = new StringBuilder();
     try {
-      winston = databasePool.borrowObject();
-      if (!winston.checkConnect()) {
-        LOGGER.error("WinstonDatabase unable to connect to MySQL.");
-      } else {
-        Channels channels = new Channels(winston);
-        if (ss[2].equals("INSTRUMENT")) {
-          metadata = getInstrumentMetadata(cmd, channels);
-        } else if (ss[2].equals("CHANNEL")) {
-          metadata = getChannelMetadata(cmd, channels);
-        }
-      }
+    if ("INSTRUMENT".equals(ss[2])) {
+      List<Instrument> instruments = databasePool.doCommand(getInstrumentsConsumer());
+      sb.append(String.format("%s %d\n", cmd.getID(), instruments.size()));
+      sb.append(getInstrumentMetadata(instruments));
+
+    } else if ("CHANNEL".equals(ss[2])) {
+      List<Channel> channels = databasePool.doCommand(getChannelsConsumer());
+      sb.append(String.format("%s %d\n", cmd.getID(), channels.size()));
+      sb.append(getChannelMetadata(channels));
+    }
     } catch (Exception e) {
-      LOGGER.error("Unable to fulfill command.", e);
-    } finally {
-      if (winston != null) {
-        databasePool.returnObject(winston);
-      }
+      throw new UtilException(e.toString());
     }
     
-    ctx.writeAndFlush(metadata);
+    ctx.writeAndFlush(sb.toString());
 
   }
 
-  private String getInstrumentMetadata(final WwsCommandString cmd, final Channels channels) {
-    final List<Instrument> insts = channels.getInstruments();
+  private WinstonConsumer<List<Channel>> getChannelsConsumer() {
+    return new WinstonConsumer<List<Channel>>() {
+
+      public List<Channel> execute(WinstonDatabase winston) {
+        return new Channels(winston).getChannels();
+      }
+    };
+  }
+
+  private WinstonConsumer<List<Instrument>> getInstrumentsConsumer() {
+    return new WinstonConsumer<List<Instrument>>() {
+
+      public List<Instrument> execute(WinstonDatabase winston) {
+        return new Channels(winston).getInstruments();
+      }
+    };
+  }
+
+  private String getInstrumentMetadata(List<Instrument> insts) {
     final StringBuilder sb = new StringBuilder(insts.size() * 60);
-    sb.append(String.format("%s %d\n", cmd.getID(), insts.size()));
     for (final Instrument inst : insts) {
       sb.append("name=");
       sb.append(escape(inst.getName()));
@@ -110,10 +120,8 @@ public class GetMetadataCommand extends WwsBaseCommand {
     return sb.toString();
   }
 
-  private String getChannelMetadata(final WwsCommandString cmd, final Channels channels) {
-    final List<Channel> chs = channels.getChannels(true);
+  private String getChannelMetadata(List<Channel> chs) {
     final StringBuilder sb = new StringBuilder(chs.size() * 60);
-    sb.append(String.format("%s %d\n", cmd.getID(), chs.size()));
     for (final Channel ch : chs) {
       sb.append("channel=");
       sb.append(ch.getCode().replace('$', ' '));
@@ -146,13 +154,13 @@ public class GetMetadataCommand extends WwsBaseCommand {
     }
     return sb.toString();
   }
-  
+
   private String escape(final String s) {
     if (s == null)
       return "";
     return s.replaceAll(",", "\\\\c").replaceAll("\n", "\\\\n");
   }
-  
+
   private void appendMap(final StringBuilder sb, final Map<String, String> map) {
     if (map == null)
       return;

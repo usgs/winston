@@ -20,6 +20,7 @@ import gov.usgs.net.NetTools;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -46,35 +47,30 @@ public class GetChannelsCommand extends WwsBaseCommand {
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
-      throws MalformedCommandException {
+      throws MalformedCommandException, UtilException {
 
     if (!cmd.isLegal(2) && !cmd.isLegal(3)) {
       throw new MalformedCommandException();
     }
 
-    boolean metadata = false;
+    final boolean metadata;
     if ("METADATA".equals(cmd.getString(2))) {
       metadata = true;
+    } else {
+      metadata = false;
     }
 
-    WinstonDatabase winston = null;
     List<Channel> chs = null;
     try {
-      winston = databasePool.borrowObject();
-      if (!winston.checkConnect()) {
-        LOGGER.error("WinstonDatabase unable to connect to MySQL.");
-      } else {
-        Channels channels = new Channels(winston);
-        channels.setAparentRetention(maxDays * ONE_DAY_S); 
-        chs = channels.getChannels(metadata);
-        LOGGER.info("got {} channels", chs.size());
-      }
+      chs = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
+        public List<Channel> execute(WinstonDatabase winston) {
+          Channels channels = new Channels(winston);
+          channels.setAparentRetention(maxDays * ONE_DAY_S); 
+          return channels.getChannels(metadata);
+        }
+      });
     } catch (Exception e) {
-      LOGGER.error("Unable to fulfill command.", e);
-    } finally {
-      if (winston != null) {
-        databasePool.returnObject(winston);
-      }
+      throw new UtilException("Unable to get channels.");
     }
 
     final StringBuilder sb = new StringBuilder(chs.size() * 60);

@@ -27,6 +27,7 @@ import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WaveServerEmulator;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -108,9 +109,10 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
    * Do the work. Return response to the browser.
    * 
    * @throws MalformedCommandException
+   * @throws UtilException 
    */
   public void respond(ChannelHandlerContext ctx, FullHttpRequest request)
-      throws MalformedCommandException {
+      throws MalformedCommandException, UtilException {
     LOGGER.info("Recieved command: {}", request.getUri());
     doCommand(ctx, request);
   }

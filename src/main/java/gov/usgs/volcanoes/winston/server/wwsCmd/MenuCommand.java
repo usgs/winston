@@ -1,7 +1,6 @@
 /**
- * I waive copyright and related rights in the this work worldwide
- * through the CC0 1.0 Universal public domain dedication.
- * https://creativecommons.org/publicdomain/zero/1.0/legalcode
+ * I waive copyright and related rights in the this work worldwide through the CC0 1.0 Universal
+ * public domain dedication. https://creativecommons.org/publicdomain/zero/1.0/legalcode
  */
 
 package gov.usgs.volcanoes.winston.server.wwsCmd;
@@ -14,6 +13,7 @@ import java.util.List;
 
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -36,7 +36,7 @@ public class MenuCommand extends WwsBaseCommand {
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
-      throws MalformedCommandException {
+      throws MalformedCommandException, UtilException {
 
     boolean isScnl = false;
 
@@ -51,37 +51,25 @@ public class MenuCommand extends WwsBaseCommand {
     ctx.write(cmd.getID() + " ");
 
     WinstonDatabase winston = null;
-    List<String> serverMenu = null;
-
+    List<Channel> channels;
     try {
-      winston = databasePool.borrowObject();
-      if (!winston.checkConnect()) {
-        LOGGER.error("WinstonDatabase unable to connect to MySQL.");
-      } else {
-        serverMenu = generateMenu(winston, isScnl);
-      }
+      channels = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
+
+        public List<Channel> execute(WinstonDatabase winston) throws UtilException {
+          return new Channels(winston).getChannels();
+        }
+
+      });
     } catch (Exception e) {
-      LOGGER.error("Unable to fulfill command.", e);
-    } finally {
-      if (winston != null) {
-        databasePool.returnObject(winston);
-      }
+      throw new UtilException(e.getMessage());
     }
 
-    if (serverMenu != null) {
-      LOGGER.info("sending {} items", serverMenu.size());
-      for (String s : serverMenu) {
-        ctx.write(s);
-        LOGGER.info("sending: {}", s);
-      }
-      ctx.writeAndFlush("\n");
-    } else {
-      LOGGER.error("NULL server menu.");
-    }
+    ctx.write(generateMenu(channels, isScnl).toString());
+    ctx.writeAndFlush('\n');
   }
 
-  public List<String> generateMenu(WinstonDatabase winston, boolean isScnl) {
-    final List<Channel> channels = new Channels(winston).getChannels();
+  public List<String> generateMenu(List<Channel> channels, boolean isScnl) {
+    
     if (channels == null) {
       return null;
     }
