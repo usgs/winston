@@ -47,7 +47,8 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
   public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
     connectionStatistics = ctx.channel().attr(connectionStatsKey).get();
 
-    final HttpBaseCommand httpWorker = HttpCommandFactory.get(winstonDatabasePool, req.getUri());
+    String command = req.getUri().substring(1, req.getUri().length());
+    final HttpBaseCommand httpWorker = HttpCommandFactory.get(winstonDatabasePool, command);
     httpWorker.respond(ctx, req);
     connectionStatistics.incrHttpCount(ctx.channel().remoteAddress());
     

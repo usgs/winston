@@ -13,15 +13,28 @@ import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 
 public enum HttpCommandFactory {
 
-  MENU("/menu", HttpMenuCommand.class);
+  MENU(MenuCommand.class),
+  USAGE(UsageCommand.class),
+  ;
+  
+//  addCommand(new HttpHeliCommand(nt, db, wws));
+//  addCommand(new HttpRsamCommand(nt, db, wws));
+//  addCommand(new HttpStatusCommand(nt, db, wws));
+//  addCommand(new HttpGapsCommand(nt, db, wws));
+//  addCommand(new FdsnDataselectQuery(nt, db, wws));
+//  addCommand(new FdsnDataselectVersion(nt, db, wws));
+//  addCommand(new FdsnDataselectWadl(nt, db, wws));
+//  addCommand(new FdsnDataselectUsage(nt, db, wws));
+//  addCommand(new FdsnStationQuery(nt, db, wws));
+//  addCommand(new FdsnStationVersion(nt, db, wws));
+//  addCommand(new FdsnStationWadl(nt, db, wws));
+//  addCommand(new FdsnStationUsage(nt, db, wws));
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpCommandFactory.class);
 
-  private String command;
   private Class<? extends HttpBaseCommand> clazz;
 
-  private HttpCommandFactory(String command, Class<? extends HttpBaseCommand> clazz) {
-    this.command = command;
+  private HttpCommandFactory(Class<? extends HttpBaseCommand> clazz) {
     this.clazz = clazz;
   }
 
@@ -32,7 +45,7 @@ public enum HttpCommandFactory {
       command = command.substring(0, cmdEnd);
     }
     for (HttpCommandFactory cmd : HttpCommandFactory.values()) {
-      if (cmd.command.equals(command)) {
+      if (cmd.toString().toLowerCase().equals(command)) {
         HttpBaseCommand baseCommand = cmd.clazz.newInstance();
         baseCommand.databasePool(databasePool);
         return baseCommand;

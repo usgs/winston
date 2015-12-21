@@ -27,7 +27,6 @@ import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
-import gov.usgs.volcanoes.winston.server.wwsCmd.MenuCommand;
 import gov.usgs.volcanoes.winston.server.wwsCmd.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
 import gov.usgs.volcanoes.winston.server.wwsCmd.MalformedCommandException;
@@ -56,14 +55,14 @@ import io.netty.util.AttributeKey;
  * @author Tom Parker
  *
  */
-public final class HttpMenuCommand extends HttpBaseCommand {
+public final class MenuCommand extends HttpBaseCommand {
 
   private static int DEFAULT_OB = 2;
   private static String DEFAULT_SO = "a";
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(HttpMenuCommand.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(MenuCommand.class);
 
-  public HttpMenuCommand() {
+  public MenuCommand() {
     super();
   }
 
@@ -170,7 +169,7 @@ public final class HttpMenuCommand extends HttpBaseCommand {
     }
 
     MenuCommand menuCmd = new MenuCommand();
-    final List<String> list = menuCmd.generateMenu(channels, true);
+    final List<String> list = gov.usgs.volcanoes.winston.server.wwsCmd.MenuCommand.generateMenu(channels, true);
 
 
     final String[][] menu = new String[list.size()][8];

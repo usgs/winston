@@ -8,6 +8,7 @@ package gov.usgs.volcanoes.winston.server.wwsCmd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,22 +69,20 @@ public class MenuCommand extends WwsBaseCommand {
     ctx.writeAndFlush('\n');
   }
 
-  public List<String> generateMenu(List<Channel> channels, boolean isScnl) {
+  public static List<String> generateMenu(List<Channel> channels, boolean isScnl) throws UtilException {
     
     if (channels == null) {
       return null;
     }
 
+    DecimalFormat decimalFormat = WwsBaseCommand.getDecimalFormat();
+    
     LOGGER.debug("channels count {}", channels.size());
     final List<String> list = new ArrayList<String>(channels.size());
     for (final Channel chan : channels) {
       final String[] ss = chan.getCode().split("\\$");
       final double[] ts = {chan.getMinTime(), chan.getMaxTime()};
 
-
-      if (maxDays > 0) {
-        ts[0] = Math.max(ts[0], J2kSec.now() - (maxDays * ONE_DAY_S));
-      }
 
       if (ts != null && ts[0] < ts[1]) {
 
