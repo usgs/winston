@@ -50,6 +50,7 @@ import io.netty.util.concurrent.Future;
 public class WWS {
   private static final Logger LOGGER = LoggerFactory.getLogger(WWS.class);
 
+  private static final int DEFAULT_DB_CONNECTIONS = 5;
   /**
    * Launch the WWS.
    *
@@ -137,7 +138,7 @@ public class WWS {
   protected String configFilename;
 
   protected int embargo = 0;
-  protected int handlers;
+  protected int dbConnections;
   protected int httpMaxSize;
   protected int httpRefreshInterval;
   protected long idleTime;
@@ -238,7 +239,7 @@ public class WWS {
 
     // TODO: figure out how much flexibility is needed here
     final GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
-    poolConfig.setMinIdle(1);
+    poolConfig.setMaxTotal(dbConnections);
 
     final ConfigFile winstonConfig = configFile.getSubConfig("winston");
     final WinstonDatabasePool databasePool = new WinstonDatabasePool(winstonConfig, poolConfig);
@@ -364,12 +365,8 @@ public class WWS {
     keepalive = k;
     LOGGER.info("config: wws.keepalive={}.", keepalive);
 
-    // final int h = StringUtils.stringToInt(cf.getString("wws.handlers"), -1);
-    // if (h < 1 || h > 128) {
-    // fatalError(configFilename + ": bad or missing 'wws.handlers' setting.");
-    // }
-    // handlers = h;
-    // LOGGER.info("config: wws.handlers={}.", handlers);
+     dbConnections = StringUtils.stringToInt(configFile.getString("wws.dbConnections"), DEFAULT_DB_CONNECTIONS);
+     LOGGER.info("config: wws.dbConnections={}.", dbConnections);
 
     // final int m = StringUtils.stringToInt(cf.getString("wws.maxConnections"), -1);
     // if (m < 0) {
