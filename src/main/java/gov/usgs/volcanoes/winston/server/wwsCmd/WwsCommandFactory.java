@@ -24,7 +24,7 @@ public enum WwsCommandFactory {
   GETWAVERAW(GetWaveRawCommand.class),
   STATUS(StatusCommand.class),
   GETSCNLRSAMRAW(GetScnlRsamRawCommand.class),
-      // GETSCNRAW("GETSCNRAW", StatusCommand.class),
+  GETSCNRAW(GetScnRawCommand.class),
       // GETSCNLRAW("GETSCNLRAW", StatusCommand.class),
       // GETSCN("GETSCN", StatusCommand.class),
       // GETSCNL("GETSCNL", StatusCommand.class),
