@@ -9,12 +9,14 @@ package gov.usgs.volcanoes.winston.server.httpCmd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.usgs.volcanoes.core.util.UtilException;
+import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 
 public enum HttpCommandFactory {
 
   MENU(MenuCommand.class),
-  USAGE(UsageCommand.class),
+//  USAGE(UsageCommand.class),
   ;
   
 //  addCommand(new HttpHeliCommand(nt, db, wws));
@@ -39,7 +41,7 @@ public enum HttpCommandFactory {
   }
 
   public static HttpBaseCommand get(WinstonDatabasePool databasePool, String command)
-      throws InstantiationException, IllegalAccessException {
+      throws InstantiationException, IllegalAccessException, MalformedCommandException {
     int cmdEnd = command.indexOf('?');
     if (cmdEnd != -1) {
       command = command.substring(0, cmdEnd);
@@ -51,6 +53,6 @@ public enum HttpCommandFactory {
         return baseCommand;
       }
     }
-    throw new RuntimeException("Unknown HTTP command " + command);
+    throw new MalformedCommandException();
   }
 }

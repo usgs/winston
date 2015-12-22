@@ -43,7 +43,7 @@ import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.wwsCmd.MenuCommand;
 import gov.usgs.volcanoes.winston.server.wwsCmd.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
-import gov.usgs.volcanoes.winston.server.wwsCmd.MalformedCommandException;
+import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -79,18 +79,6 @@ public final class UsageCommand extends HttpBaseCommand {
 
   public UsageCommand() {
     super();
-  }
-
-  private void initializeTemplateEngine() {
-    cfg = new Configuration();
-    cfg.setTemplateLoader(new ClassTemplateLoader(getClass(), "/freemarker/www"));
-    DefaultObjectWrapper obj = new DefaultObjectWrapper();
-    obj.setExposeFields(true);
-    cfg.setObjectWrapper(obj);
-
-    cfg.setDefaultEncoding("UTF-8");
-    cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
-    cfg.setIncompatibleImprovements(new freemarker.template.Version(2, 3, 20));
   }
 
   public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws UtilException {

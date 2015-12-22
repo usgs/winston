@@ -2,7 +2,7 @@ package gov.usgs.volcanoes.winston.server.httpCmd;
 
 import gov.usgs.net.HttpRequest;
 import gov.usgs.volcanoes.core.util.UtilException;
-import gov.usgs.volcanoes.winston.server.wwsCmd.MalformedCommandException;
+import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 

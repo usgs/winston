@@ -21,6 +21,7 @@ import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
+import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 

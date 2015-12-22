@@ -119,7 +119,6 @@ static {
     
     p.addLast(new HttpRequestDecoder());
     p.addLast(new HttpObjectAggregator(1048576));
-    p.addLast(new StringEncoder(CharsetUtil.US_ASCII));
     p.addLast(new HttpResponseEncoder());
     p.addLast(new HttpCommandHandler(configFile, winstonDatabasePool));
     p.remove(this);

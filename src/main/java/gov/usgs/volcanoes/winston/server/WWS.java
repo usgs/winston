@@ -104,6 +104,7 @@ public class WWS {
       }
     } else {
       System.out.println("No console present. Unable to accept console commands.");
+      org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
     }
   }
 

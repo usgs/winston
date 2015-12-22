@@ -2,6 +2,8 @@
 <html>
 	<head>
 		<link href="/style.css" rel="stylesheet" type="text/css">
+	
+		<#--
 		<script>
 			var timeZones = [<#list timeZones as timeZone>${timeZone},</#list>];
 			var channels = [<#list channels as channel>${channel},</#list>]
@@ -16,7 +18,7 @@
 				buildGapsUrl();
 			}
 		</script>
-	
+	-->
 		<title>Winston Wave Server</title>
 	</head>
 	<body>
@@ -30,23 +32,29 @@
 			<div id="tabContainer">
 				<div id="tabs">
 					<ul>
+					<#--
 						<#list httpCommands as httpCommand>
 							<li id="tabHeader_${httpCommand?counter}">httpCommand</li>
 						</#list>
+						-->
     	  </ul>
 			</div>
 			<div id="tabscontent">
+			<#--
 				<#list httpCommands?keys as httpCommand>
         	<div class="tabpage" id="tabpage_${httpCommand?counter}">
 	        	<h2>${httpCommand.getTitle()}</h2>
 	        	${httpCommand.getUsage}
     	    </div>
-				</#list>	
+				</#list>
+				-->	
 			</div>
 		</div>
 		<p><br><p>
     <b>${versionString}</b>
 	</div>
+	<#--
 	<script src="/tabs.js"></script>
+	-->
 	</body>
 </html>

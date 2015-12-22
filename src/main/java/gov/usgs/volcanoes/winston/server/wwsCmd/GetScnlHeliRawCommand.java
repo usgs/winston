@@ -32,6 +32,7 @@ import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
 import gov.usgs.volcanoes.winston.legacyServer.WWSCommandString;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.BaseCommand;
+import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import io.netty.channel.ChannelHandlerContext;
 
 /**

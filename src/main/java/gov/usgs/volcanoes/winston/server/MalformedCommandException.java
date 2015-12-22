@@ -4,7 +4,7 @@
  * https://creativecommons.org/publicdomain/zero/1.0/legalcode
  */
 
-package gov.usgs.volcanoes.winston.server.wwsCmd;
+package gov.usgs.volcanoes.winston.server;
 
 import java.io.IOException;
 
