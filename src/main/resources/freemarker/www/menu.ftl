@@ -1,3 +1,4 @@
+<!-- BEGIN MENU TAB -->
 <script>
 	function buildMenuUrl() {
 		var menuOB = document.getElementById("menuOB");
@@ -86,3 +87,4 @@ recent and most recent data point for each station.
 	<br>
   Channels with least recent data:<br><a href="http://${host}/menu?ob=7&so=a">http://${host}/menu?ob=7&so=a</a><p>
 </div>
+<!-- END MENU TAB -->

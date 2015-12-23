@@ -6,6 +6,9 @@
 
 package gov.usgs.volcanoes.winston.server.httpCmd;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +18,8 @@ import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 
 public enum HttpCommandFactory {
 
-  MENU(MenuCommand.class),
+  MENU(MenuCommand.class, "Server Menu"),
+  HELI(HeliCommand.class, "Helicorder")
 //  USAGE(UsageCommand.class),
   ;
   
@@ -35,15 +39,20 @@ public enum HttpCommandFactory {
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpCommandFactory.class);
 
   private Class<? extends HttpBaseCommand> clazz;
+  private String commandName;
 
-  private HttpCommandFactory(Class<? extends HttpBaseCommand> clazz) {
+  private HttpCommandFactory(Class<? extends HttpBaseCommand> clazz, String commandName) {
     this.clazz = clazz;
+    this.commandName = commandName;
   }
 
   public Class<? extends HttpBaseCommand> getCommandClass() {
-    return this.clazz;
+    return clazz;
   }
   
+  public String commandName() {
+    return commandName;
+  }
   public static HttpBaseCommand get(WinstonDatabasePool databasePool, String command)
       throws InstantiationException, IllegalAccessException, MalformedCommandException {
     int cmdEnd = command.indexOf('?');
@@ -58,5 +67,13 @@ public enum HttpCommandFactory {
       }
     }
     throw new MalformedCommandException();
+  }
+
+  public static List<String> getNames() {
+    List names = new ArrayList();
+    for (HttpCommandFactory command : HttpCommandFactory.values()) {
+      names.add(command.commandName());
+    }
+    return names;
   }
 }

@@ -161,6 +161,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
     root.put("timeZones", TimeZone.getAvailableIDs());
     root.put("channels", channels);
     root.put("httpCommands", HttpCommandFactory.values());
+    root.put("httpCommandNames", HttpCommandFactory.getNames());
     root.put("versionString", Version.VERSION_STRING);
     root.put("host", ctx.channel().localAddress().toString().substring(1));
     HttpConstants.applyDefaults(root);

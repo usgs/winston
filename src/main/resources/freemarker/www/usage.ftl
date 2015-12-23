@@ -34,8 +34,8 @@
 			<div id="tabContainer">
 				<div id="tabs">
 					<ul>
-						<#list httpCommands as httpCommand>
-							<li id="tabHeader_${httpCommand?counter}">${httpCommand?lower_case}</li>
+						<#list httpCommandNames as httpCommand>
+							<li id="tabHeader_${httpCommand?counter}">${httpCommand}</li>
 						</#list>
     	  	</ul>
 				</div>

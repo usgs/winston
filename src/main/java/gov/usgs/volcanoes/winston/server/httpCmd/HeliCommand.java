@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -16,10 +17,15 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.TimeZone;
 
 import gov.usgs.net.HttpRequest;
 import gov.usgs.net.NetTools;
+import gov.usgs.plot.HelicorderSettings;
+import gov.usgs.plot.PlotException;
+import gov.usgs.plot.data.HelicorderData;
+import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
@@ -56,11 +62,15 @@ import io.netty.util.AttributeKey;
  * @author Tom Parker
  *
  */
-public final class MenuCommand extends HttpBaseCommand {
+public final class HeliCommand extends HttpBaseCommand {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MenuCommand.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeliCommand.class);
 
-  public MenuCommand() {
+  public static final int MAX_HOURS = 144;
+  public static final int MIN_HOURS = 1;
+  public static final double MAX_TC = 21600;
+
+  public HeliCommand() {
     super();
   }
 
@@ -77,6 +87,118 @@ public final class MenuCommand extends HttpBaseCommand {
       return;
     }
 
+    /*
+        final CodeTimer ct = new CodeTimer("HttpHeliCommand");
+
+    String error = "";
+    final HelicorderSettings settings = new HelicorderSettings();
+
+    settings.channel = arguments.get("code");
+    if (settings.channel == null)
+      error = "Error: you must specify a channel (code).";
+    else {
+      settings.channel = settings.channel.replace('_', '$');
+      if (settings.channel.indexOf(";") != -1)
+        error = "Error: illegal characters in channel (code).";
+    }
+
+    final String tz = StringUtils.stringToString(arguments.get("tz"), DEFAULT_TZ);
+    settings.timeZone = TimeZone.getTimeZone(tz);
+
+    settings.endTime = getEndTime(arguments.get("t2"));
+    if (Double.isNaN(settings.endTime))
+      error = error + "Error: could not parse end time (t2). Should be " + INPUT_DATE_FORMAT + ".";
+
+    settings.startTime = getStartTime(arguments.get("t1"), settings.endTime, ONE_HOUR);
+    if (Double.isNaN(settings.startTime))
+      error += "Error: cannot parse start time. Should be " + INPUT_DATE_FORMAT
+          + " or -HH. I received " + arguments.get("t1");
+
+    if (settings.endTime - settings.startTime > MAX_HOURS * ONE_HOUR)
+      error += "Error: Plot must not be more that " + MAX_HOURS + " hours long";
+    else if (settings.endTime - settings.startTime < MIN_HOURS * ONE_HOUR)
+      error += "Error: Plot cannot be less than " + MIN_HOURS + " hour long";
+
+    settings.timeChunk = StringUtils.stringToDouble(arguments.get("tc"), DEFAULT_TC) * ONE_MINUTE;
+    if (settings.timeChunk <= 0 || settings.timeChunk > MAX_TC)
+      error = error + "Error: time chunk (tc) must be greater than 0 and less than " + MAX_TC + ".";
+
+    final int width = StringUtils.stringToInt(arguments.get("w"), DEFAULT_W);
+    final int height = StringUtils.stringToInt(arguments.get("h"), DEFAULT_H);
+    settings.setSizeFromPlotSize(width, height);
+
+    if (settings.height * settings.width <= 0
+        || settings.height * settings.width > wws.httpMaxSize())
+      error = error + "Error: product of width (w) and height (h) must be between 1 and "
+          + wws.httpMaxSize() + ".";
+
+    settings.showClip = StringUtils.stringToBoolean(arguments.get("sc"), DEFAULT_SC);
+    settings.forceCenter = StringUtils.stringToBoolean(arguments.get("fc"), DEFAULT_FC);
+    settings.barRange = StringUtils.stringToInt(arguments.get("br"), -1);
+    settings.clipValue = StringUtils.stringToInt(arguments.get("cv"), -1);
+
+    settings.largeChannelDisplay = StringUtils.stringToBoolean(arguments.get("lb"));
+
+    settings.minimumAxis = StringUtils.stringToBoolean(arguments.get("min"));
+    if (settings.minimumAxis)
+      settings.setMinimumSizes();
+
+    if (error.length() > 0) {
+      ct.stop();
+      writeSimpleHTML(error);
+    } else {
+      HelicorderData heliData = null;
+      try {
+        heliData =
+            data.getHelicorderData(settings.channel, settings.startTime, settings.endTime, 0);
+      } catch (final UtilException e) {
+      }
+      ct.stop();
+
+      // Did it take too long to gather the data?
+      if (wws.getSlowCommandTime() > 0 && ct.getRunTimeMillis() > wws.getSlowCommandTime() * .75)
+        wws.log(Level.INFO,
+            String.format(
+                "slow db query (%1.2f ms) http/heli " + settings.channel + " " + settings.startTime
+                    + " -> " + settings.endTime + " ("
+                    + decimalFormat.format(settings.endTime - settings.startTime) + ") ",
+                ct.getRunTimeMillis()),
+            socketChannel);
+
+      if (heliData == null || heliData.rows() <= 0)
+        writeSimpleHTML("Error: could not get helicorder data, check channel (code).");
+      else {
+        ct.start();
+        final HttpResponse response = new HttpResponse("image/png");
+        response.setVersion(request.getVersion());
+        if (wws.httpRefreshInterval() > 0)
+          response.setHeader("Refresh:",
+              wws.httpRefreshInterval() + "; url=" + request.getResource());
+
+        byte[] png;
+        try {
+          png = settings.createPlot(heliData).getPNGBytes();
+          response.setLength(png.length);
+          netTools.writeString(response.getHeaderString(), socketChannel);
+          netTools.writeByteBuffer(ByteBuffer.wrap(png), socketChannel);
+        } catch (final PlotException e) {
+          e.printStackTrace();
+          error = error + "Error: Can not create plot.";
+        }
+
+        ct.stop();
+        // Did it take too long to deliver the data?
+        if (wws.getSlowCommandTime() > 0 && ct.getRunTimeMillis() > wws.getSlowCommandTime() * .75)
+          wws.log(Level.INFO,
+              String.format(
+                  "slow network (%1.2f ms) http/heli? " + settings.channel + " "
+                      + settings.startTime + " -> " + settings.endTime + " ("
+                      + decimalFormat.format(settings.endTime - settings.startTime) + ") ",
+                  ct.getRunTimeMillis()),
+              socketChannel);
+
+      }
+     */
     // validate input. Write error and return if bad.
     final int sortCol = StringUtils.stringToInt(params.get("ob"), HttpConstants.ORDER_BY);
     if (sortCol < 1 || sortCol > 8) {
@@ -161,7 +283,7 @@ public final class MenuCommand extends HttpBaseCommand {
       throw new UtilException(e.getMessage());
     }
 
-    MenuCommand menuCmd = new MenuCommand();
+    HeliCommand menuCmd = new HeliCommand();
     final List<String> list = gov.usgs.volcanoes.winston.server.wwsCmd.MenuCommand.generateMenu(channels, true);
 
 
