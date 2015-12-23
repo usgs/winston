@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.RandomAccessFile;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -29,6 +30,7 @@ import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.wwsCmd.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -105,22 +107,18 @@ public final class MenuCommand extends HttpBaseCommand {
       ctx.writeAndFlush(error);
     } else {
 
-      WinstonDatabase winston = null;
-      String response = prepareResponse(sortCol, order, timeZone);
+      String html = prepareResponse(sortCol, order, timeZone);
 
-      if (response != null) {
-        HttpResponse httpResponse =
-            new DefaultHttpResponse(request.getProtocolVersion(), HttpResponseStatus.OK);
-        httpResponse.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
+      if (html != null) {
+        FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
+            HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
+        response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, html.length());
+        response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
 
-        boolean keepAlive = HttpHeaders.isKeepAlive(request);
-
-        if (keepAlive) {
-          httpResponse.headers().set(HttpHeaders.Names.CONTENT_LENGTH, response.length());
-          httpResponse.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+        if (HttpHeaders.isKeepAlive(request)) {
+          response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
         }
-        ctx.write(httpResponse);
-        ctx.writeAndFlush(response);
+        ctx.write(response);
       } else {
         LOGGER.error("NULL server menu.");
       }
