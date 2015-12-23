@@ -56,9 +56,6 @@ import io.netty.util.AttributeKey;
  */
 public final class MenuCommand extends HttpBaseCommand {
 
-  private static int DEFAULT_OB = 2;
-  private static String DEFAULT_SO = "a";
-
   private static final Logger LOGGER = LoggerFactory.getLogger(MenuCommand.class);
 
   public MenuCommand() {
@@ -79,12 +76,12 @@ public final class MenuCommand extends HttpBaseCommand {
     }
 
     // validate input. Write error and return if bad.
-    final int sortCol = StringUtils.stringToInt(params.get("ob"), DEFAULT_OB);
+    final int sortCol = StringUtils.stringToInt(params.get("ob"), HttpConstants.DEFAULT_ORDER_BY);
     if (sortCol < 1 || sortCol > 8) {
       error.append("Error: could not parse ob = " + params.get("ob") + "<br>");
     }
 
-    final String o = StringUtils.stringToString(params.get("so"), DEFAULT_SO);
+    final String o = StringUtils.stringToString(params.get("so"), HttpConstants.DEFAULT_SORT_ORDER);
     final char order = o.charAt(0);
     if (order != 'a' && order != 'd') {
       error.append("Error: could not parse so = " + params.get("so") + "<br>");
@@ -255,9 +252,9 @@ public final class MenuCommand extends HttpBaseCommand {
             + req.getHeader("Host") + "/menu?\";\n");
 
     output.append(
-        "if (menuOB.value != \"" + DEFAULT_OB + "\") { linkUrl += \"&ob=\" + menuOB.value;}\n");
+        "if (menuOB.value != \"" + HttpConstants.DEFAULT_ORDER_BY + "\") { linkUrl += \"&ob=\" + menuOB.value;}\n");
     output.append(
-        "if (menuSO.value != \"" + DEFAULT_SO + "\") { linkUrl += \"&so=\" + menuSO.value;}\n");
+        "if (menuSO.value != \"" + HttpConstants.DEFAULT_SORT_ORDER + "\") { linkUrl += \"&so=\" + menuSO.value;}\n");
     output.append(
         "if (menuTZ.value != \"" + DEFAULT_TZ + "\") { linkUrl += \"&tz=\" + menuTZ.value;}\n");
     output.append("linkUrl = linkUrl.replace(\"?&\", \"?\");\n");
@@ -299,9 +296,9 @@ public final class MenuCommand extends HttpBaseCommand {
     output.append("<div class=\"tabContent\">\n");
     output.append(
         "<code>ob</code>: <b>Order By</b> The column number used to order the menu (default = "
-            + DEFAULT_OB + ").<br><br>\n"
+            + HttpConstants.DEFAULT_ORDER_BY + ").<br><br>\n"
             + "<code>so</code>: <b>Sort Order</b> How to order the menu, a is ascending, d is decending (default = "
-            + DEFAULT_SO + ").<br><br>\n" + "<code>tz</code>: <b>Time Zone</b> (deafult = "
+            + HttpConstants.DEFAULT_SORT_ORDER + ").<br><br>\n" + "<code>tz</code>: <b>Time Zone</b> (deafult = "
             + DEFAULT_TZ + ")<br><br>\n");
     output.append("</div>");
     output.append("<div class=\"tabContentTitle\">Examples</DIV>\n");

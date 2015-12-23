@@ -82,7 +82,6 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
    */
   abstract public String getCommand();
 
-
   /**
    * Do the work. Return response to the browser.
    * 

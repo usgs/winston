@@ -15,6 +15,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -29,11 +30,15 @@ import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.volcanoes.winston.db.Channels;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.http.AbstractHttpCommand;
 import gov.usgs.volcanoes.winston.server.httpCmd.HttpBaseCommand;
+import gov.usgs.volcanoes.winston.server.httpCmd.HttpCommand;
 import gov.usgs.volcanoes.winston.server.httpCmd.HttpCommandFactory;
+import gov.usgs.volcanoes.winston.server.httpCmd.HttpConstants;
 import gov.usgs.volcanoes.winston.server.httpCmd.HttpTemplateConfiguration;
 import gov.usgs.volcanoes.winston.server.httpCmd.MimeType;
+import gov.usgs.volcanoes.winston.server.wwsCmd.WinstonConsumer;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -101,7 +106,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
         }
       }
     }
-    
+
     // If keep-alive is not set, close the connection once the content is fully written.
     if (!HttpHeaders.isKeepAlive(req)) {
       ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
@@ -113,7 +118,8 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
     byte[] file = IOUtils.toByteArray(is);
 
-    FullHttpResponse response = new DefaultFullHttpResponse(req.getProtocolVersion(), HttpResponseStatus.OK, Unpooled.copiedBuffer(file));
+    FullHttpResponse response = new DefaultFullHttpResponse(req.getProtocolVersion(),
+        HttpResponseStatus.OK, Unpooled.copiedBuffer(file));
     response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, file.length);
     response.headers().set(HttpHeaders.Names.CONTENT_TYPE, mimeType);
 
@@ -126,22 +132,38 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
   private void send404(ChannelHandlerContext ctx, FullHttpRequest req) {
     String html = "Unknown command.";
-    
-    FullHttpResponse response = new DefaultFullHttpResponse(req.getProtocolVersion(), HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
+
+    FullHttpResponse response = new DefaultFullHttpResponse(req.getProtocolVersion(),
+        HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
     response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, html.length());
     response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
-    
+
     ctx.writeAndFlush(response);
   }
 
-  private void sendUsage(ChannelHandlerContext ctx, FullHttpRequest req) {
+  private void sendUsage(ChannelHandlerContext ctx, FullHttpRequest req) throws UtilException {
     HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();
+    List<Channel> channels;
+    try {
+      channels = winstonDatabasePool.doCommand(new WinstonConsumer<List<Channel>>() {
+
+        public List<Channel> execute(WinstonDatabase winston) throws UtilException {
+          return new Channels(winston).getChannels();
+        }
+
+      });
+    } catch (Exception e) {
+      throw new UtilException(e.getMessage());
+    }
 
     Map<String, Object> root = new HashMap<String, Object>();
-    // root.put("timeZones", );
-    // root.put("channels", );
-    // root.put("httpCommands", );
+
+    root.put("timeZones", TimeZone.getAvailableIDs());
+    root.put("channels", channels);
+    root.put("httpCommands", HttpCommandFactory.values());
     root.put("versionString", Version.VERSION_STRING);
+    root.put("host", ctx.channel().localAddress().toString().substring(1));
+    HttpConstants.applyDefaults(root);
 
     try {
       Template template = cfg.getTemplate("usage.ftl");
@@ -150,9 +172,10 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
       String html = sw.toString();
       sw.close();
 
-      FullHttpResponse response = new DefaultFullHttpResponse(req.getProtocolVersion(), HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
+      FullHttpResponse response = new DefaultFullHttpResponse(req.getProtocolVersion(),
+          HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
       response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, html.length());
-     
+
       if (HttpHeaders.isKeepAlive(req)) {
         response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
       }

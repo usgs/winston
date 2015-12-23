@@ -40,6 +40,10 @@ public enum HttpCommandFactory {
     this.clazz = clazz;
   }
 
+  public Class<? extends HttpBaseCommand> getCommandClass() {
+    return this.clazz;
+  }
+  
   public static HttpBaseCommand get(WinstonDatabasePool databasePool, String command)
       throws InstantiationException, IllegalAccessException, MalformedCommandException {
     int cmdEnd = command.indexOf('?');
