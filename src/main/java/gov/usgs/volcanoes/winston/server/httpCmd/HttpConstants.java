@@ -3,11 +3,17 @@ package gov.usgs.volcanoes.winston.server.httpCmd;
 import java.util.Map;
 
 public final class HttpConstants {
+  public static final String INPUT_DATE_FORMAT = "yyyyMMddHHmm";
+  public static final String DISPLAY_DATE_FORMAT = "yyyy-MM-dd HH:mm";
+  public final static int ONE_MINUTE_S = 60;
+  public final static int ONE_HOUR_S = 60 * ONE_MINUTE_S;
+  public final static int ONE_DAY_S = 24 * ONE_HOUR_S;
+
   public static final int ORDER_BY = 2;
   public static final String SORT_ORDER = "a";
   public static final String TIME_ZONE = "UTC";
   
-  public static final String HELI_START_TIME = "-12";
+  public static final String HELI_START_TIME = "-24";
   public static final String HELI_END_TIME = "now";
   public static final int HELI_HEIGHT = 800;
   public static final int HELI_WIDTH = 800;

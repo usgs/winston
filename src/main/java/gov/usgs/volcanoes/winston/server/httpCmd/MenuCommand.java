@@ -90,7 +90,7 @@ public final class MenuCommand extends HttpBaseCommand {
       return;
     }
 
-    final String tz = StringUtils.stringToString(params.get("tz"), DEFAULT_TZ);
+    final String tz = StringUtils.stringToString(params.get("tz"), HttpConstants.TIME_ZONE);
     final TimeZone timeZone = TimeZone.getTimeZone(tz);
 
     if (error.length() > 0) {
@@ -233,92 +233,5 @@ public final class MenuCommand extends HttpBaseCommand {
         }
       }
     };
-  }
-
-  public String getUsage(final HttpRequest req) {
-    final String Url = "http://" + req.getHeader("Host") + "/menu";
-
-    final StringBuilder output = new StringBuilder();
-
-    output.append(
-        "<script>function buildMenuUrl() {" + "var urlDiv = document.getElementById(\"menuUrl\");\n"
-            + "var menuOB = document.getElementById(\"menuOB\");\n"
-            + "var menuSO = document.getElementById(\"menuSO\");\n"
-            + "var menuTZ = document.getElementById(\"menuTZ\");\n"
-            + "var a = document.createElement('a');\n" + "var linkUrl = \"http://"
-            + req.getHeader("Host") + "/menu?\";\n");
-
-    output.append(
-        "if (menuOB.value != \"" + HttpConstants.ORDER_BY + "\") { linkUrl += \"&ob=\" + menuOB.value;}\n");
-    output.append(
-        "if (menuSO.value != \"" + HttpConstants.SORT_ORDER + "\") { linkUrl += \"&so=\" + menuSO.value;}\n");
-    output.append(
-        "if (menuTZ.value != \"" + DEFAULT_TZ + "\") { linkUrl += \"&tz=\" + menuTZ.value;}\n");
-    output.append("linkUrl = linkUrl.replace(\"?&\", \"?\");\n");
-    output.append("linkUrl = linkUrl.replace(/\\?$/, \"\");\n");
-    output.append("a.href = linkUrl;\n" + "a.text = linkUrl;\n" + "a.textContent = linkUrl; \n"
-        + "a.textContent = linkUrl; \n"
-        + "while(urlDiv.hasChildNodes()) {urlDiv.removeChild(urlDiv.lastChild);}"
-        + "urlDiv.appendChild(a);\n" + "}</script>\n");
-
-    output.append(
-        "Returns the server menu. The menu contains the list of stations in this winston along with the earliest and most recent data point for each station.\n");
-    output.append("<div class=\"tabContentTitle\">URL Builder</DIV>\n");
-    output.append("<div class=\"tabContent\">\n");
-    output.append("<FORM>\n");
-    output.append("<div class=\"left\"><div class=\"left\">\n");
-    output.append("<label for=\"tz\">Time Zone</label><br>\n");
-    output.append(
-        "<select onchange=\"buildMenuUrl()\" class=\"timeZone\" id=\"menuTZ\" name=\"tz\" size=8>"
-            + "</select>");
-    output.append("</div><div class=\"right\">\n");
-    output.append(
-        "<br><div class=\"input\" style=\"width: 20em\"><label for=\"ob\">Order By</label>");
-    output.append("<select id=\"menuOB\" onchange=\"buildMenuUrl()\" name=\"ob\">\n"
-        + "<option value=1>Pin</option>" + "<option value=2 selected>Station</option>"
-        + "<option value=3>Component</option>" + "<option value=4>Network</option>"
-        + "<option value=5>Location</option>" + "<option value=6>Earliest</option>"
-        + "<option value=7>Most Recent</option>" + "<option value=8>Type</Option>"
-        + "</select></div><br>\n");
-    output
-        .append("<div class=\"input\" style=\"width: 20em\"><label for=\"so\">Sort Order</label>");
-    output.append("<select id=\"menuSO\" onchange=\"buildMenuUrl()\" name=\"so\">"
-        + "<option value=\"a\" selected>Ascending</option>"
-        + "<option value=\"d\">Descending</option>" + "</select></div><br>");
-
-    output.append("</div></div></FORM><div class=\"clear\"></div>\n");
-    output.append("<HR class=\"urlBuilder\"><b>URL:</b><BR><div id=\"menuUrl\"></div>");
-    output.append("</div>");
-    output.append("<div class=\"tabContentTitle\">Arguments</DIV>\n");
-    output.append("<div class=\"tabContent\">\n");
-    output.append(
-        "<code>ob</code>: <b>Order By</b> The column number used to order the menu (default = "
-            + HttpConstants.ORDER_BY + ").<br><br>\n"
-            + "<code>so</code>: <b>Sort Order</b> How to order the menu, a is ascending, d is decending (default = "
-            + HttpConstants.SORT_ORDER + ").<br><br>\n" + "<code>tz</code>: <b>Time Zone</b> (deafult = "
-            + DEFAULT_TZ + ")<br><br>\n");
-    output.append("</div>");
-    output.append("<div class=\"tabContentTitle\">Examples</DIV>\n");
-    output.append("<div class=\"tabContent\">\n");
-    output.append("Most recently added channels:<br><a href=\"http://" + req.getHeader("Host")
-        + "/menu?ob=6&so=d\">" + "http://" + req.getHeader("Host")
-        + "/menu?ob=6&so=d</a><br><p><br>");
-    output.append("Channels with least recent data:<br><a href=\"http://" + req.getHeader("Host")
-        + "/menu?ob=7&so=a\">" + "http://" + req.getHeader("Host") + "/menu?ob=7&so=a</a><p>");
-    output.append("</div>");
-    return output.toString();
-  }
-
-  public String getAnchor() {
-    return "menu";
-  }
-
-  public String getTitle() {
-    return "Server Menu";
-  }
-
-  @Override
-  public String getCommand() {
-    return "/menu";
   }
 }

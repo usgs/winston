@@ -39,8 +39,7 @@ recent and most recent data point for each station.
 		<div class="left">
 			<div class="left">
 				<label for="tz">Time Zone</label><br>
-				<select onchange="buildMenuUrl()" class="timeZone" id="menuTZ" name="tz" size=8>
-				</select>
+				<select onchange="buildMenuUrl()" class="timeZone" id="menuTZ" name="tz" size=8></select>
 			</div>
 			<div class="right">
 				<br>
@@ -70,7 +69,7 @@ recent and most recent data point for each station.
 	</form>
 	<div class="clear"></div>
 	<HR class="urlBuilder"/>
-	<b>URL:</b><BR><div id="menuUrl">
+	<b>URL:</b><BR><div id="menuUrl"></div>
 </div>
 <div class="tabContentTitle">Arguments</div>
 <div class="tabContent">

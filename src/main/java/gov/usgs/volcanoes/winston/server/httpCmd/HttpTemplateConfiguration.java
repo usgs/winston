@@ -22,7 +22,7 @@ public final class HttpTemplateConfiguration extends Configuration {
 
     setTemplateLoader(new ClassTemplateLoader(getClass(), "/freemarker/www"));
     setDefaultEncoding("UTF-8");
-    setBooleanFormat("true,false");
+    setBooleanFormat("1,0");
 
     setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
 

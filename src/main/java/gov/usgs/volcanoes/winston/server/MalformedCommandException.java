@@ -14,4 +14,8 @@ public class MalformedCommandException extends IOException {
   public MalformedCommandException() {
     super();
   }
+
+  public MalformedCommandException(String msg) {
+    super(msg);
+  }
 }

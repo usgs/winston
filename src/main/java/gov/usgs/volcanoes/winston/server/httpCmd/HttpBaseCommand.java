@@ -12,19 +12,17 @@ import org.slf4j.LoggerFactory;
 import java.nio.channels.SocketChannel;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TimeZone;
 
 import gov.usgs.net.HttpRequest;
-import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
+import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
@@ -34,8 +32,6 @@ import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
 import gov.usgs.volcanoes.winston.server.BaseCommand;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
-import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
-import gov.usgs.volcanoes.winston.server.wwsCmd.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpMethod;
@@ -51,12 +47,6 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpBaseCommand.class);
 
-  private static final String INPUT_DATE_FORMAT = "yyyyMMddHHmm";
-  private static final String DISPLAY_DATE_FORMAT = "yyyy-MM-dd HH:mm";
-  private final static int ONE_MINUTE = 60;
-  private final static int ONE_HOUR = 60 * ONE_MINUTE;
-  private final static int ONE_DAY = 24 * ONE_HOUR;
-  protected static final String DEFAULT_TZ = "UTC";
 
 
   private SocketChannel socketChannel;
@@ -70,17 +60,12 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
   private String cmd;
   private Map<String, String> arguments;
   private DecimalFormat decimalFormat;
-
+  protected ConfigFile configFile;
+  
   public HttpBaseCommand() {
     super();
   }
 
-  /**
-   * Command as a http file
-   * 
-   * @return command, including leading /
-   */
-  abstract public String getCommand();
 
   /**
    * Do the work. Return response to the browser.
@@ -150,7 +135,7 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
       final double hrs = StringUtils.stringToDouble(t1, -12);
       startTime = endTime + hrs * mult;
     } else {
-      final DateFormat dateFormat = new SimpleDateFormat(INPUT_DATE_FORMAT);
+      final DateFormat dateFormat = new SimpleDateFormat(HttpConstants.INPUT_DATE_FORMAT);
       dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
       Date bt;
       try {
@@ -184,7 +169,7 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
     if (t2 == null || t2.equalsIgnoreCase("now"))
       endTime = J2kSec.now();
     else {
-      final DateFormat dateFormat = new SimpleDateFormat(INPUT_DATE_FORMAT);
+      final DateFormat dateFormat = new SimpleDateFormat(HttpConstants.INPUT_DATE_FORMAT);
       dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
       Date bt;
       try {
@@ -217,7 +202,7 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
     if (maxDays == 0)
       return t;
     else
-      return Math.max(t, J2kSec.now() - (maxDays * ONE_DAY));
+      return Math.max(t, J2kSec.now() - (maxDays * HttpConstants.ONE_DAY_S));
   }
 
   /**
@@ -228,5 +213,10 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
    */
   protected int boolToInt(final boolean in) {
     return in == true ? 1 : 0;
+  }
+
+
+  public void setConfig(ConfigFile configFile) {
+    this.configFile = configFile;
   }
 }

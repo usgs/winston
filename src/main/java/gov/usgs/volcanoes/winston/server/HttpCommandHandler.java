@@ -65,6 +65,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpCommandHandler.class);
 
   private final WinstonDatabasePool winstonDatabasePool;
+  private final ConfigFile configFile;
 
   private static final AttributeKey<ConnectionStatistics> connectionStatsKey;
 
@@ -74,6 +75,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
   public HttpCommandHandler(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     this.winstonDatabasePool = winstonDatabasePool;
+    this.configFile = configFile;
   }
 
   @Override
@@ -88,6 +90,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
       // HTTP command
       try {
         final HttpBaseCommand httpWorker = HttpCommandFactory.get(winstonDatabasePool, command);
+        httpWorker.setConfig(configFile);
         httpWorker.respond(ctx, req);
         ConnectionStatistics connectionStatistics = ctx.channel().attr(connectionStatsKey).get();
         connectionStatistics.incrHttpCount(ctx.channel().remoteAddress());
