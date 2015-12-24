@@ -86,19 +86,19 @@
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>      }
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>  
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>      <em class="jxr_comment">// validate input. Write error and return if bad.</em>
-<a class="jxr_linenumber" name="L81" href="#L81">81</a>      <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> sortCol = StringUtils.stringToInt(params.get(<span class="jxr_string">"ob"</span>), HttpConstants.DEFAULT_ORDER_BY);
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>      <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">int</strong> sortCol = StringUtils.stringToInt(params.get(<span class="jxr_string">"ob"</span>), HttpConstants.ORDER_BY);
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>      <strong class="jxr_keyword">if</strong> (sortCol &lt; 1 || sortCol &gt; 8) {
 <a class="jxr_linenumber" name="L83" href="#L83">83</a>        error.append(<span class="jxr_string">"Error: could not parse ob = "</span> + params.get(<span class="jxr_string">"ob"</span>) + <span class="jxr_string">"&lt;br&gt;"</span>);
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>      }
 <a class="jxr_linenumber" name="L85" href="#L85">85</a>  
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>      <strong class="jxr_keyword">final</strong> String o = StringUtils.stringToString(params.get(<span class="jxr_string">"so"</span>), HttpConstants.DEFAULT_SORT_ORDER);
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>      <strong class="jxr_keyword">final</strong> String o = StringUtils.stringToString(params.get(<span class="jxr_string">"so"</span>), HttpConstants.SORT_ORDER);
 <a class="jxr_linenumber" name="L87" href="#L87">87</a>      <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">char</strong> order = o.charAt(0);
 <a class="jxr_linenumber" name="L88" href="#L88">88</a>      <strong class="jxr_keyword">if</strong> (order != 'a' &amp;&amp; order != 'd') {
 <a class="jxr_linenumber" name="L89" href="#L89">89</a>        error.append(<span class="jxr_string">"Error: could not parse so = "</span> + params.get(<span class="jxr_string">"so"</span>) + <span class="jxr_string">"&lt;br&gt;"</span>);
 <a class="jxr_linenumber" name="L90" href="#L90">90</a>        <strong class="jxr_keyword">return</strong>;
 <a class="jxr_linenumber" name="L91" href="#L91">91</a>      }
 <a class="jxr_linenumber" name="L92" href="#L92">92</a>  
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>      <strong class="jxr_keyword">final</strong> String tz = StringUtils.stringToString(params.get(<span class="jxr_string">"tz"</span>), DEFAULT_TZ);
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>      <strong class="jxr_keyword">final</strong> String tz = StringUtils.stringToString(params.get(<span class="jxr_string">"tz"</span>), HttpConstants.TIME_ZONE);
 <a class="jxr_linenumber" name="L94" href="#L94">94</a>      <strong class="jxr_keyword">final</strong> TimeZone timeZone = TimeZone.getTimeZone(tz);
 <a class="jxr_linenumber" name="L95" href="#L95">95</a>  
 <a class="jxr_linenumber" name="L96" href="#L96">96</a>      <strong class="jxr_keyword">if</strong> (error.length() &gt; 0) {
@@ -242,94 +242,7 @@
 <a class="jxr_linenumber" name="L234" href="#L234">234</a>       }
 <a class="jxr_linenumber" name="L235" href="#L235">235</a>     };
 <a class="jxr_linenumber" name="L236" href="#L236">236</a>   }
-<a class="jxr_linenumber" name="L237" href="#L237">237</a> 
-<a class="jxr_linenumber" name="L238" href="#L238">238</a>   <strong class="jxr_keyword">public</strong> String getUsage(<strong class="jxr_keyword">final</strong> HttpRequest req) {
-<a class="jxr_linenumber" name="L239" href="#L239">239</a>     <strong class="jxr_keyword">final</strong> String Url = <span class="jxr_string">"http://"</span> + req.getHeader(<span class="jxr_string">"Host"</span>) + <span class="jxr_string">"/menu"</span>;
-<a class="jxr_linenumber" name="L240" href="#L240">240</a> 
-<a class="jxr_linenumber" name="L241" href="#L241">241</a>     <strong class="jxr_keyword">final</strong> StringBuilder output = <strong class="jxr_keyword">new</strong> StringBuilder();
-<a class="jxr_linenumber" name="L242" href="#L242">242</a> 
-<a class="jxr_linenumber" name="L243" href="#L243">243</a>     output.append(
-<a class="jxr_linenumber" name="L244" href="#L244">244</a>         <span class="jxr_string">"&lt;script&gt;function buildMenuUrl() {"</span> + <span class="jxr_string">"var urlDiv = document.getElementById(\&quot;menuUrl\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L245" href="#L245">245</a>             + <span class="jxr_string">"var menuOB = document.getElementById(\&quot;menuOB\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L246" href="#L246">246</a>             + <span class="jxr_string">"var menuSO = document.getElementById(\&quot;menuSO\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L247" href="#L247">247</a>             + <span class="jxr_string">"var menuTZ = document.getElementById(\&quot;menuTZ\&quot;);\n"</span>
-<a class="jxr_linenumber" name="L248" href="#L248">248</a>             + <span class="jxr_string">"var a = document.createElement('a');\n"</span> + <span class="jxr_string">"var linkUrl = \&quot;http://"</span>
-<a class="jxr_linenumber" name="L249" href="#L249">249</a>             + req.getHeader(<span class="jxr_string">"Host"</span>) + <span class="jxr_string">"/menu?\&quot;;\n"</span>);
-<a class="jxr_linenumber" name="L250" href="#L250">250</a> 
-<a class="jxr_linenumber" name="L251" href="#L251">251</a>     output.append(
-<a class="jxr_linenumber" name="L252" href="#L252">252</a>         <span class="jxr_string">"if (menuOB.value != \&quot;"</span> + HttpConstants.DEFAULT_ORDER_BY + <span class="jxr_string">"\&quot;) { linkUrl += \&quot;&amp;ob=\&quot; + menuOB.value;}\n"</span>);
-<a class="jxr_linenumber" name="L253" href="#L253">253</a>     output.append(
-<a class="jxr_linenumber" name="L254" href="#L254">254</a>         <span class="jxr_string">"if (menuSO.value != \&quot;"</span> + HttpConstants.DEFAULT_SORT_ORDER + <span class="jxr_string">"\&quot;) { linkUrl += \&quot;&amp;so=\&quot; + menuSO.value;}\n"</span>);
-<a class="jxr_linenumber" name="L255" href="#L255">255</a>     output.append(
-<a class="jxr_linenumber" name="L256" href="#L256">256</a>         <span class="jxr_string">"if (menuTZ.value != \&quot;"</span> + DEFAULT_TZ + <span class="jxr_string">"\&quot;) { linkUrl += \&quot;&amp;tz=\&quot; + menuTZ.value;}\n"</span>);
-<a class="jxr_linenumber" name="L257" href="#L257">257</a>     output.append(<span class="jxr_string">"linkUrl = linkUrl.replace(\&quot;?&amp;\&quot;, \&quot;?\&quot;);\n"</span>);
-<a class="jxr_linenumber" name="L258" href="#L258">258</a>     output.append(<span class="jxr_string">"linkUrl = linkUrl.replace(/&#92;&#92;?$/, \&quot;\&quot;);\n"</span>);
-<a class="jxr_linenumber" name="L259" href="#L259">259</a>     output.append(<span class="jxr_string">"a.href = linkUrl;\n"</span> + <span class="jxr_string">"a.text = linkUrl;\n"</span> + <span class="jxr_string">"a.textContent = linkUrl; \n"</span>
-<a class="jxr_linenumber" name="L260" href="#L260">260</a>         + <span class="jxr_string">"a.textContent = linkUrl; \n"</span>
-<a class="jxr_linenumber" name="L261" href="#L261">261</a>         + <span class="jxr_string">"while(urlDiv.hasChildNodes()) {urlDiv.removeChild(urlDiv.lastChild);}"</span>
-<a class="jxr_linenumber" name="L262" href="#L262">262</a>         + <span class="jxr_string">"urlDiv.appendChild(a);\n"</span> + <span class="jxr_string">"}&lt;/script&gt;\n"</span>);
-<a class="jxr_linenumber" name="L263" href="#L263">263</a> 
-<a class="jxr_linenumber" name="L264" href="#L264">264</a>     output.append(
-<a class="jxr_linenumber" name="L265" href="#L265">265</a>         <span class="jxr_string">"Returns the server menu. The menu contains the list of stations in this winston along with the earliest and most recent data point for each station.\n"</span>);
-<a class="jxr_linenumber" name="L266" href="#L266">266</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContentTitle\&quot;&gt;URL Builder&lt;/DIV&gt;\n"</span>);
-<a class="jxr_linenumber" name="L267" href="#L267">267</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContent\&quot;&gt;\n"</span>);
-<a class="jxr_linenumber" name="L268" href="#L268">268</a>     output.append(<span class="jxr_string">"&lt;FORM&gt;\n"</span>);
-<a class="jxr_linenumber" name="L269" href="#L269">269</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;left\&quot;&gt;&lt;div class=\&quot;left\&quot;&gt;\n"</span>);
-<a class="jxr_linenumber" name="L270" href="#L270">270</a>     output.append(<span class="jxr_string">"&lt;label for=\&quot;tz\&quot;&gt;Time Zone&lt;/label&gt;&lt;br&gt;\n"</span>);
-<a class="jxr_linenumber" name="L271" href="#L271">271</a>     output.append(
-<a class="jxr_linenumber" name="L272" href="#L272">272</a>         <span class="jxr_string">"&lt;select onchange=\&quot;buildMenuUrl()\&quot; class=\&quot;timeZone\&quot; id=\&quot;menuTZ\&quot; name=\&quot;tz\&quot; size=8&gt;"</span>
-<a class="jxr_linenumber" name="L273" href="#L273">273</a>             + <span class="jxr_string">"&lt;/select&gt;"</span>);
-<a class="jxr_linenumber" name="L274" href="#L274">274</a>     output.append(<span class="jxr_string">"&lt;/div&gt;&lt;div class=\&quot;right\&quot;&gt;\n"</span>);
-<a class="jxr_linenumber" name="L275" href="#L275">275</a>     output.append(
-<a class="jxr_linenumber" name="L276" href="#L276">276</a>         <span class="jxr_string">"&lt;br&gt;&lt;div class=\&quot;input\&quot; style=\&quot;width: 20em\&quot;&gt;&lt;label for=\&quot;ob\&quot;&gt;Order By&lt;/label&gt;"</span>);
-<a class="jxr_linenumber" name="L277" href="#L277">277</a>     output.append(<span class="jxr_string">"&lt;select id=\&quot;menuOB\&quot; onchange=\&quot;buildMenuUrl()\&quot; name=\&quot;ob\&quot;&gt;\n"</span>
-<a class="jxr_linenumber" name="L278" href="#L278">278</a>         + <span class="jxr_string">"&lt;option value=1&gt;Pin&lt;/option&gt;"</span> + <span class="jxr_string">"&lt;option value=2 selected&gt;Station&lt;/option&gt;"</span>
-<a class="jxr_linenumber" name="L279" href="#L279">279</a>         + <span class="jxr_string">"&lt;option value=3&gt;Component&lt;/option&gt;"</span> + <span class="jxr_string">"&lt;option value=4&gt;Network&lt;/option&gt;"</span>
-<a class="jxr_linenumber" name="L280" href="#L280">280</a>         + <span class="jxr_string">"&lt;option value=5&gt;Location&lt;/option&gt;"</span> + <span class="jxr_string">"&lt;option value=6&gt;Earliest&lt;/option&gt;"</span>
-<a class="jxr_linenumber" name="L281" href="#L281">281</a>         + <span class="jxr_string">"&lt;option value=7&gt;Most Recent&lt;/option&gt;"</span> + <span class="jxr_string">"&lt;option value=8&gt;Type&lt;/Option&gt;"</span>
-<a class="jxr_linenumber" name="L282" href="#L282">282</a>         + <span class="jxr_string">"&lt;/select&gt;&lt;/div&gt;&lt;br&gt;\n"</span>);
-<a class="jxr_linenumber" name="L283" href="#L283">283</a>     output
-<a class="jxr_linenumber" name="L284" href="#L284">284</a>         .append(<span class="jxr_string">"&lt;div class=\&quot;input\&quot; style=\&quot;width: 20em\&quot;&gt;&lt;label for=\&quot;so\&quot;&gt;Sort Order&lt;/label&gt;"</span>);
-<a class="jxr_linenumber" name="L285" href="#L285">285</a>     output.append(<span class="jxr_string">"&lt;select id=\&quot;menuSO\&quot; onchange=\&quot;buildMenuUrl()\&quot; name=\&quot;so\&quot;&gt;"</span>
-<a class="jxr_linenumber" name="L286" href="#L286">286</a>         + <span class="jxr_string">"&lt;option value=\&quot;a\&quot; selected&gt;Ascending&lt;/option&gt;"</span>
-<a class="jxr_linenumber" name="L287" href="#L287">287</a>         + <span class="jxr_string">"&lt;option value=\&quot;d\&quot;&gt;Descending&lt;/option&gt;"</span> + <span class="jxr_string">"&lt;/select&gt;&lt;/div&gt;&lt;br&gt;"</span>);
-<a class="jxr_linenumber" name="L288" href="#L288">288</a> 
-<a class="jxr_linenumber" name="L289" href="#L289">289</a>     output.append(<span class="jxr_string">"&lt;/div&gt;&lt;/div&gt;&lt;/FORM&gt;&lt;div class=\&quot;clear\&quot;&gt;&lt;/div&gt;\n"</span>);
-<a class="jxr_linenumber" name="L290" href="#L290">290</a>     output.append(<span class="jxr_string">"&lt;HR class=\&quot;urlBuilder\&quot;&gt;&lt;b&gt;URL:&lt;/b&gt;&lt;BR&gt;&lt;div id=\&quot;menuUrl\&quot;&gt;&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L291" href="#L291">291</a>     output.append(<span class="jxr_string">"&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L292" href="#L292">292</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContentTitle\&quot;&gt;Arguments&lt;/DIV&gt;\n"</span>);
-<a class="jxr_linenumber" name="L293" href="#L293">293</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContent\&quot;&gt;\n"</span>);
-<a class="jxr_linenumber" name="L294" href="#L294">294</a>     output.append(
-<a class="jxr_linenumber" name="L295" href="#L295">295</a>         <span class="jxr_string">"&lt;code&gt;ob&lt;/code&gt;: &lt;b&gt;Order By&lt;/b&gt; The column number used to order the menu (default = "</span>
-<a class="jxr_linenumber" name="L296" href="#L296">296</a>             + HttpConstants.DEFAULT_ORDER_BY + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;\n"</span>
-<a class="jxr_linenumber" name="L297" href="#L297">297</a>             + <span class="jxr_string">"&lt;code&gt;so&lt;/code&gt;: &lt;b&gt;Sort Order&lt;/b&gt; How to order the menu, a is ascending, d is decending (default = "</span>
-<a class="jxr_linenumber" name="L298" href="#L298">298</a>             + HttpConstants.DEFAULT_SORT_ORDER + <span class="jxr_string">").&lt;br&gt;&lt;br&gt;\n"</span> + <span class="jxr_string">"&lt;code&gt;tz&lt;/code&gt;: &lt;b&gt;Time Zone&lt;/b&gt; (deafult = "</span>
-<a class="jxr_linenumber" name="L299" href="#L299">299</a>             + DEFAULT_TZ + <span class="jxr_string">")&lt;br&gt;&lt;br&gt;\n"</span>);
-<a class="jxr_linenumber" name="L300" href="#L300">300</a>     output.append(<span class="jxr_string">"&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L301" href="#L301">301</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContentTitle\&quot;&gt;Examples&lt;/DIV&gt;\n"</span>);
-<a class="jxr_linenumber" name="L302" href="#L302">302</a>     output.append(<span class="jxr_string">"&lt;div class=\&quot;tabContent\&quot;&gt;\n"</span>);
-<a class="jxr_linenumber" name="L303" href="#L303">303</a>     output.append(<span class="jxr_string">"Most recently added channels:&lt;br&gt;&lt;a href=\&quot;http://"</span> + req.getHeader(<span class="jxr_string">"Host"</span>)
-<a class="jxr_linenumber" name="L304" href="#L304">304</a>         + <span class="jxr_string">"/menu?ob=6&amp;so=d\&quot;&gt;"</span> + <span class="jxr_string">"http://"</span> + req.getHeader(<span class="jxr_string">"Host"</span>)
-<a class="jxr_linenumber" name="L305" href="#L305">305</a>         + <span class="jxr_string">"/menu?ob=6&amp;so=d&lt;/a&gt;&lt;br&gt;&lt;p&gt;&lt;br&gt;"</span>);
-<a class="jxr_linenumber" name="L306" href="#L306">306</a>     output.append(<span class="jxr_string">"Channels with least recent data:&lt;br&gt;&lt;a href=\&quot;http://"</span> + req.getHeader(<span class="jxr_string">"Host"</span>)
-<a class="jxr_linenumber" name="L307" href="#L307">307</a>         + <span class="jxr_string">"/menu?ob=7&amp;so=a\&quot;&gt;"</span> + <span class="jxr_string">"http://"</span> + req.getHeader(<span class="jxr_string">"Host"</span>) + <span class="jxr_string">"/menu?ob=7&amp;so=a&lt;/a&gt;&lt;p&gt;"</span>);
-<a class="jxr_linenumber" name="L308" href="#L308">308</a>     output.append(<span class="jxr_string">"&lt;/div&gt;"</span>);
-<a class="jxr_linenumber" name="L309" href="#L309">309</a>     <strong class="jxr_keyword">return</strong> output.toString();
-<a class="jxr_linenumber" name="L310" href="#L310">310</a>   }
-<a class="jxr_linenumber" name="L311" href="#L311">311</a> 
-<a class="jxr_linenumber" name="L312" href="#L312">312</a>   <strong class="jxr_keyword">public</strong> String getAnchor() {
-<a class="jxr_linenumber" name="L313" href="#L313">313</a>     <strong class="jxr_keyword">return</strong> <span class="jxr_string">"menu"</span>;
-<a class="jxr_linenumber" name="L314" href="#L314">314</a>   }
-<a class="jxr_linenumber" name="L315" href="#L315">315</a> 
-<a class="jxr_linenumber" name="L316" href="#L316">316</a>   <strong class="jxr_keyword">public</strong> String getTitle() {
-<a class="jxr_linenumber" name="L317" href="#L317">317</a>     <strong class="jxr_keyword">return</strong> <span class="jxr_string">"Server Menu"</span>;
-<a class="jxr_linenumber" name="L318" href="#L318">318</a>   }
-<a class="jxr_linenumber" name="L319" href="#L319">319</a> 
-<a class="jxr_linenumber" name="L320" href="#L320">320</a>   @Override
-<a class="jxr_linenumber" name="L321" href="#L321">321</a>   <strong class="jxr_keyword">public</strong> String getCommand() {
-<a class="jxr_linenumber" name="L322" href="#L322">322</a>     <strong class="jxr_keyword">return</strong> <span class="jxr_string">"/menu"</span>;
-<a class="jxr_linenumber" name="L323" href="#L323">323</a>   }
-<a class="jxr_linenumber" name="L324" href="#L324">324</a> }
+<a class="jxr_linenumber" name="L237" href="#L237">237</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2015. All rights reserved.</div>
