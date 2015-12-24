@@ -23,9 +23,9 @@ public enum HttpCommandFactory {
   RSAM(RsamCommand.class, "RSAM"),
   ;
   
-//  addCommand(new HttpRsamCommand(nt, db, wws));
 //  addCommand(new HttpStatusCommand(nt, db, wws));
 //  addCommand(new HttpGapsCommand(nt, db, wws));
+  
 //  addCommand(new FdsnDataselectQuery(nt, db, wws));
 //  addCommand(new FdsnDataselectVersion(nt, db, wws));
 //  addCommand(new FdsnDataselectWadl(nt, db, wws));

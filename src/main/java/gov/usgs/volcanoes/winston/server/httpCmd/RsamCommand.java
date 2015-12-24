@@ -5,57 +5,36 @@
 
 package gov.usgs.volcanoes.winston.server.httpCmd;
 
+import java.awt.Color;
+import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.TimeZone;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.TimeZone;
-
-import gov.usgs.net.HttpRequest;
-import gov.usgs.net.NetTools;
-import gov.usgs.plot.HelicorderSettings;
+import gov.usgs.math.DownsamplingType;
+import gov.usgs.plot.Plot;
 import gov.usgs.plot.PlotException;
 import gov.usgs.plot.data.HelicorderData;
-import gov.usgs.volcanoes.core.CodeTimer;
-import gov.usgs.volcanoes.core.time.Ew;
-import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.plot.data.RSAMData;
+import gov.usgs.plot.decorate.DefaultFrameDecorator;
+import gov.usgs.plot.decorate.DefaultFrameDecorator.Location;
+import gov.usgs.plot.render.MatrixRenderer;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
-import gov.usgs.volcanoes.winston.Channel;
-import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
-import gov.usgs.volcanoes.winston.server.wwsCmd.WinstonConsumer;
-import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
+import gov.usgs.volcanoes.winston.server.wwsCmd.WinstonConsumer;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.ssl.SslHandler;
-import io.netty.handler.stream.ChunkedNioFile;
-import io.netty.util.AttributeKey;
 
 /**
  * Return the wave server menu. Similar to earthworm getmenu command.
@@ -71,12 +50,35 @@ public final class RsamCommand extends HttpBaseCommand {
   public static final int MIN_HOURS = 1;
   public static final double MAX_TC = 21600;
 
+
+  private TimeZone timeZone;
+  private int timeZoneOffset;
+  private Double endTime;
+  private Double startTime;
+  private int width;
+  private int height;
+  private boolean detrend;
+  private int rsamPeriod;
+  private boolean despike;
+  private double despikePeriod;
+  private boolean runningMedian;
+  private double runningMedianPeriod;
+  private double plotMax;
+  private double plotMin;
+  private boolean outputData;
+  private String errorString = "";
+  private String code;
+  private RSAMData rsamData;
+  private FullHttpRequest request;
+
   public RsamCommand() {
     super();
   }
 
 
-  public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws UtilException, MalformedCommandException {
+  public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request)
+      throws UtilException, MalformedCommandException {
+    this.request = request;
     StringBuffer error = new StringBuffer();
 
     Map<String, String> params;
@@ -86,112 +88,187 @@ public final class RsamCommand extends HttpBaseCommand {
       throw new MalformedCommandException();
     }
 
-    final HelicorderSettings settings = validateParams(params);
-    final String channel = settings.channel;
-    final double startTime = settings.startTime;
-    final double endTime = settings.endTime;
 
-    HelicorderData heliData = null;
+    errorString = validateParams(params);
+    getData();
+    if (outputData)
+      ctx.write(sendData());
+    else
+      ctx.write(sendPlot());
+
+  }
+
+
+  private void getData() throws UtilException {
+    rsamData = null;
     try {
-      heliData = databasePool.doCommand(new WinstonConsumer<HelicorderData>() {
 
-        public HelicorderData execute(WinstonDatabase winston) throws UtilException {
-          return new Data(winston).getHelicorderData(channel, startTime, endTime, 0);
-        }
-      });
-    } catch (Exception e) {
-      throw new UtilException(e.getMessage());
-    }
-
-     if (heliData == null || heliData.rows() <= 0) {
-       throw new UtilException("Error: could not get helicorder data, check channel (code).");
-     }
-     
-      byte[] png = null;
-      try {
-        png = settings.createPlot(heliData).getPNGBytes();
-      } catch (PlotException e) {
-        throw new UtilException(e.getLocalizedMessage());
+      final DownsamplingType dst;
+      final int dsInt;
+      if (rsamPeriod < 2) {
+        dst = DownsamplingType.NONE;
+        dsInt = 0;
+      } else {
+        dst = DownsamplingType.MEAN;
+        dsInt = rsamPeriod;
       }
-     
-     FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
-         HttpResponseStatus.OK, Unpooled.copiedBuffer(png));
-     response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, png.length);
-     response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "image/png");
 
-     int httpRefreshInterval = configFile.getInt("wws.httpRefreshInterval", -1);
-      if (httpRefreshInterval > 0)
-        response.headers().set("Refresh", httpRefreshInterval + "; url=" + request.getUri());
+      HelicorderData heliData = null;
+      try {
+        rsamData = databasePool.doCommand(new WinstonConsumer<RSAMData>() {
 
-     if (HttpHeaders.isKeepAlive(request)) {
-       response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-     }
-     ctx.write(response);
+          public RSAMData execute(WinstonDatabase winston) throws UtilException {
+            return new Data(winston).getRSAMData(code, startTime, endTime, 0, dst, dsInt);
+          }
+        });
+      } catch (Exception e) {
+        throw new UtilException(e.getMessage());
+      }
+
+      rsamData.adjustTime(timeZoneOffset);
+
+      if (despike)
+        rsamData.despike(1, despikePeriod);
+
+      if (detrend)
+        rsamData.detrend(1);
+
+      if (runningMedian)
+        rsamData.set2median(1, runningMedianPeriod);
+
+
+    } catch (final UtilException e) {
+      throw new UtilException(
+          "Error: could not get RSAM data, check channel (code). e = " + e.toString());
+    }
+    if (rsamData == null || rsamData.rows() <= 0)
+      throw new UtilException(
+          "Error: could not get RSAM data, check channel (code). Empty result.");
   }
 
+  private String validateParams(Map<String, String> arguments) throws MalformedCommandException {
+    StringBuffer errorString = new StringBuffer();
 
-  private HelicorderSettings validateParams(Map<String, String> params) throws MalformedCommandException {
-    new HelicorderSettings();
-    HelicorderSettings settings = new HelicorderSettings();
-    StringBuffer error = new StringBuffer();
-    settings.channel = params.get("code");
-    if (settings.channel == null) {
-      error.append("Error: you must specify a channel (code).");
-    } else {
-      settings.channel = settings.channel.replace('_', '$');
+    code = arguments.get("code");
+    if (code == null)
+      errorString.append("Error: you must specify a channel (code).<br>");
+    else {
+      code = code.replace('_', '$');
+      if (code.indexOf(";") != -1)
+        errorString.append("Error: illegal characters in channel (code).<br>");
     }
 
-    final String tz = StringUtils.stringToString(params.get("tz"), HttpConstants.TIME_ZONE);
-    settings.timeZone = TimeZone.getTimeZone(tz);
+    timeZone = TimeZone.getTimeZone(StringUtils.stringToString(arguments.get("tz"), "UTC"));
 
-    settings.endTime = getEndTime(params.get("t2"));
-    if (Double.isNaN(settings.endTime))
-      error.append("Error: could not parse end time (t2). Should be ")
-          .append(HttpConstants.INPUT_DATE_FORMAT).append('.');
+    endTime = getEndTime(arguments.get("t2"));
+    if (endTime.isNaN())
+      errorString.append("Error: could not parse end time (t2). Should be ")
+          .append(HttpConstants.INPUT_DATE_FORMAT).append(".<br>");
 
-    settings.startTime = getStartTime(params.get("t1"), settings.endTime, HttpConstants.ONE_HOUR_S);
-    if (Double.isNaN(settings.startTime))
-      error.append("Error: cannot parse start time. Should be ")
-          .append(HttpConstants.INPUT_DATE_FORMAT).append(" or -HH. I received ")
-          .append(params.get("t1"));
+    startTime = getStartTime(arguments.get("t1"), endTime, HttpConstants.ONE_DAY_S);
+    if (startTime.isNaN())
+      errorString.append("Error: could not parse start time (t1). Should be ")
+          .append(HttpConstants.INPUT_DATE_FORMAT).append(" or -HH.M<br>");
 
-    if (settings.endTime - settings.startTime > MAX_HOURS * HttpConstants.ONE_HOUR_S)
-      error.append("Error: Plot must not be more that ").append(MAX_HOURS).append(" hours long");
-    else if (settings.endTime - settings.startTime < MIN_HOURS * HttpConstants.ONE_HOUR_S)
-      error.append("Error: Plot cannot be less than ").append(MIN_HOURS).append(" hour long");
+    timeZoneOffset = timeZone.getOffset(J2kSec.asEpoch(endTime));
 
-    settings.timeChunk = StringUtils.stringToDouble(params.get("tc"), HttpConstants.HELI_TIME_CHUNK)
-        * HttpConstants.ONE_MINUTE_S;
-    if (settings.timeChunk <= 0 || settings.timeChunk > MAX_TC)
-      error.append("Error: time chunk (tc) must be greater than 0 and less than ").append(MAX_TC)
-          .append(".");
+    width = StringUtils.stringToInt(arguments.get("w"), HttpConstants.RSAM_WIDTH);
+    height = StringUtils.stringToInt(arguments.get("h"), HttpConstants.RSAM_HEIGHT);
 
-    final int width = StringUtils.stringToInt(params.get("w"), HttpConstants.HELI_WIDTH);
-    final int height = StringUtils.stringToInt(params.get("h"), HttpConstants.HELI_HEIGHT);
-    settings.setSizeFromPlotSize(width, height);
+    // if (height * width <= 0 || height * width > wws.httpMaxSize())
+    // errorString += "Error: product of width (w) and height (h) must be between 1 and "
+    // + wws.httpMaxSize() + ".<br>";
 
-//    if (settings.height * settings.width <= 0
-//        || settings.height * settings.width > wws.httpMaxSize())
-//      error = error + "Error: product of width (w) and height (h) must be between 1 and "
-//          + wws.httpMaxSize() + ".";
+    detrend = StringUtils.stringToBoolean(arguments.get("dt"), HttpConstants.RSAM_DETREND);
 
-    settings.showClip = StringUtils.stringToBoolean(params.get("sc"), HttpConstants.HELI_SHOW_CLIP);
-    settings.forceCenter =
-        StringUtils.stringToBoolean(params.get("fc"), HttpConstants.HELI_FORCE_CENTER);
-    settings.barRange = StringUtils.stringToInt(params.get("br"), -1);
-    settings.clipValue = StringUtils.stringToInt(params.get("cv"), -1);
+    rsamPeriod = StringUtils.stringToInt(arguments.get("rsamP"), HttpConstants.RSAM_RSAM_PERIOD);
 
-    settings.largeChannelDisplay =
-        StringUtils.stringToBoolean(params.get("lb"), HttpConstants.HELI_LABEL);
+    despike = StringUtils.stringToBoolean(arguments.get("ds"), HttpConstants.RSAM_DOWN_SAMPLE);
+    despikePeriod = StringUtils.stringToDouble(arguments.get("dsp"), 0);
 
-    settings.minimumAxis = StringUtils.stringToBoolean(params.get("min"));
-    if (settings.minimumAxis)
-      settings.setMinimumSizes();
-    
-    if (error.length() > 0) {
-      throw new MalformedCommandException(error.toString());
+    runningMedian = StringUtils.stringToBoolean(arguments.get("rm"), false);
+    runningMedianPeriod = StringUtils.stringToDouble(arguments.get("rmp"), 300);
+
+    plotMax = StringUtils.stringToDouble(arguments.get("max"), Double.MAX_VALUE);
+    plotMin = StringUtils.stringToDouble(arguments.get("min"), Double.MIN_VALUE);
+
+    outputData = StringUtils.stringToBoolean(arguments.get("csv"), HttpConstants.RSAM_CSV);
+
+    if (errorString.length() != 0) {
+      throw new MalformedCommandException();
     }
-    
-    return settings;
+
+    return errorString.toString();
   }
+
+  private FullHttpResponse sendPlot() throws UtilException {
+    // if (wws.httpRefreshInterval() > 0)
+    // response.setHeader("Refresh:", wws.httpRefreshInterval() + "; url=" + request.getResource());
+
+    byte[] png;
+
+    final Plot plot = new Plot();
+    plot.setSize(width, height);
+    plot.setBackgroundColor(new Color(0.97f, 0.97f, 0.97f));
+
+    final MatrixRenderer mr = new MatrixRenderer(rsamData.getData(), false);
+    final double max = Math.min(plotMax, rsamData.max(1) + rsamData.max(1) * .1);
+    final double min = Math.max(plotMin, rsamData.min(1) - rsamData.max(1) * .1);
+
+    mr.setExtents(startTime + timeZoneOffset, endTime + timeZoneOffset, min, max);
+    mr.setLocation(70, 35, width - 140, height - 70);
+    mr.createDefaultAxis();
+    mr.setXAxisToTime(8, true, true);
+
+    final String tzText =
+        timeZone.getDisplayName(timeZone.inDaylightTime(J2kSec.asDate(endTime)), TimeZone.SHORT);
+    final String bottomText =
+        "(" + J2kSec.format(HttpConstants.DISPLAY_DATE_FORMAT, startTime + timeZoneOffset) + " to "
+            + J2kSec.format(HttpConstants.DISPLAY_DATE_FORMAT, endTime + timeZoneOffset) + " "
+            + tzText + ")";
+
+    mr.getAxis().setBottomLabelAsText(bottomText);
+    mr.getAxis().setLeftLabelAsText("RSAM");
+    DefaultFrameDecorator.addLabel(mr, code.replace('$', ' '), Location.LEFT);
+    mr.createDefaultLineRenderers(Color.blue);
+    // mr.setExtents(startTime, endTime, gdm.min(1), gdm.max(1));
+    plot.addRenderer(mr);
+    try {
+      png = plot.getPNGBytes();
+    } catch (PlotException e) {
+      throw new UtilException(e.getLocalizedMessage());
+    }
+
+    FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
+        HttpResponseStatus.OK, Unpooled.copiedBuffer(png));
+    response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, png.length);
+    response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "image/png");
+
+    int httpRefreshInterval = configFile.getInt("wws.httpRefreshInterval", -1);
+    if (httpRefreshInterval > 0)
+      response.headers().set("Refresh", httpRefreshInterval + "; url=" + request.getUri());
+
+    if (HttpHeaders.isKeepAlive(request)) {
+      response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+    }
+
+    return response;
+  }
+
+  private FullHttpResponse sendData() {
+    final String html = rsamData.toCSV();
+    final String fileName = code + "-RSAM.csv";
+
+    FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
+        HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
+    response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, html.length());
+    response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/csv; charset=utf-8");
+    response.headers().set("content-Disposition:", "attachment; filename='" + fileName + "'");
+
+    if (HttpHeaders.isKeepAlive(request)) {
+      response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+    }
+    return response;
+  }
+
 }
