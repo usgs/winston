@@ -12,7 +12,7 @@ public final class HttpConstants {
   public static final int ORDER_BY = 2;
   public static final String SORT_ORDER = "a";
   public static final String TIME_ZONE = "UTC";
-  
+
   public static final String HELI_START_TIME = "-24";
   public static final String HELI_END_TIME = "now";
   public static final int HELI_HEIGHT = 800;
@@ -23,14 +23,28 @@ public final class HttpConstants {
   public static final boolean HELI_FORCE_CENTER = false;
   public static final boolean HELI_LABEL = false;
   public static final String HELI_CLIP_VALUE = "auto";
-  
-  private HttpConstants() {
-  }
-  
+
+  public static final int RSAM_HEIGHT = 300;
+  public static final int RSAM_WIDTH = 900;
+  public static final boolean RSAM_DOWN_SAMPLE = false;
+  public static final int RSAM_DOWN_SAMPLE_PERIOD = 0;
+  public static final int RSAM_RSAM_PERIOD = 60;
+  public static final boolean RSAM_DETREND = false;
+  public static final String RSAM_START_TIME = "-12";
+  public static final String RSAM_END_TIME = "now";
+  public static final String RSAM_MAX = "auto";
+  public static final String RSAM_MIN = "auto";
+  public static final boolean RSAM_REMOVE_MEAN = false;
+  public static final boolean RSAM_CSV = false;
+  public static final int RSAM_REMOVE_MEAN_PERIOD = 300;
+
+  private HttpConstants() {}
+
   public static void applyDefaults(Map<String, Object> map) {
     map.put("DEFAULT_ORDER_BY", new Integer(ORDER_BY));
     map.put("DEFAULT_SORT_ORDER", SORT_ORDER);
-    map.put("DEFAULT_TIME_ZONE", TIME_ZONE);
+    map.put("TIME_ZONE", TIME_ZONE);
+    
     map.put("DEFAULT_T1", HELI_START_TIME);
     map.put("DEFAULT_T2", HELI_END_TIME);
     map.put("DEFAULT_H", HELI_HEIGHT);
@@ -41,5 +55,20 @@ public final class HttpConstants {
     map.put("DEFAULT_FC", HELI_FORCE_CENTER);
     map.put("DEFAULT_LB", HELI_LABEL);
     map.put("DEFAULT_CV", HELI_CLIP_VALUE);
-    map.put("DEFAULT_TZ", TIME_ZONE);  } 
+    map.put("DEFAULT_TZ", TIME_ZONE);
+    
+    map.put("RSAM_HEIGHT", RSAM_HEIGHT);
+    map.put("RSAM_WIDTH", RSAM_WIDTH);
+    map.put("RSAM_DOWN_SAMPLE", RSAM_DOWN_SAMPLE);
+    map.put("RSAM_DOWN_SAMPLE_PERIOD", RSAM_DOWN_SAMPLE_PERIOD);
+    map.put("RSAM_RSAM_PERIOD", RSAM_RSAM_PERIOD);
+    map.put("RSAM_DETREND", RSAM_DETREND);
+    map.put("RSAM_START_TIME", RSAM_START_TIME);
+    map.put("RSAM_END_TIME", RSAM_END_TIME);
+    map.put("RSAM_MAX", RSAM_MAX);
+    map.put("RSAM_MIN", RSAM_MIN);
+    map.put("RSAM_REMOVE_MEAN", RSAM_REMOVE_MEAN);
+    map.put("RSAM_CSV", RSAM_CSV);
+    map.put("RSAM_REMOVE_MEAN_PERIOD", RSAM_REMOVE_MEAN_PERIOD);
+  }
 }

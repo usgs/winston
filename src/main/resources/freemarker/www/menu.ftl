@@ -14,7 +14,7 @@
     	linkUrl += "&so=" + menuSO.value;
     }
 
-    if (menuTZ.value != "${DEFAULT_TIME_ZONE}") { 
+    if (menuTZ.value != "${TIME_ZONE}") { 
     	linkUrl += "&tz=" + menuTZ.value;
     }
 		linkUrl = linkUrl.replace("?&", "?");
@@ -77,7 +77,7 @@ recent and most recent data point for each station.
 	<br>
 	<code>so</code>: <b>Sort Order</b> How to order the menu, a is ascending, d is decending (default = ${DEFAULT_SORT_ORDER}).<br>
 	<br>
-	<code>tz</code>: <b>Time Zone</b> (deafult = ${DEFAULT_TIME_ZONE})<br>
+	<code>tz</code>: <b>Time Zone</b> (deafult = ${TIME_ZONE})<br>
 	<br>
 </div>
 <div class="tabContentTitle">Examples</div>

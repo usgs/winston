@@ -19,11 +19,10 @@ import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 public enum HttpCommandFactory {
 
   MENU(MenuCommand.class, "Server Menu"),
-  HELI(HeliCommand.class, "Helicorder")
-//  USAGE(UsageCommand.class),
+  HELI(HeliCommand.class, "Helicorder"),
+  RSAM(RsamCommand.class, "RSAM"),
   ;
   
-//  addCommand(new HttpHeliCommand(nt, db, wws));
 //  addCommand(new HttpRsamCommand(nt, db, wws));
 //  addCommand(new HttpStatusCommand(nt, db, wws));
 //  addCommand(new HttpGapsCommand(nt, db, wws));
