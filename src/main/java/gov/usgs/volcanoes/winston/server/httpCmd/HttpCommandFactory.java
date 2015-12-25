@@ -21,9 +21,9 @@ public enum HttpCommandFactory {
   MENU(MenuCommand.class, "Server Menu"),
   HELI(HeliCommand.class, "Helicorder"),
   RSAM(RsamCommand.class, "RSAM"),
+  STATUS(StatusCommand.class, "Server Status"),
   ;
   
-//  addCommand(new HttpStatusCommand(nt, db, wws));
 //  addCommand(new HttpGapsCommand(nt, db, wws));
   
 //  addCommand(new FdsnDataselectQuery(nt, db, wws));

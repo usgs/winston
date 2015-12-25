@@ -43,7 +43,7 @@
 					<#list httpCommands as httpCommand>
 		      	<div class="tabpage" id="tabpage_${httpCommand?counter}">
 			      	<h2>${httpCommand}</h2>
-			        <#include httpCommand?lower_case + ".ftl" >
+			        <#include httpCommand?lower_case + "Usage.ftl" >
 		    		</div>
 					</#list>
 				</div>

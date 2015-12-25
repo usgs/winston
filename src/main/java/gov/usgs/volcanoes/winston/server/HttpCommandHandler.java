@@ -145,7 +145,6 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
   }
 
   private void sendUsage(ChannelHandlerContext ctx, FullHttpRequest req) throws UtilException {
-    HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();
     List<Channel> channels;
     try {
       channels = winstonDatabasePool.doCommand(new WinstonConsumer<List<Channel>>() {
@@ -169,7 +168,9 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
     root.put("host", ctx.channel().localAddress().toString().substring(1));
     HttpConstants.applyDefaults(root);
 
+
     try {
+      HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();
       Template template = cfg.getTemplate("usage.ftl");
       Writer sw = new StringWriter();
       template.process(root, sw);
