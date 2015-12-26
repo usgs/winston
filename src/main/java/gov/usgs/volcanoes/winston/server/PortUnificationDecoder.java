@@ -1,25 +1,24 @@
 /**
- * I waive copyright and related rights in the this work worldwide
- * through the CC0 1.0 Universal public domain dedication.
- * https://creativecommons.org/publicdomain/zero/1.0/legalcode
+ * I waive copyright and related rights in the this work worldwide through the CC0 1.0 Universal
+ * public domain dedication. https://creativecommons.org/publicdomain/zero/1.0/legalcode
  */
 
 package gov.usgs.volcanoes.winston.server;
 
-import org.slf4j.Logger;
-
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.winston.server.http.HttpCommandHandler;
+import gov.usgs.volcanoes.winston.server.wws.WwsCommandHandler;
+import gov.usgs.volcanoes.winston.server.wws.WwsCommandStringDecoder;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import io.netty.handler.codec.LineBasedFrameDecoder;
-import io.netty.handler.codec.bytes.ByteArrayDecoder;
 import io.netty.handler.codec.bytes.ByteArrayEncoder;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpRequestDecoder;
@@ -28,9 +27,9 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
-import io.netty.channel.*;
+
 /**
- * Classifies requests by protocol and rejiggers pipeline accordingly.
+ * Classifies requests by protocol and rejiggers the pipeline accordingly.
  *
  * Assumptions:
  * <ul>
@@ -69,16 +68,16 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
 
   private final WinstonDatabasePool winstonDatabasePool;
 
-private ConnectionStatistics connectionStatistics;
-private DatabaseStatistics databaseStatistics;
+  private ConnectionStatistics connectionStatistics;
+  private DatabaseStatistics databaseStatistics;
 
-private static final AttributeKey<ConnectionStatistics> connectionStatsKey;
-private static final AttributeKey<DatabaseStatistics> databaseStatsKey;
+  private static final AttributeKey<ConnectionStatistics> connectionStatsKey;
+  private static final AttributeKey<DatabaseStatistics> databaseStatsKey;
 
-static {
-  connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
-  databaseStatsKey = AttributeKey.valueOf("databaseStatistics");
-}
+  static {
+    connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
+    databaseStatsKey = AttributeKey.valueOf("databaseStatistics");
+  }
 
   /**
    * Constructor.
@@ -88,13 +87,13 @@ static {
   public PortUnificationDecoder(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     super();
     this.configFile = configFile;
-    this.winstonDatabasePool = winstonDatabasePool;    
+    this.winstonDatabasePool = winstonDatabasePool;
   }
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
     connectionStatistics = ctx.channel().attr(connectionStatsKey).get();
-    
+
     // Will use the first five bytes to detect a protocol.
     if (in.readableBytes() < LEN) {
       return;
@@ -116,7 +115,7 @@ static {
 
   private void switchToHttp(ChannelPipeline p) {
     LOGGER.debug("Detected HTTP connection.");
-    
+
     p.addLast(new HttpRequestDecoder());
     p.addLast(new HttpObjectAggregator(1048576));
     p.addLast(new HttpResponseEncoder());
@@ -126,7 +125,7 @@ static {
 
   private void switchToWws(ChannelPipeline p) {
     LOGGER.debug("Detected WWS connection");
-    
+
     p.addLast(new LineBasedFrameDecoder(1024, true, true));
     p.addLast(new StringDecoder(CharsetUtil.US_ASCII));
     p.addLast(new StringEncoder(CharsetUtil.US_ASCII));

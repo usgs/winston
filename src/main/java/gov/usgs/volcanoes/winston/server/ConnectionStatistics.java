@@ -7,36 +7,31 @@ package gov.usgs.volcanoes.winston.server;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.handler.traffic.ChannelTrafficShapingHandler;
-import io.netty.handler.traffic.GlobalChannelTrafficShapingHandler;
-import io.netty.handler.traffic.TrafficCounter;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.time.Time;
+import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 
+/**
+ * Statistics of connections to a wave server.
+ * 
+ * @author Tom Parker
+ *
+ */
 public class ConnectionStatistics {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatistics.class);
 
-  public static enum SortOrder {
+  private static enum SortOrder {
     ADDRESS, CONNECT_TIME, LAST_REQUEST_TIME, RX_BYTES, TX_BYTES, INDEX;
 
     public static SortOrder parse(char c) {
@@ -64,7 +59,7 @@ public class ConnectionStatistics {
   private final AtomicLong openCount;
   private Map<InetSocketAddress, Connection> connectionMap;
 
-  public class Connection {
+  private class Connection {
     private final String address;
     private final ChannelTrafficShapingHandler trafficShapingHandler;
     private final AtomicLong connectTime;
@@ -144,29 +139,6 @@ public class ConnectionStatistics {
     return openCount.get();
   }
 
-  // public String toString() {
-  // StringBuffer sb = new StringBuffer();
-  // sb.append("------- Connections --------\n");
-  // sb.append(
-  // "[A]ddress [C]onnect time [L]ast time [R]X bytes [T]X bytes [I]ndex\n");
-  // for (InetSocketAddress addr : connectionMap.keySet()) {
-  // Connection conn = connectionMap.get(addr);
-  // TrafficCounter counter = conn.trafficShapingHandler.trafficCounter();
-  // sb.append(String.format("%-25s %-22s %-22s %-11d %-11d\n", addr.toString(),
-  // Time.format(Time.STANDARD_TIME_FORMAT, conn.connectTime.get()),
-  // Time.format(Time.STANDARD_TIME_FORMAT, conn.lastTime.get()),
-  // counter.cumulativeReadBytes(), counter.cumulativeWrittenBytes()));
-  // }
-  // sb.append(
-  // "[A]ddress [C]onnect time [L]ast time [R]X bytes [T]X bytes [I]ndex\n");
-  // sb.append("\n\n");
-  // sb.append("Total Connections : ").append(connectionCount).append('\n');
-  // sb.append("Open Connections : ").append(openCount).append('\n');
-  // sb.append("WWS Commands : ").append(wwsCount).append('\n');
-  // sb.append("HTTP commands : ").append(httpCount).append('\n');
-  // return sb.toString();
-  // }
-
   public void mapChannel(InetSocketAddress remoteAddress,
       ChannelTrafficShapingHandler trafficCounter2) {
     LOGGER.warn("mapping " + remoteAddress);
@@ -182,17 +154,6 @@ public class ConnectionStatistics {
     sb.append("------- Connections --------\n");
     sb.append(
         "[A]ddress                 [C]onnect time         [L]ast time            [R]X bytes  [T]X bytes  [I]ndex\n");
-
-    // String[] connections = new String[connectionMap.size()];
-    int idx = 0;
-    // for (InetSocketAddress addr : connectionMap.keySet()) {
-    // Connection conn = connectionMap.get(addr);
-    // TrafficCounter counter = conn.trafficShapingHandler.trafficCounter();
-    // connections[idx++] = String.format("%-25s %-22s %-22s %-11d %-11d\n", addr.toString(),
-    // Time.format(Time.STANDARD_TIME_FORMAT, conn.connectTime.get()),
-    // Time.format(Time.STANDARD_TIME_FORMAT, conn.lastTime.get()),
-    // counter.cumulativeReadBytes(), counter.cumulativeWrittenBytes());
-    // }
 
     char col = 'T';
     if (s.length() > 1)
@@ -241,10 +202,6 @@ public class ConnectionStatistics {
           case TX_BYTES:
             cmp = (int) (cs1.cumulativeWrittenBytes() - cs2.cumulativeWrittenBytes());
             break;
-          // case INDEX:
-          // cmp = (int) (cs1.index - cs2.index);
-          // break;
-
         }
         if (desc)
           cmp = -cmp;
