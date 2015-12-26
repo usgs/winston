@@ -13,7 +13,9 @@ gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.dataselect
 gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.event
 gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.station
 gov.usgs.volcanoes.winston.server
-gov.usgs.volcanoes.winston.server.httpCmd
-gov.usgs.volcanoes.winston.server.wwsCmd
+gov.usgs.volcanoes.winston.server.http
+gov.usgs.volcanoes.winston.server.http.cmd
+gov.usgs.volcanoes.winston.server.wws
+gov.usgs.volcanoes.winston.server.wws.cmd
 gov.usgs.volcanoes.winston.tools
 gov.usgs.volcanoes.winston.tools.pannel
