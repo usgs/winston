@@ -1,4 +1,3 @@
-<!-- BEGIN HELI TAB -->
 <script>
 	function buildHeliUrl() {
 		var urlDiv = document.getElementById("heliUrl");
@@ -180,4 +179,3 @@ Returns a helicorder plot.
   	(like a 10000 x 10000 pixel graph).
 
 </div>
-<!-- END HELI TAB -->

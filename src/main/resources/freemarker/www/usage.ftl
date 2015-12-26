@@ -41,10 +41,12 @@
 				</div>
 				<div id="tabscontent">
 					<#list httpCommands as httpCommand>
+						<!-- BEGIN ${httpCommand?upper_case} TAB -->
 		      	<div class="tabpage" id="tabpage_${httpCommand?counter}">
 			      	<h2>${httpCommand}</h2>
 			        <#include httpCommand?lower_case + "Usage.ftl" >
 		    		</div>
+						<!-- END ${httpCommand?upper_case} TAB -->
 					</#list>
 				</div>
 			</div>

@@ -107,30 +107,6 @@ public final class StatusCommand extends HttpBaseCommand {
 
     final double medianDataAge = now - sts.get(sts.size() / 2).getMaxTime();
 
-//    final ArrayList<String> oneMinChannels = new ArrayList<String>();
-//    final ArrayList<String> fiveMinChannels = new ArrayList<String>();
-//    final ArrayList<String> oneHourChannels = new ArrayList<String>();
-//    final ArrayList<String> oneDayChannels = new ArrayList<String>();
-//    final ArrayList<String> oneMonthChannels = new ArrayList<String>();
-//    final ArrayList<String> ancientChannels = new ArrayList<String>();
-//
-//    for (final Channel chan : sts) {
-//      final double age = now - chan.getMaxTime();
-//      final String code = chan.getCode().replace('$', '_');
-//      if (age < 60)
-//        oneMinChannels.add(code);
-//      else if (age <= 60 * 5)
-//        fiveMinChannels.add(code);
-//      else if (age <= 60 * 60)
-//        oneHourChannels.add(code);
-//      else if (age <= 60 * 60 * 24)
-//        oneDayChannels.add(code);
-//      else if (age <= 60 * 60 * 24 * 7 * 4)
-//        oneMonthChannels.add(code);
-//      else
-//        ancientChannels.add(code);
-//    }
-    
     final Map<String, Integer> oneMinChannels = new HashMap<String, Integer>();
     final Map<String, Integer> fiveMinChannels = new HashMap<String, Integer>();
     final Map<String, Integer> oneHourChannels = new HashMap<String, Integer>();

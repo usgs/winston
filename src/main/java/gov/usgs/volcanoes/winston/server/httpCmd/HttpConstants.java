@@ -38,6 +38,12 @@ public final class HttpConstants {
   public static final boolean RSAM_CSV = false;
   public static final int RSAM_REMOVE_MEAN_PERIOD = 300;
 
+  public static final String GAPS_START_TIME = "-12";
+  public static final String GAPS_END_TIME = "now";
+  public static final int GAPS_MINIMUM_DURATION = 5;
+  public static final boolean GAPS_WC = false;
+  
+  
   private HttpConstants() {}
 
   public static void applyDefaults(Map<String, Object> map) {
@@ -70,5 +76,11 @@ public final class HttpConstants {
     map.put("RSAM_REMOVE_MEAN", RSAM_REMOVE_MEAN);
     map.put("RSAM_CSV", RSAM_CSV);
     map.put("RSAM_REMOVE_MEAN_PERIOD", RSAM_REMOVE_MEAN_PERIOD);
+    
+    map.put("GAPS_START_TIME", GAPS_START_TIME);
+    map.put("GAPS_END_TIME", GAPS_END_TIME);
+    map.put("GAPS_MINIMUM_DURATION", GAPS_MINIMUM_DURATION);
+    map.put("GAPS_WC", GAPS_WC);
+
   }
 }

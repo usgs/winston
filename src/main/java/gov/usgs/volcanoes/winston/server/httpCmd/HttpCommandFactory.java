@@ -22,6 +22,7 @@ public enum HttpCommandFactory {
   HELI(HeliCommand.class, "Helicorder"),
   RSAM(RsamCommand.class, "RSAM"),
   STATUS(StatusCommand.class, "Server Status"),
+  GAPS(GapsCommand.class, "Data Gaps"),
   ;
   
 //  addCommand(new HttpGapsCommand(nt, db, wws));
