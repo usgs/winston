@@ -19,29 +19,20 @@ import gov.usgs.volcanoes.core.args.decorator.ConfigFileArg;
 import gov.usgs.volcanoes.core.args.decorator.VerboseArg;
 
 /**
- * Argument processor for Pensive.
+ * Argument processor for WWS.
  *
  * @author Tom Parker
  */
 public class WWSArgs {
-  private static final String DEFAULT_CONFIG_FILENAME = "WWS.config";
-
-  private static final String EXPLANATION = "I am the Winston wave server\n";
-
-  /** format of time on cmd line */
-  public static final String INPUT_TIME_FORMAT = "yyyyMMddHHmm";
   private static final Logger LOGGER = LoggerFactory.getLogger(WWSArgs.class);
 
-  private static final Parameter[] PARAMETERS =
-      new Parameter[] {new Switch("noInput", 'i', "noinput", "Do not poll keyboard for input.")};
+  private static final String DEFAULT_CONFIG_FILENAME = "WWS.config";
+  private static final String EXPLANATION = "I am the Winston wave server\n";
 
   private static final String PROGRAM_NAME = "java -jar gov.usgs.volcanoes.winston.server.WWS";
 
   /** my config file. */
   public final String configFileName;
-
-  /** if true don't poll console for input */
-  public final boolean isNoInput;
 
   /** if true be verbose */
   public final boolean isVerbose;
@@ -55,7 +46,7 @@ public class WWSArgs {
   public WWSArgs(final String[] commandLineArgs) throws Exception {
 
     Arguments args = null;
-    args = new Args(PROGRAM_NAME, EXPLANATION, PARAMETERS);
+    args = new Args(PROGRAM_NAME, EXPLANATION, null);
     args = new ConfigFileArg(DEFAULT_CONFIG_FILENAME, args);
     args = new VerboseArg(args);
 
@@ -64,7 +55,6 @@ public class WWSArgs {
 
     isVerbose = jsapResult.getBoolean("verbose");
     configFileName = jsapResult.getString("config-filename");
-    isNoInput = jsapResult.getBoolean("noInput");
     LOGGER.debug("Setting: verbose={}", isVerbose);
   }
 }

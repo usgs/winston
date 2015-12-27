@@ -365,7 +365,7 @@
 				<configuration>
 					<recursiveInput>true</recursiveInput>
 					<inputDirectory>${project.basedir}/src/main/resources/docs/</inputDirectory>
-					<outputDirectory>${project.build.directory}/docs/</outputDirectory>
+					<outputDirectory>${project.build.outputDirectory}/www/docs/</outputDirectory>
 					<transformRelativeMarkdownLinks>true</transformRelativeMarkdownLinks>
 					<pegdownExtensions>ANCHORLINKS</pegdownExtensions>
 				</configuration>
