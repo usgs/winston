@@ -8,62 +8,38 @@ package gov.usgs.volcanoes.winston.server.http.cmd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.TimeZone;
 
-import gov.usgs.net.HttpRequest;
-import gov.usgs.net.NetTools;
-import gov.usgs.volcanoes.core.time.Ew;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
-import gov.usgs.volcanoes.winston.Channel;
-import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
-import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
-import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.http.HttpBaseCommand;
 import gov.usgs.volcanoes.winston.server.http.HttpConstants;
 import gov.usgs.volcanoes.winston.server.http.HttpTemplateConfiguration;
 import gov.usgs.volcanoes.winston.server.http.UnsupportedMethodException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.ssl.SslHandler;
-import io.netty.handler.stream.ChunkedNioFile;
-import io.netty.util.AttributeKey;
 
 /**
  * Return the wave server menu. Similar to earthworm getmenu command.
@@ -75,15 +51,6 @@ public final class GapsCommand extends HttpBaseCommand {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GapsCommand.class);
 
-  private static final AttributeKey<ConnectionStatistics> connectionStatsKey;
-
-  static {
-    connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
-  }
-
-
-
-  private String error = "";
   private String code;
   private Double endTime;
   private Double startTime;
@@ -97,20 +64,10 @@ public final class GapsCommand extends HttpBaseCommand {
   private double totalTime;
 
   private List<double[]> gaps;
-  private double[] gap;
   private int gapCount;
-
-  // double dataStart;
-  // double dataEnd;
-  // double dataLength;
-
-  private String[] color = {"#ffeeee;", "#eeffee;", "#eeeeff;"};
-  private int colorCount;
 
   private double gapLength;
   private double totalGapLength;
-  private double averageGapLength;
-  private double dataPercentage;
 
   private ChannelHandlerContext ctx;
   private FullHttpRequest request;
@@ -221,19 +178,19 @@ public final class GapsCommand extends HttpBaseCommand {
     root.put("channel", code);
     root.put("minimumGapDuration", minGapDuration);
     root.put("totalTime", totalTime);
-  
+
     double totalGap = 0;
     for (double[] gap : gaps) {
       totalGap += gap[1] - gap[0];
     }
     root.put("totalGap", totalGap);
-    
+
     for (double[] gap : gaps) {
       gap[0] = J2kSec.asEpoch(gap[0]);
       gap[1] = J2kSec.asEpoch(gap[1]);
     }
     root.put("gaps", gaps);
-    
+
     try {
       HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();
       Template template = cfg.getTemplate("gaps.ftl");

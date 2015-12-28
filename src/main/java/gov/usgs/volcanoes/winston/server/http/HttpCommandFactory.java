@@ -9,10 +9,6 @@ package gov.usgs.volcanoes.winston.server.http;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import gov.usgs.volcanoes.winston.server.http.cmd.GapsCommand;
@@ -23,14 +19,13 @@ import gov.usgs.volcanoes.winston.server.http.cmd.StatusCommand;
 
 public enum HttpCommandFactory {
 
-  MENU(MenuCommand.class, "Server Menu"),
-  HELI(HeliCommand.class, "Helicorder"),
-  RSAM(RsamCommand.class, "RSAM"),
-  STATUS(StatusCommand.class, "Server Status"),
+  MENU(MenuCommand.class, "Server Menu"), 
+  HELI(HeliCommand.class, "Helicorder"), 
+  RSAM(RsamCommand.class, "RSAM"), 
+  STATUS(StatusCommand.class, "Server Status"), 
   GAPS(GapsCommand.class, "Data Gaps"),
   ;
-  
-  private static final Logger LOGGER = LoggerFactory.getLogger(HttpCommandFactory.class);
+
 
   private Class<? extends HttpBaseCommand> clazz;
   private String commandName;
@@ -43,10 +38,11 @@ public enum HttpCommandFactory {
   public Class<? extends HttpBaseCommand> getCommandClass() {
     return clazz;
   }
-  
+
   public String commandName() {
     return commandName;
   }
+
   public static HttpBaseCommand get(WinstonDatabasePool databasePool, String command)
       throws InstantiationException, IllegalAccessException, MalformedCommandException {
     int cmdEnd = command.indexOf('?');
@@ -64,7 +60,7 @@ public enum HttpCommandFactory {
   }
 
   public static List<String> getNames() {
-    List names = new ArrayList();
+    List<String> names = new ArrayList<String>();
     for (HttpCommandFactory command : HttpCommandFactory.values()) {
       names.add(command.commandName());
     }

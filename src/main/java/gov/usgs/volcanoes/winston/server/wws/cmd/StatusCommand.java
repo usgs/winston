@@ -5,15 +5,10 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
-import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
@@ -29,8 +24,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 
 public class StatusCommand extends WwsBaseCommand {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(StatusCommand.class);
 
   private ConnectionStatistics connectionStatistics;
 
@@ -67,7 +60,7 @@ public class StatusCommand extends WwsBaseCommand {
     } catch (Exception e) {
       throw new UtilException("Unable to get channels for status command");
     }
-    
+
     sb.append(String.format("Channel count: %d\n", sts.size()));
     lines++;
 

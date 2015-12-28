@@ -54,31 +54,31 @@
 						<TR STYLE="background: #eeeeff;">
 							<TD>&le; 1 minute</TD>
 							<#assign percent = 100 * oneMinChannels?size / channelCount>
-							<TD><A HREF="javascript:popup(count1Title,count1);">${oneMinChannels?size} channels</A> ${percent}%)</TD>
+							<TD><A HREF="javascript:popup(count1Title,count1);">${oneMinChannels?size} channels</A> (${percent?round}%)</TD>
 						</TR>
 						<TR>
 							<TD>&le; 5 minutes</TD>
 							<#assign percent = 100 * fiveMinChannels?size / channelCount>
-							<TD><A HREF="javascript:popup(countFreshTitle,countFresh);">${fiveMinChannels?size} channels</A> ${percent}%)</TD>
+							<TD><A HREF="javascript:popup(countFreshTitle,countFresh);">${fiveMinChannels?size} channels</A> (${percent?round}%)</TD>
 						</TR>
 						<TR STYLE="background: #eeeeff;">
 							<TD>&le; 1 hour</TD>
 							<#assign percent = 100 * oneHourChannels?size / channelCount>
-							<TD><A HREF="javascript:popup(count5Title,count5);">${oneHourChannels?size} channels</A> ${percent}%)</TD>
+							<TD><A HREF="javascript:popup(count5Title,count5);">${oneHourChannels?size} channels</A> (${percent?round}%)</TD>
 						</TR>
 						<TR>
 							<TD>&le; 1 day</TD>
 							<#assign percent = 100 * oneDayChannels?size / channelCount>
-							<TD><A HREF="javascript:popup(countHourTitle,countHour);">${oneDayChannels?size} channels</A> ${percent}%)</TD>
+							<TD><A HREF="javascript:popup(countHourTitle,countHour);">${oneDayChannels?size} channels</A> (${percent?round}%)</TD>
 						</TR>
 						<TR STYLE="background: #eeeeff;"><TD>&le; 4 weeks</TD>
 							<#assign percent = 100 * oneMonthChannels?size / channelCount>
-						<TD><A HREF="javascript:popup(countDayTitle,countDay);">${oneMonthChannels?size} channels</A> ${percent}%)</TD>
+						<TD><A HREF="javascript:popup(countDayTitle,countDay);">${oneMonthChannels?size} channels</A> (${percent?round}%)</TD>
 					</TR>
 					<TR>
 						<TD>&gt; 4 weeks</TD>
 							<#assign percent = 100 * ancientChannels?size / channelCount>
-						<TD><A HREF="javascript:popup(countMonthTitle,countMonth);">${ancientChannels?size} channels</A> ${percent}%)</TD>
+						<TD><A HREF="javascript:popup(countMonthTitle,countMonth);">${ancientChannels?size} channels</A> (${percent?round}%)</TD>
 					</TR>
 				</TABLE>
 				</TD>
@@ -94,7 +94,7 @@
 							 <#assign bgColor = (chan?counter % 2 == 0)?string("#eeeeff;","#ffffff;")>
 								<TR style="background-color: ${bgColor}">
 									<TD ALIGN=right>${chan}</TD>
-									<TD>${interestingChannels[chan]/60} minutes</TD>
+									<TD>${(interestingChannels[chan]/60)?round} minutes</TD>
 								</TR>
 							</#list>
 					</TABLE>

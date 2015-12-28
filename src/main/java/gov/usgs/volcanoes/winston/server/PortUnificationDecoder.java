@@ -5,10 +5,10 @@
 
 package gov.usgs.volcanoes.winston.server;
 
-import java.util.List;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.winston.server.http.HttpCommandHandler;
@@ -25,7 +25,6 @@ import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
-import io.netty.util.AttributeKey;
 import io.netty.util.CharsetUtil;
 
 /**
@@ -64,20 +63,7 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
   }
 
   private final ConfigFile configFile;
-
-
   private final WinstonDatabasePool winstonDatabasePool;
-
-  private ConnectionStatistics connectionStatistics;
-  private DatabaseStatistics databaseStatistics;
-
-  private static final AttributeKey<ConnectionStatistics> connectionStatsKey;
-  private static final AttributeKey<DatabaseStatistics> databaseStatsKey;
-
-  static {
-    connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
-    databaseStatsKey = AttributeKey.valueOf("databaseStatistics");
-  }
 
   /**
    * Constructor.
@@ -92,7 +78,6 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
 
   @Override
   protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-    connectionStatistics = ctx.channel().attr(connectionStatsKey).get();
 
     // Will use the first five bytes to detect a protocol.
     if (in.readableBytes() < LEN) {

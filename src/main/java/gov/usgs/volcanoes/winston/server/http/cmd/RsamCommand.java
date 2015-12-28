@@ -10,13 +10,9 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import gov.usgs.math.DownsamplingType;
 import gov.usgs.plot.Plot;
 import gov.usgs.plot.PlotException;
-import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.decorate.DefaultFrameDecorator;
 import gov.usgs.plot.decorate.DefaultFrameDecorator.Location;
@@ -47,8 +43,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  */
 public final class RsamCommand extends HttpBaseCommand {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RsamCommand.class);
-
   public static final int MAX_HOURS = 144;
   public static final int MIN_HOURS = 1;
   public static final double MAX_TC = 21600;
@@ -69,7 +63,6 @@ public final class RsamCommand extends HttpBaseCommand {
   private double plotMax;
   private double plotMin;
   private boolean outputData;
-  private String errorString = "";
   private String code;
   private RSAMData rsamData;
   private FullHttpRequest request;
@@ -82,7 +75,6 @@ public final class RsamCommand extends HttpBaseCommand {
   public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request)
       throws UtilException, MalformedCommandException {
     this.request = request;
-    StringBuffer error = new StringBuffer();
 
     Map<String, String> params;
     try {
@@ -92,7 +84,10 @@ public final class RsamCommand extends HttpBaseCommand {
     }
 
 
-    errorString = validateParams(params);
+    String errorString = validateParams(params);
+    if (errorString.length() > 0) {
+      throw new MalformedCommandException(errorString);
+    }
     getData();
     if (outputData)
       ctx.write(sendData());
@@ -116,7 +111,6 @@ public final class RsamCommand extends HttpBaseCommand {
         dsInt = rsamPeriod;
       }
 
-      HelicorderData heliData = null;
       try {
         rsamData = databasePool.doCommand(new WinstonConsumer<RSAMData>() {
 
@@ -128,25 +122,27 @@ public final class RsamCommand extends HttpBaseCommand {
         throw new UtilException(e.getMessage());
       }
 
-      rsamData.adjustTime(timeZoneOffset);
+      if (rsamData != null && rsamData.rows() > 0) {
+        rsamData.adjustTime(timeZoneOffset);
 
-      if (despike)
-        rsamData.despike(1, despikePeriod);
+        if (despike)
+          rsamData.despike(1, despikePeriod);
 
-      if (detrend)
-        rsamData.detrend(1);
+        if (detrend)
+          rsamData.detrend(1);
 
-      if (runningMedian)
-        rsamData.set2median(1, runningMedianPeriod);
+        if (runningMedian)
+          rsamData.set2median(1, runningMedianPeriod);
+      } else {
+        throw new UtilException(
+            "Error: could not get RSAM data, check channel (code). Empty result.");
 
+      }
 
     } catch (final UtilException e) {
       throw new UtilException(
           "Error: could not get RSAM data, check channel (code). e = " + e.toString());
     }
-    if (rsamData == null || rsamData.rows() <= 0)
-      throw new UtilException(
-          "Error: could not get RSAM data, check channel (code). Empty result.");
   }
 
   private String validateParams(Map<String, String> arguments) throws MalformedCommandException {

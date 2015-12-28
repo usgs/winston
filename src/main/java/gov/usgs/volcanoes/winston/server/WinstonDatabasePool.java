@@ -7,8 +7,6 @@ package gov.usgs.volcanoes.winston.server;
 
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.util.UtilException;
@@ -22,8 +20,6 @@ import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
  *
  */
 public final class WinstonDatabasePool extends GenericObjectPool<WinstonDatabase> {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(WinstonDatabasePool.class);
 
   public WinstonDatabasePool(ConfigFile configFile, GenericObjectPoolConfig poolConfig) {
     super(new WinstonDatabaseFactory(configFile), poolConfig);

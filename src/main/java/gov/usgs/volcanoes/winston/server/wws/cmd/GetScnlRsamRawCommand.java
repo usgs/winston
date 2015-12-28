@@ -9,31 +9,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.logging.Level;
 
 import gov.usgs.math.DownsamplingType;
-import gov.usgs.net.ConnectionStatistics;
-import gov.usgs.net.NetTools;
-import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.plot.data.RSAMData;
 import gov.usgs.volcanoes.core.Zip;
-import gov.usgs.volcanoes.core.time.CurrentTime;
-import gov.usgs.volcanoes.core.time.Ew;
-import gov.usgs.volcanoes.core.time.J2kSec;
-import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
-import gov.usgs.volcanoes.winston.Channel;
-import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
-import gov.usgs.volcanoes.winston.legacyServer.WWS;
-import gov.usgs.volcanoes.winston.legacyServer.WWSCommandString;
-import gov.usgs.volcanoes.winston.legacyServer.cmd.BaseCommand;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
@@ -81,7 +63,7 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
     ByteBuffer bb = null;
     if (rsam != null && rsam.rows() > 0)
       bb = (ByteBuffer) rsam.toBinary().flip();
-    
+
     if (cmd.getInt(9) == 1)
       bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 

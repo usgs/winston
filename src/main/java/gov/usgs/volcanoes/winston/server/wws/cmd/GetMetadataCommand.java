@@ -5,30 +5,14 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
 
-import gov.usgs.net.ConnectionStatistics;
-import gov.usgs.net.NetTools;
-import gov.usgs.volcanoes.core.time.Ew;
-import gov.usgs.volcanoes.core.time.J2kSec;
-import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.Instrument;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
-import gov.usgs.volcanoes.winston.legacyServer.WWS;
-import gov.usgs.volcanoes.winston.legacyServer.WWSCommandString;
-import gov.usgs.volcanoes.winston.legacyServer.cmd.BaseCommand;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
@@ -44,10 +28,6 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Tom Parker
  */
 public class GetMetadataCommand extends WwsBaseCommand {
-  private static final int PROTOCOL_VERSION = 3;
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(GetMetadataCommand.class);
-
   public GetMetadataCommand() {
     super();
   }
@@ -61,20 +41,20 @@ public class GetMetadataCommand extends WwsBaseCommand {
 
     StringBuilder sb = new StringBuilder();
     try {
-    if ("INSTRUMENT".equals(ss[2])) {
-      List<Instrument> instruments = databasePool.doCommand(getInstrumentsConsumer());
-      sb.append(String.format("%s %d\n", cmd.getID(), instruments.size()));
-      sb.append(getInstrumentMetadata(instruments));
+      if ("INSTRUMENT".equals(ss[2])) {
+        List<Instrument> instruments = databasePool.doCommand(getInstrumentsConsumer());
+        sb.append(String.format("%s %d\n", cmd.getID(), instruments.size()));
+        sb.append(getInstrumentMetadata(instruments));
 
-    } else if ("CHANNEL".equals(ss[2])) {
-      List<Channel> channels = databasePool.doCommand(getChannelsConsumer());
-      sb.append(String.format("%s %d\n", cmd.getID(), channels.size()));
-      sb.append(getChannelMetadata(channels));
-    }
+      } else if ("CHANNEL".equals(ss[2])) {
+        List<Channel> channels = databasePool.doCommand(getChannelsConsumer());
+        sb.append(String.format("%s %d\n", cmd.getID(), channels.size()));
+        sb.append(getChannelMetadata(channels));
+      }
     } catch (Exception e) {
       throw new UtilException(e.toString());
     }
-    
+
     ctx.writeAndFlush(sb.toString());
 
   }

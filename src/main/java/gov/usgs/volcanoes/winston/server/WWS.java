@@ -15,26 +15,20 @@ import java.io.Console;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.concurrent.Executors;
 
 import gov.usgs.volcanoes.core.Log;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Version;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.SocketChannelConfig;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
-import io.netty.handler.traffic.GlobalChannelTrafficShapingHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 
@@ -51,6 +45,7 @@ public class WWS {
   private static final Logger LOGGER = LoggerFactory.getLogger(WWS.class);
 
   private static final int DEFAULT_DB_CONNECTIONS = 5;
+
   /**
    * Launch the WWS.
    *
@@ -80,8 +75,8 @@ public class WWS {
         if (s.equals("q")) {
           run = false;
           wws.shutdownGracefully();
-           } else if (s.startsWith("c")) {
-           wws.printConnections(s);
+        } else if (s.startsWith("c")) {
+          wws.printConnections(s);
           // } else if (s.startsWith("m")) {
           // wws.printCommands(s);
           // } else if (s.equals("d")) {
@@ -111,6 +106,7 @@ public class WWS {
   public void printConnections(String s) {
     System.out.println(connectionStatistics.printConnections(s));
   }
+
   public static void printKeys() {
     final StringBuffer sb = new StringBuffer();
     sb.append(Version.VERSION_STRING + "\n");
@@ -167,9 +163,9 @@ public class WWS {
 
   protected String winstonURL;
   protected NioEventLoopGroup group;
-  private boolean acceptCommands;
 
   private final ConnectionStatistics connectionStatistics;
+
   /**
    * Creates a new WWS.
    */
@@ -177,7 +173,6 @@ public class WWS {
     super();
 
     connectionStatistics = new ConnectionStatistics();
-    acceptCommands = true;
     LOGGER.info(Version.VERSION_STRING);
     configFilename = cf;
     processConfigFile();
@@ -244,23 +239,24 @@ public class WWS {
 
     final ConfigFile winstonConfig = configFile.getSubConfig("winston");
     final WinstonDatabasePool databasePool = new WinstonDatabasePool(winstonConfig, poolConfig);
-//    final GlobalChannelTrafficShapingHandler trafficCounter = new GlobalChannelTrafficShapingHandler(Executors.newScheduledThreadPool(1));
+    // final GlobalChannelTrafficShapingHandler trafficCounter = new
+    // GlobalChannelTrafficShapingHandler(Executors.newScheduledThreadPool(1));
 
     final AttributeKey<ConnectionStatistics> connectionStatsKey =
         AttributeKey.valueOf("connectionStatistics");
 
-//    new Thread() {
-//      public void run() {
-//        while (true) {
-//          System.out.println(connectionStatistics);
-//          try {
-//            Thread.sleep(2 * 1000);
-//          } catch (InterruptedException ignored) {
-//            // TODO Auto-generated catch block
-//          }
-//        }
-//      }
-//    }.start();
+    // new Thread() {
+    // public void run() {
+    // while (true) {
+    // System.out.println(connectionStatistics);
+    // try {
+    // Thread.sleep(2 * 1000);
+    // } catch (InterruptedException ignored) {
+    // // TODO Auto-generated catch block
+    // }
+    // }
+    // }
+    // }.start();
 
     // final AttributeKey<DatabaseStatistics> databaseStatsKey =
     // AttributeKey.valueOf("databaseStatistics");
@@ -274,10 +270,11 @@ public class WWS {
           @Override
           public void initChannel(SocketChannel ch) throws Exception {
             connectionStatistics.incrOpenCount();
-            final ChannelTrafficShapingHandler trafficCounter = new ChannelTrafficShapingHandler(1000);
+            final ChannelTrafficShapingHandler trafficCounter =
+                new ChannelTrafficShapingHandler(1000);
             final InetSocketAddress remoteAddress = ch.remoteAddress();
             connectionStatistics.mapChannel(remoteAddress, trafficCounter);
- 
+
             ch.pipeline().addLast(trafficCounter);
             ch.pipeline().addLast(new PortUnificationDecoder(configFile, databasePool));
 
@@ -288,10 +285,11 @@ public class WWS {
                 connectionStatistics.decrOpenCount();
                 connectionStatistics.unmapChannel(remoteAddress);
 
-                System.out.println("Total: " + trafficCounter.trafficCounter().cumulativeWrittenBytes());
+                System.out
+                    .println("Total: " + trafficCounter.trafficCounter().cumulativeWrittenBytes());
               }
             });
-            
+
           }
         });
 
@@ -322,7 +320,6 @@ public class WWS {
   public void shutdownGracefully() {
     LOGGER.warn("shutting down");
 
-    acceptCommands = false;
     final Future<?> ff = group.shutdownGracefully();
     try {
       ff.sync();
@@ -366,8 +363,9 @@ public class WWS {
     keepalive = k;
     LOGGER.info("config: wws.keepalive={}.", keepalive);
 
-     dbConnections = StringUtils.stringToInt(configFile.getString("wws.dbConnections"), DEFAULT_DB_CONNECTIONS);
-     LOGGER.info("config: wws.dbConnections={}.", dbConnections);
+    dbConnections =
+        StringUtils.stringToInt(configFile.getString("wws.dbConnections"), DEFAULT_DB_CONNECTIONS);
+    LOGGER.info("config: wws.dbConnections={}.", dbConnections);
 
     // final int m = StringUtils.stringToInt(cf.getString("wws.maxConnections"), -1);
     // if (m < 0) {

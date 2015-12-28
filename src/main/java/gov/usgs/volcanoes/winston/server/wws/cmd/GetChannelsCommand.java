@@ -8,25 +8,12 @@ package gov.usgs.volcanoes.winston.server.wws.cmd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
 
-import gov.usgs.net.ConnectionStatistics;
-import gov.usgs.net.NetTools;
-import gov.usgs.volcanoes.core.time.Ew;
-import gov.usgs.volcanoes.core.time.J2kSec;
-import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
-import gov.usgs.volcanoes.winston.legacyServer.WWS;
-import gov.usgs.volcanoes.winston.legacyServer.WWSCommandString;
-import gov.usgs.volcanoes.winston.legacyServer.cmd.BaseCommand;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
@@ -42,8 +29,6 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Tom Parker
  */
 public class GetChannelsCommand extends WwsBaseCommand {
-  private static final int PROTOCOL_VERSION = 3;
-
   private static final Logger LOGGER = LoggerFactory.getLogger(GetChannelsCommand.class);
 
   public GetChannelsCommand() {
@@ -69,7 +54,7 @@ public class GetChannelsCommand extends WwsBaseCommand {
       chs = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
         public List<Channel> execute(WinstonDatabase winston) {
           Channels channels = new Channels(winston);
-          channels.setAparentRetention(maxDays * ONE_DAY_S); 
+          channels.setAparentRetention(maxDays * ONE_DAY_S);
           return channels.getChannels(metadata);
         }
       });

@@ -9,9 +9,7 @@ package gov.usgs.volcanoes.winston.server.http;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.channels.SocketChannel;
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,16 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import gov.usgs.net.HttpRequest;
-import gov.usgs.net.NetTools;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
-import gov.usgs.volcanoes.winston.db.Data;
-import gov.usgs.volcanoes.winston.db.WaveServerEmulator;
-import gov.usgs.volcanoes.winston.db.WinstonDatabase;
-import gov.usgs.volcanoes.winston.legacyServer.WWS;
 import gov.usgs.volcanoes.winston.server.BaseCommand;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import io.netty.channel.ChannelHandlerContext;
@@ -49,19 +41,9 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
 
 
 
-  private SocketChannel socketChannel;
-  private NetTools netTools;
-  private WinstonDatabase winston;
-  private WWS wws;
-  private Data data;
-  private WaveServerEmulator emulator;
   private int maxDays;
-  private HttpRequest request;
-  private String cmd;
-  private Map<String, String> arguments;
-  private DecimalFormat decimalFormat;
   protected ConfigFile configFile;
-  
+
   public HttpBaseCommand() {
     super();
   }
@@ -71,7 +53,7 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
    * Do the work. Return response to the browser.
    * 
    * @throws MalformedCommandException
-   * @throws UtilException 
+   * @throws UtilException
    */
   public void respond(ChannelHandlerContext ctx, FullHttpRequest request)
       throws MalformedCommandException, UtilException {

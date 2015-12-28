@@ -55,7 +55,6 @@ public class MenuCommand extends WwsBaseCommand {
 
     ctx.write(cmd.getID() + " ");
 
-    WinstonDatabase winston = null;
     List<Channel> channels;
     try {
       channels = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
@@ -73,14 +72,15 @@ public class MenuCommand extends WwsBaseCommand {
     ctx.writeAndFlush('\n');
   }
 
-  public static List<String> generateMenu(List<Channel> channels, boolean isScnl) throws UtilException {
-    
+  public static List<String> generateMenu(List<Channel> channels, boolean isScnl)
+      throws UtilException {
+
     if (channels == null) {
       return null;
     }
 
     DecimalFormat decimalFormat = WwsBaseCommand.getDecimalFormat();
-    
+
     LOGGER.debug("channels count {}", channels.size());
     final List<String> list = new ArrayList<String>(channels.size());
     for (final Channel chan : channels) {

@@ -5,38 +5,16 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.logging.Level;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.math.DownsamplingType;
-import gov.usgs.net.ConnectionStatistics;
-import gov.usgs.net.NetTools;
-import gov.usgs.plot.data.HelicorderData;
-import gov.usgs.plot.data.RSAMData;
-import gov.usgs.volcanoes.core.Zip;
-import gov.usgs.volcanoes.core.time.CurrentTime;
-import gov.usgs.volcanoes.core.time.Ew;
-import gov.usgs.volcanoes.core.time.J2kSec;
-import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
-import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
-import gov.usgs.volcanoes.winston.legacyServer.WWS;
-import gov.usgs.volcanoes.winston.legacyServer.WWSCommandString;
-import gov.usgs.volcanoes.winston.legacyServer.cmd.BaseCommand;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
@@ -44,7 +22,6 @@ import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;
 
 public class GetScnRawCommand extends WwsBaseCommand {
-  private static final Logger LOGGER = LoggerFactory.getLogger(GetScnRawCommand.class);
 
   public GetScnRawCommand() {
     super();
@@ -67,8 +44,8 @@ public class GetScnRawCommand extends WwsBaseCommand {
       throw new MalformedCommandException();
     }
 
-    
-    
+
+
     final Integer chanId;
     try {
       chanId = databasePool.doCommand(new WinstonConsumer<Integer>() {

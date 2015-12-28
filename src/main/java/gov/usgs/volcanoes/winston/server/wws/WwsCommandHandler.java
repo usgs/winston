@@ -9,12 +9,9 @@ package gov.usgs.volcanoes.winston.server.wws;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
-
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
-import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -29,7 +26,7 @@ public class WwsCommandHandler extends SimpleChannelInboundHandler<WwsCommandStr
   private final WinstonDatabasePool winstonDatabasePool;
   private final ConfigFile configFile;
   private ConnectionStatistics connectionStatistics;
-  
+
   private static final AttributeKey<ConnectionStatistics> connectionStatsKey;
 
   static {

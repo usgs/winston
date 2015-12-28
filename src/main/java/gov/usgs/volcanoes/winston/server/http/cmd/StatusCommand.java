@@ -8,58 +8,33 @@ package gov.usgs.volcanoes.winston.server.http.cmd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TimeZone;
 
-import gov.usgs.net.HttpRequest;
-import gov.usgs.net.NetTools;
-import gov.usgs.volcanoes.core.time.Ew;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import gov.usgs.volcanoes.core.time.J2kSec;
-import gov.usgs.volcanoes.core.time.Time;
-import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
-import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.http.HttpBaseCommand;
 import gov.usgs.volcanoes.winston.server.http.HttpTemplateConfiguration;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.ssl.SslHandler;
-import io.netty.handler.stream.ChunkedNioFile;
 import io.netty.util.AttributeKey;
 
 /**
@@ -84,9 +59,7 @@ public final class StatusCommand extends HttpBaseCommand {
 
 
   public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws UtilException {
-    StringBuffer error = new StringBuffer();
-
-     final DecimalFormat formatter = new DecimalFormat("#.##");
+    final DecimalFormat formatter = new DecimalFormat("#.##");
     final double now = J2kSec.fromEpoch(System.currentTimeMillis());
 
     // get and sort menu
@@ -101,10 +74,6 @@ public final class StatusCommand extends HttpBaseCommand {
       });
     } catch (Exception e) {
       throw new UtilException(e.getMessage());
-    }
-
-    for (int i = 0; i < sts.size(); i++) {
-      final Channel chan = sts.get(i);
     }
 
     final double medianDataAge = now - sts.get(sts.size() / 2).getMaxTime();
@@ -140,13 +109,13 @@ public final class StatusCommand extends HttpBaseCommand {
     root.put("oneDayChannels", oneDayChannels);
     root.put("oneMonthChannels", oneMonthChannels);
     root.put("ancientChannels", ancientChannels);
-    
+
     root.put("channelCount", sts.size());
     root.put("medianDataAge", formatter.format(medianDataAge));
-    
+
     ConnectionStatistics connectionStatistics = ctx.channel().attr(connectionStatsKey).get();
     root.put("connectionCount", connectionStatistics.getOpen());
-    
+
     final Channel chan = sts.get(0);
     root.put("mostRecentChan", chan.getCode().replace('$', '_'));
     root.put("mostRecentTime", formatter.format(now - chan.getMaxTime()));

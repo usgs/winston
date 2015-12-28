@@ -5,24 +5,20 @@
 
 package gov.usgs.volcanoes.winston.server.http;
 
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URL;
-import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.apache.log4j.lf5.util.ResourceUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.commons.io.IOUtils;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
@@ -31,7 +27,6 @@ import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
-import gov.usgs.volcanoes.winston.legacyServer.cmd.http.AbstractHttpCommand;
 import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
@@ -41,15 +36,11 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.FutureListener;
 
 /**
  * Derived from HttpSnoopServerHandler
@@ -94,8 +85,6 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
         // send file
       } catch (MalformedCommandException e) {
-        String uri = req.getUri();
-
         InputStream is = this.getClass().getClassLoader().getResourceAsStream("www/" + command);
 
         if (is == null) {

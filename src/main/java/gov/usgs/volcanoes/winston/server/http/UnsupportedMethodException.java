@@ -8,7 +8,14 @@ package gov.usgs.volcanoes.winston.server.http;
 
 import java.io.IOException;
 
+/**
+ * Thrown when a client submits a HTTP requiest using a HTTP method that is not supported.
+ * @author Tom Parker
+ *
+ */
 public class UnsupportedMethodException extends IOException {
+
+  private static final long serialVersionUID = 1L;
 
   public UnsupportedMethodException(String msg) {
     super(msg);

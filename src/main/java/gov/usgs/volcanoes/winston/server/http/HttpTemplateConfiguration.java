@@ -1,8 +1,5 @@
 package gov.usgs.volcanoes.winston.server.http;
 
-import java.io.File;
-import java.io.IOException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,10 +22,6 @@ public final class HttpTemplateConfiguration extends Configuration {
     setBooleanFormat("1,0");
 
     setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-
-    // DefaultObjectWrapper obj = new DefaultObjectWrapper();
-    // obj.setExposeFields(true);
-    // setObjectWrapper(obj);
   }
 
   public static HttpTemplateConfiguration getInstance() {

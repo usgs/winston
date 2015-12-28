@@ -5,60 +5,28 @@
 
 package gov.usgs.volcanoes.winston.server.http.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
-import java.nio.charset.Charset;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.logging.Level;
 import java.util.TimeZone;
 
-import gov.usgs.net.HttpRequest;
-import gov.usgs.net.NetTools;
 import gov.usgs.plot.HelicorderSettings;
 import gov.usgs.plot.PlotException;
 import gov.usgs.plot.data.HelicorderData;
-import gov.usgs.volcanoes.core.CodeTimer;
-import gov.usgs.volcanoes.core.time.Ew;
-import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
-import gov.usgs.volcanoes.winston.Channel;
-import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
-import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.http.HttpBaseCommand;
 import gov.usgs.volcanoes.winston.server.http.HttpConstants;
 import gov.usgs.volcanoes.winston.server.http.UnsupportedMethodException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.DefaultFileRegion;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.LastHttpContent;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.ssl.SslHandler;
-import io.netty.handler.stream.ChunkedNioFile;
-import io.netty.util.AttributeKey;
 
 /**
  * Return the wave server menu. Similar to earthworm getmenu command.
@@ -67,8 +35,6 @@ import io.netty.util.AttributeKey;
  *
  */
 public final class HeliCommand extends HttpBaseCommand {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(HeliCommand.class);
 
   public static final int MAX_HOURS = 144;
   public static final int MIN_HOURS = 1;
@@ -79,8 +45,8 @@ public final class HeliCommand extends HttpBaseCommand {
   }
 
 
-  public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws UtilException, MalformedCommandException {
-    StringBuffer error = new StringBuffer();
+  public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request)
+      throws UtilException, MalformedCommandException {
 
     Map<String, String> params;
     try {
@@ -106,34 +72,35 @@ public final class HeliCommand extends HttpBaseCommand {
       throw new UtilException(e.getMessage());
     }
 
-     if (heliData == null || heliData.rows() <= 0) {
-       throw new UtilException("Error: could not get helicorder data, check channel (code).");
-     }
-     
-      byte[] png = null;
-      try {
-        png = settings.createPlot(heliData).getPNGBytes();
-      } catch (PlotException e) {
-        throw new UtilException(e.getLocalizedMessage());
-      }
-     
-     FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
-         HttpResponseStatus.OK, Unpooled.copiedBuffer(png));
-     response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, png.length);
-     response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "image/png");
+    if (heliData == null || heliData.rows() <= 0) {
+      throw new UtilException("Error: could not get helicorder data, check channel (code).");
+    }
 
-     int httpRefreshInterval = configFile.getInt("wws.httpRefreshInterval", -1);
-      if (httpRefreshInterval > 0)
-        response.headers().set("Refresh", httpRefreshInterval + "; url=" + request.getUri());
+    byte[] png = null;
+    try {
+      png = settings.createPlot(heliData).getPNGBytes();
+    } catch (PlotException e) {
+      throw new UtilException(e.getLocalizedMessage());
+    }
 
-     if (HttpHeaders.isKeepAlive(request)) {
-       response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-     }
-     ctx.write(response);
+    FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
+        HttpResponseStatus.OK, Unpooled.copiedBuffer(png));
+    response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, png.length);
+    response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "image/png");
+
+    int httpRefreshInterval = configFile.getInt("wws.httpRefreshInterval", -1);
+    if (httpRefreshInterval > 0)
+      response.headers().set("Refresh", httpRefreshInterval + "; url=" + request.getUri());
+
+    if (HttpHeaders.isKeepAlive(request)) {
+      response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+    }
+    ctx.write(response);
   }
 
 
-  private HelicorderSettings validateParams(Map<String, String> params) throws MalformedCommandException {
+  private HelicorderSettings validateParams(Map<String, String> params)
+      throws MalformedCommandException {
     new HelicorderSettings();
     HelicorderSettings settings = new HelicorderSettings();
     StringBuffer error = new StringBuffer();
@@ -173,10 +140,10 @@ public final class HeliCommand extends HttpBaseCommand {
     final int height = StringUtils.stringToInt(params.get("h"), HttpConstants.HELI_HEIGHT);
     settings.setSizeFromPlotSize(width, height);
 
-//    if (settings.height * settings.width <= 0
-//        || settings.height * settings.width > wws.httpMaxSize())
-//      error = error + "Error: product of width (w) and height (h) must be between 1 and "
-//          + wws.httpMaxSize() + ".";
+    // if (settings.height * settings.width <= 0
+    // || settings.height * settings.width > wws.httpMaxSize())
+    // error = error + "Error: product of width (w) and height (h) must be between 1 and "
+    // + wws.httpMaxSize() + ".";
 
     settings.showClip = StringUtils.stringToBoolean(params.get("sc"), HttpConstants.HELI_SHOW_CLIP);
     settings.forceCenter =
@@ -190,11 +157,11 @@ public final class HeliCommand extends HttpBaseCommand {
     settings.minimumAxis = StringUtils.stringToBoolean(params.get("min"));
     if (settings.minimumAxis)
       settings.setMinimumSizes();
-    
+
     if (error.length() > 0) {
       throw new MalformedCommandException(error.toString());
     }
-    
+
     return settings;
   }
 }
