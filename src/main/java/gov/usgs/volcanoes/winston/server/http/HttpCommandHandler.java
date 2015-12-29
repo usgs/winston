@@ -5,10 +5,6 @@
 
 package gov.usgs.volcanoes.winston.server.http;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -18,6 +14,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -40,6 +40,7 @@ import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.AttributeKey;
 
 /**
@@ -70,9 +71,12 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
   public void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
 
     LOGGER.info("Received HTTP req: {}", req.getUri());
+    FullHttpResponse response = null;
+
     String command = req.getUri().substring(1);
     if (command.length() == 0) {
-      sendUsage(ctx, req);
+      response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.OK,
+          sendUsage(ctx.channel().localAddress().toString().substring(1)));
     } else {
 
       // HTTP command
@@ -84,53 +88,61 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
         connectionStatistics.incrHttpCount(ctx.channel().remoteAddress());
 
         // send file
-      } catch (MalformedCommandException e) {
+      } catch (UnknownCommandException e) {
         InputStream is = this.getClass().getClassLoader().getResourceAsStream("www/" + command);
 
         if (is == null) {
-          send404(ctx, req);
+          response =
+              buildResponse(req.getProtocolVersion(), HttpResponseStatus.NOT_FOUND, "Not found.");
         } else {
+          response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.OK, is);
           final String mimeType = MimeType.guessMimeType(command);
-          sendFile(ctx, req, mimeType, is);
+          response.headers().set(HttpHeaders.Names.CONTENT_TYPE, mimeType);
         }
+      } catch (MalformedCommandException e) {
+        response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST,
+            e.getLocalizedMessage());
+      } catch (UtilException e) {
+        response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST,
+            e.getLocalizedMessage());
       }
+
     }
 
+    if (response != null) {
+      LOGGER.info("sending error response");
+      if (HttpHeaders.isKeepAlive(req)) {
+        response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+      }
+      ctx.writeAndFlush(response);
+    }
+    
     // If keep-alive is not set, close the connection once the content is fully written.
     if (!HttpHeaders.isKeepAlive(req)) {
       ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
     }
   }
 
-  private void sendFile(ChannelHandlerContext ctx, FullHttpRequest req, String mimeType,
-      InputStream is) throws IOException {
-
-    byte[] file = IOUtils.toByteArray(is);
-
-    FullHttpResponse response = new DefaultFullHttpResponse(req.getProtocolVersion(),
-        HttpResponseStatus.OK, Unpooled.copiedBuffer(file));
-    response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, file.length);
-    response.headers().set(HttpHeaders.Names.CONTENT_TYPE, mimeType);
-
-    if (HttpHeaders.isKeepAlive(req)) {
-      response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-    }
-
-    ctx.write(response);
-  }
-
-  private void send404(ChannelHandlerContext ctx, FullHttpRequest req) {
-    String html = "Unknown command.";
-
-    FullHttpResponse response = new DefaultFullHttpResponse(req.getProtocolVersion(),
-        HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
+  private FullHttpResponse buildResponse(HttpVersion httpVersion, HttpResponseStatus status,
+      String html) {
+    FullHttpResponse response = new DefaultFullHttpResponse(httpVersion, status,
+        Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
     response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, html.length());
     response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
-
-    ctx.writeAndFlush(response);
+    return response;
   }
 
-  private void sendUsage(ChannelHandlerContext ctx, FullHttpRequest req) throws UtilException {
+  private FullHttpResponse buildResponse(HttpVersion httpVersion, HttpResponseStatus status,
+      InputStream is) throws IOException {
+    byte[] file = IOUtils.toByteArray(is);
+    FullHttpResponse response =
+        new DefaultFullHttpResponse(httpVersion, status, Unpooled.copiedBuffer(file));
+    response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, file.length);
+    response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
+    return response;
+  }
+
+  private String sendUsage(String host) throws UtilException {
     List<Channel> channels;
     try {
       channels = winstonDatabasePool.doCommand(new WinstonConsumer<List<Channel>>() {
@@ -151,31 +163,25 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
     root.put("httpCommands", HttpCommandFactory.values());
     root.put("httpCommandNames", HttpCommandFactory.getNames());
     root.put("versionString", Version.VERSION_STRING);
-    root.put("host", ctx.channel().localAddress().toString().substring(1));
+    root.put("host", host);
     HttpConstants.applyDefaults(root);
 
+    String html = null;
 
     try {
       HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();
       Template template = cfg.getTemplate("usage.ftl");
       Writer sw = new StringWriter();
       template.process(root, sw);
-      String html = sw.toString();
+      html = sw.toString();
       sw.close();
-
-      FullHttpResponse response = new DefaultFullHttpResponse(req.getProtocolVersion(),
-          HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
-      response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, html.length());
-
-      if (HttpHeaders.isKeepAlive(req)) {
-        response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-      }
-      ctx.writeAndFlush(response);
     } catch (IOException e) {
       LOGGER.error(e.getLocalizedMessage());
     } catch (TemplateException e) {
       LOGGER.error(e.getLocalizedMessage());
     }
+
+    return html;
   }
 
   @Override

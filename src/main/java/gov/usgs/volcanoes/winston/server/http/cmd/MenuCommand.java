@@ -23,6 +23,7 @@ import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.http.HttpBaseCommand;
 import gov.usgs.volcanoes.winston.server.http.HttpConstants;
 import gov.usgs.volcanoes.winston.server.http.UnsupportedMethodException;
@@ -52,7 +53,7 @@ public final class MenuCommand extends HttpBaseCommand {
   }
 
 
-  public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws UtilException {
+  public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws UtilException, MalformedCommandException {
     StringBuffer error = new StringBuffer();
 
     Map<String, String> params;
@@ -60,10 +61,8 @@ public final class MenuCommand extends HttpBaseCommand {
       params = getUnaryParams(request);
     } catch (UnsupportedMethodException e) {
       // TODO return 501 error
-      e.printStackTrace();
-      return;
+      throw new MalformedCommandException("Unsupported method.");
     }
-
     // validate input. Write error and return if bad.
     final int sortCol = StringUtils.stringToInt(params.get("ob"), HttpConstants.ORDER_BY);
     if (sortCol < 1 || sortCol > 8) {
@@ -72,26 +71,16 @@ public final class MenuCommand extends HttpBaseCommand {
 
     final String o = StringUtils.stringToString(params.get("so"), HttpConstants.SORT_ORDER);
     final char order = o.charAt(0);
+
     if (order != 'a' && order != 'd') {
       error.append("Error: could not parse so = " + params.get("so") + "<br>");
-      return;
     }
 
     final String tz = StringUtils.stringToString(params.get("tz"), HttpConstants.TIME_ZONE);
     final TimeZone timeZone = TimeZone.getTimeZone(tz);
 
     if (error.length() > 0) {
-      HttpResponse response =
-          new DefaultHttpResponse(request.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST);
-      response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
-
-      boolean keepAlive = HttpHeaders.isKeepAlive(request);
-
-      if (keepAlive) {
-        response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, error.length());
-        response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-      }
-      ctx.writeAndFlush(error);
+      throw new MalformedCommandException(error.toString());
     } else {
 
       String html = prepareResponse(sortCol, order, timeZone);

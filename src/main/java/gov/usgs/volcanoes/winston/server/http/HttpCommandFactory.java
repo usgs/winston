@@ -9,6 +9,7 @@ package gov.usgs.volcanoes.winston.server.http;
 import java.util.ArrayList;
 import java.util.List;
 
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import gov.usgs.volcanoes.winston.server.http.cmd.GapsCommand;
@@ -44,19 +45,26 @@ public enum HttpCommandFactory {
   }
 
   public static HttpBaseCommand get(WinstonDatabasePool databasePool, String command)
-      throws InstantiationException, IllegalAccessException, MalformedCommandException {
+      throws UtilException, UnknownCommandException {
     int cmdEnd = command.indexOf('?');
     if (cmdEnd != -1) {
       command = command.substring(0, cmdEnd);
     }
     for (HttpCommandFactory cmd : HttpCommandFactory.values()) {
       if (cmd.toString().toLowerCase().equals(command)) {
-        HttpBaseCommand baseCommand = cmd.clazz.newInstance();
+        HttpBaseCommand baseCommand;
+        try {
+          baseCommand = cmd.clazz.newInstance();
+        } catch (InstantiationException e) {
+          throw new UtilException(e.getLocalizedMessage());
+        } catch (IllegalAccessException e) {
+          throw new UtilException(e.getLocalizedMessage());
+        }
         baseCommand.databasePool(databasePool);
         return baseCommand;
       }
     }
-    throw new MalformedCommandException();
+    throw new UnknownCommandException();
   }
 
   public static List<String> getNames() {
