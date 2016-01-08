@@ -33,18 +33,12 @@ public class GetScnRawCommand extends WwsBaseCommand {
       return; // malformed command
 
     final String id = cmd.getID();
-    final String scnl = cmd.getWinstonSCNL();
     final String s = cmd.getS();
     final String c = cmd.getC();
     final String n = cmd.getN();
+    final String scnl = s + "$" + c + "$" + n;
     final double t1 = cmd.getT1(false);
     final double t2 = cmd.getT1(false);
-
-    if (scnl == null) {
-      throw new MalformedCommandException();
-    }
-
-
 
     final Integer chanId;
     try {
@@ -73,17 +67,18 @@ public class GetScnRawCommand extends WwsBaseCommand {
       throw new UtilException("Unable to get timeSpan.");
     }
 
+    String hdrPreamble = id + " " + chanId + " " + s + " " + c + " " + n + " ";
     String errorString = null;
     if (t2 < t1) {
-      errorString = id + " " + chanId + " " + s + " " + c + " " + n + " " + "FB" + "\n";
+      errorString = hdrPreamble + "FB";
     } else if (t2 < tb[0]) {
-      errorString = id + " " + chanId + " " + s + " " + c + " " + n + " " + "FL s4 " + "\n";
+      errorString = hdrPreamble + "FL s4";
     } else if (t1 > tb[1]) {
-      errorString = id + " " + chanId + " " + s + " " + c + " " + n + " " + "FR s4 " + "\n";
+      errorString = hdrPreamble + "FR s4";
     }
 
-    if (errorString == null) {
-      ctx.writeAndFlush(errorString);
+    if (errorString != null) {
+      ctx.writeAndFlush(errorString + "\n");
       return;
     }
 
