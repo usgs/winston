@@ -72,7 +72,7 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
       ctx.write(cmd.getID() + " " + bb.limit() + "\n");
       ctx.writeAndFlush(bb.array());
     } else {
-      LOGGER.warn("no heli data");
+      ctx.write(cmd.getID() + " 0\n");
     }
   }
 }
