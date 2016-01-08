@@ -46,7 +46,7 @@ import io.netty.util.CharsetUtil;
  */
 public class PortUnificationDecoder extends ByteToMessageDecoder {
   private static final Logger LOGGER = LoggerFactory.getLogger(PortUnificationDecoder.class);
-
+  private static final boolean DEFAULT_ALLOW_HTTP = false;
   private static final int LEN = 5;
 
   private static final byte[] GET = {'G', 'E', 'T', 0};
@@ -92,15 +92,19 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
 
     final ChannelPipeline p = ctx.pipeline();
     if (startsWith(bytes, GET) || startsWith(bytes, POST)) {
-      switchToHttp(p);
+      LOGGER.debug("Detected HTTP connection.");
+      if (configFile.getBoolean("wws.allowHttp", DEFAULT_ALLOW_HTTP)) {
+        switchToHttp(p);
+      } else {
+        LOGGER.info("Ignoring HTTP request. (wws.allowHttp = false");
+      }
     } else {
+      LOGGER.debug("Detected WWS connection");
       switchToWws(p);
     }
   }
 
   private void switchToHttp(ChannelPipeline p) {
-    LOGGER.debug("Detected HTTP connection.");
-
     p.addLast(new HttpRequestDecoder());
     p.addLast(new HttpObjectAggregator(1048576));
     p.addLast(new HttpResponseEncoder());
@@ -109,8 +113,6 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
   }
 
   private void switchToWws(ChannelPipeline p) {
-    LOGGER.debug("Detected WWS connection");
-
     p.addLast(new LineBasedFrameDecoder(1024, true, true));
     p.addLast(new StringDecoder(CharsetUtil.US_ASCII));
     p.addLast(new StringEncoder(CharsetUtil.US_ASCII));
