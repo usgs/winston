@@ -52,7 +52,9 @@ public class WWSArgs {
     jsapResult = args.parse(commandLineArgs);
 
     isVerbose = jsapResult.getBoolean("verbose");
-    configFileName = jsapResult.getString("config-filename");
     LOGGER.debug("Setting: verbose={}", isVerbose);
+    
+    configFileName = jsapResult.getString("config-filename");
+    LOGGER.debug("Setting: config-filename={}", configFileName);
   }
 }
