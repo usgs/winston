@@ -10,6 +10,7 @@ import gov.usgs.volcanoes.winston.server.wws.cmd.GetChannelsCommand;
 import gov.usgs.volcanoes.winston.server.wws.cmd.GetMetadataCommand;
 import gov.usgs.volcanoes.winston.server.wws.cmd.GetScnRawCommand;
 import gov.usgs.volcanoes.winston.server.wws.cmd.GetScnlHeliRawCommand;
+import gov.usgs.volcanoes.winston.server.wws.cmd.GetScnlRawCommand;
 import gov.usgs.volcanoes.winston.server.wws.cmd.GetScnlRsamRawCommand;
 import gov.usgs.volcanoes.winston.server.wws.cmd.GetWaveRawCommand;
 import gov.usgs.volcanoes.winston.server.wws.cmd.MenuCommand;
@@ -22,12 +23,16 @@ import gov.usgs.volcanoes.winston.server.wws.cmd.VersionCommand;
  *
  */
 public enum WwsCommandFactory {
-  MENU(MenuCommand.class), VERSION(VersionCommand.class), GETCHANNELS(
-      GetChannelsCommand.class), GETMETADATA(GetMetadataCommand.class), GETSCNLHELIRAW(
-          GetScnlHeliRawCommand.class), GETWAVERAW(GetWaveRawCommand.class), STATUS(
-              StatusCommand.class), GETSCNLRSAMRAW(GetScnlRsamRawCommand.class), GETSCNRAW(
-                  GetScnRawCommand.class),
-                  // GETSCNLRAW("GETSCNLRAW", StatusCommand.class),
+  MENU(MenuCommand.class), 
+  VERSION(VersionCommand.class), 
+  GETCHANNELS(GetChannelsCommand.class), 
+  GETMETADATA(GetMetadataCommand.class), 
+  GETSCNLHELIRAW(GetScnlHeliRawCommand.class), 
+  GETWAVERAW(GetWaveRawCommand.class), 
+  STATUS(StatusCommand.class), 
+  GETSCNLRSAMRAW(GetScnlRsamRawCommand.class), 
+  GETSCNRAW(GetScnRawCommand.class),
+  GETSCNLRAW(GetScnlRawCommand.class),
                   // GETSCN("GETSCN", StatusCommand.class),
                   // GETSCNL("GETSCNL", StatusCommand.class),
   ;
