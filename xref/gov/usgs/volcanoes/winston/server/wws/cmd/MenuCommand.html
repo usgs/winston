@@ -63,32 +63,32 @@
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>  
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>      ctx.write(cmd.getID() + <span class="jxr_string">" "</span>);
 <a class="jxr_linenumber" name="L57" href="#L57">57</a>  
-<a class="jxr_linenumber" name="L58" href="#L58">58</a>      <a href="../../../../../../../gov/usgs/volcanoes/winston/db/WinstonDatabase.html">WinstonDatabase</a> winston = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L59" href="#L59">59</a>      List&lt;Channel&gt; channels;
-<a class="jxr_linenumber" name="L60" href="#L60">60</a>      <strong class="jxr_keyword">try</strong> {
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>        channels = databasePool.doCommand(<strong class="jxr_keyword">new</strong> WinstonConsumer&lt;List&lt;Channel&gt;&gt;() {
-<a class="jxr_linenumber" name="L62" href="#L62">62</a>  
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>          <strong class="jxr_keyword">public</strong> List&lt;Channel&gt; execute(<a href="../../../../../../../gov/usgs/volcanoes/winston/db/WinstonDatabase.html">WinstonDatabase</a> winston) <strong class="jxr_keyword">throws</strong> UtilException {
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>            <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/db/Channels.html">Channels</a>(winston).getChannels();
-<a class="jxr_linenumber" name="L65" href="#L65">65</a>          }
-<a class="jxr_linenumber" name="L66" href="#L66">66</a>  
-<a class="jxr_linenumber" name="L67" href="#L67">67</a>        });
-<a class="jxr_linenumber" name="L68" href="#L68">68</a>      } <strong class="jxr_keyword">catch</strong> (Exception e) {
-<a class="jxr_linenumber" name="L69" href="#L69">69</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> UtilException(e.getMessage());
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>      }
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>  
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>      ctx.write(generateMenu(channels, isScnl).toString());
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>      ctx.writeAndFlush('\n');
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>    }
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>  
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> List&lt;String&gt; generateMenu(List&lt;Channel&gt; channels, <strong class="jxr_keyword">boolean</strong> isScnl) <strong class="jxr_keyword">throws</strong> UtilException {
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>      
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>      List&lt;Channel&gt; channels;
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>      <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>        channels = databasePool.doCommand(<strong class="jxr_keyword">new</strong> WinstonConsumer&lt;List&lt;Channel&gt;&gt;() {
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>          <strong class="jxr_keyword">public</strong> List&lt;Channel&gt; execute(<a href="../../../../../../../gov/usgs/volcanoes/winston/db/WinstonDatabase.html">WinstonDatabase</a> winston) <strong class="jxr_keyword">throws</strong> UtilException {
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>            <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../gov/usgs/volcanoes/winston/db/Channels.html">Channels</a>(winston).getChannels();
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>          }
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>  
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>        });
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>      } <strong class="jxr_keyword">catch</strong> (Exception e) {
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> UtilException(e.getMessage());
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>      }
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>  
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>      ctx.write(generateMenu(channels, isScnl).toString());
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>      ctx.writeAndFlush('\n');
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>    }
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>  
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>    <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> List&lt;String&gt; generateMenu(List&lt;Channel&gt; channels, <strong class="jxr_keyword">boolean</strong> isScnl)
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>        <strong class="jxr_keyword">throws</strong> UtilException {
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>  
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>      <strong class="jxr_keyword">if</strong> (channels == <strong class="jxr_keyword">null</strong>) {
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>        <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>      }
 <a class="jxr_linenumber" name="L81" href="#L81">81</a>  
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>      DecimalFormat decimalFormat = WwsBaseCommand.getDecimalFormat();
-<a class="jxr_linenumber" name="L83" href="#L83">83</a>      
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>  
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>      LOGGER.debug(<span class="jxr_string">"channels count {}"</span>, channels.size());
 <a class="jxr_linenumber" name="L85" href="#L85">85</a>      <strong class="jxr_keyword">final</strong> List&lt;String&gt; list = <strong class="jxr_keyword">new</strong> ArrayList&lt;String&gt;(channels.size());
 <a class="jxr_linenumber" name="L86" href="#L86">86</a>      <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">final</strong> Channel chan : channels) {
@@ -117,6 +117,6 @@
 <a class="jxr_linenumber" name="L109" href="#L109">109</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2015. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2016. All rights reserved.</div>
 </body>
 </html>
