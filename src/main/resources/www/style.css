@@ -182,7 +182,8 @@ label {
 }
 
 #intro {
-        width:685px;
+        width:675px;
+        margin: 0 auto;
 	padding: 15px;
 	border: 5px #524C7F solid;
 	font-family: "New Century Schoolbook", Times, serif;
