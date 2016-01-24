@@ -12,6 +12,7 @@ import java.sql.Statement;
 import java.util.Locale;
 
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.Retriable;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
@@ -158,7 +159,7 @@ public class WinstonDatabase {
     return sv;
   }
 
-  public boolean execute(final String sql) {
+  private boolean execute(final String sql) {
     Boolean b = null;
     try {
       b = new Retriable<Boolean>() {
@@ -256,7 +257,8 @@ public class WinstonDatabase {
       getStatement().execute("CREATE TABLE supp_data_xref ( sdid INT NOT NULL, cid INT NOT NULL, "
           + "UNIQUE KEY (sdid,cid) ) " + tableEngine);
     } catch (final Exception e) {
-      LOGGER.error("Could not create tables in WWS database.  Are permissions set properly? ({})", e);
+      LOGGER.error("Could not create tables in WWS database.  Are permissions set properly? ({})",
+          e);
     }
   }
 
@@ -328,8 +330,8 @@ public class WinstonDatabase {
       if (ps == null) {
         ps = winstonConnection.prepareStatement(sql);
         preparedStatements.put(sql, ps);
-        LOGGER.debug("Adding statement to cache({}/{}): {}",
-            preparedStatements.size(), preparedStatements.maxSize(), sql);
+        LOGGER.debug("Adding statement to cache({}/{}): {}", preparedStatements.size(),
+            preparedStatements.maxSize(), sql);
       }
       return ps;
     } catch (final Exception e) {

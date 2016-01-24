@@ -1,0 +1,81 @@
+package gov.usgs.volcanoes.winston.legacyServer;
+
+import java.nio.channels.SocketChannel;
+
+import gov.usgs.net.CommandHandler;
+import gov.usgs.net.NetTools;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.BaseCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.GetChannelsCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.GetMetadataCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.GetSCNCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.GetSCNLCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.GetSCNLHeliRawCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.GetSCNLRSAMRawCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.GetSCNLRawCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.GetSCNRawCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.GetWaveRawCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.HttpCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.MenuCommand;
+import gov.usgs.volcanoes.winston.legacyServer.cmd.StatusCommand;
+
+/**
+ * A class that handles WWS requests.
+ *
+ * TODO: send ERROR REQUEST on bad commands.
+ * TODO: compressed wave protocol.
+ *
+ * FYI, known bugs in wave_serverV that this program mimics:<br>
+ * -- SCN not found on MENUSCN replies with extra request ID<br>
+ * -- MENUSCN does not append \n properly<br>
+ *
+ *
+ * @author Dan Cervelli
+ */
+@Deprecated
+public class ServerHandler extends CommandHandler {
+  private static final int PROTOCOL_VERSION = 3;
+
+  private final WinstonDatabase winston;
+
+  private static int instances = 0;
+  private final WWS wws;
+  private final NetTools netTools;
+
+  public ServerHandler(final WWS s) {
+    super(s, "WWSHandler-" + instances++);
+
+    wws = s;
+    netTools = new NetTools();
+    netTools.setServer(wws);
+    winston = new WinstonDatabase(wws.getWinstonDriver(), wws.getWinstonURL(),
+        wws.getWinstonPrefix(), wws.getWinstonStatementCacheCap());
+
+    slowCommandTime = wws.slowCommandTime;
+    setupCommandHandlers();
+  }
+
+  @Override
+  protected void setupCommandHandlers() {
+    addCommand("VERSION", new BaseCommand(netTools, winston, wws) {
+      public void doCommand(final Object info, final SocketChannel channel) {
+        netTools.writeString("PROTOCOL_VERSION: " + PROTOCOL_VERSION + "\n", channel);
+      }
+    });
+    addCommand("MENU", new MenuCommand(netTools, winston, wws));
+    addCommand("STATUS", new StatusCommand(netTools, winston, wws));
+    addCommand("GETSCNRAW", new GetSCNRawCommand(netTools, winston, wws));
+    addCommand("GETSCNLRAW", new GetSCNLRawCommand(netTools, winston, wws));
+    addCommand("GETSCN", new GetSCNCommand(netTools, winston, wws));
+    addCommand("GETSCNL", new GetSCNLCommand(netTools, winston, wws));
+    addCommand("GETSCNLHELIRAW", new GetSCNLHeliRawCommand(netTools, winston, wws));
+    addCommand("GETSCNLRSAMRAW", new GetSCNLRSAMRawCommand(netTools, winston, wws));
+    addCommand("GETCHANNELS", new GetChannelsCommand(netTools, winston, wws));
+    addCommand("GETWAVERAW", new GetWaveRawCommand(netTools, winston, wws));
+    addCommand("GETMETADATA", new GetMetadataCommand(netTools, winston, wws));
+    if (wws.isHttpAllowed()) {
+      addCommand("GET", new HttpCommand(netTools, winston, wws, this));
+      addCommand("POST", new HttpCommand(netTools, winston, wws, this));
+    }
+  }
+}
