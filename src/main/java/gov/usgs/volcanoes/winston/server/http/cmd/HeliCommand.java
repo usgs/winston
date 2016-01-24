@@ -36,10 +36,13 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  */
 public final class HeliCommand extends HttpBaseCommand {
 
-  public static final int MAX_HOURS = 144;
-  public static final int MIN_HOURS = 1;
-  public static final double MAX_TC = 21600;
+  private static final int MAX_HOURS = 144;
+  private static final int MIN_HOURS = 1;
+  private static final double MAX_TC = 21600;
 
+  /**
+   * Constructor.
+   */
   public HeliCommand() {
     super();
   }

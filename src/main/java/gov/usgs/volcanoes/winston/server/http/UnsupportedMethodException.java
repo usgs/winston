@@ -10,6 +10,7 @@ import java.io.IOException;
 
 /**
  * Thrown when a client submits a HTTP requiest using a HTTP method that is not supported.
+ * 
  * @author Tom Parker
  *
  */
@@ -17,6 +18,11 @@ public class UnsupportedMethodException extends IOException {
 
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Constructor.
+   * 
+   * @param msg brief explanation
+   */
   public UnsupportedMethodException(String msg) {
     super(msg);
   }

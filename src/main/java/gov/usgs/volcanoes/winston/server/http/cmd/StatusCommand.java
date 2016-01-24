@@ -53,6 +53,9 @@ public final class StatusCommand extends HttpBaseCommand {
     connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
   }
 
+  /**
+   * Constructor.
+   */
   public StatusCommand() {
     super();
   }

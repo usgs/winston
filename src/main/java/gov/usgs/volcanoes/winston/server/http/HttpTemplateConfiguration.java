@@ -1,3 +1,8 @@
+/**
+ * I waive copyright and related rights in the this work worldwide through the CC0 1.0 Universal
+ * public domain dedication. https://creativecommons.org/publicdomain/zero/1.0/legalcode
+ */
+
 package gov.usgs.volcanoes.winston.server.http;
 
 import org.slf4j.Logger;
@@ -7,6 +12,12 @@ import freemarker.cache.ClassTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
 
+/**
+ * Singleton template configuration.
+ * 
+ * @author Tom Parker
+ *
+ */
 public final class HttpTemplateConfiguration extends Configuration {
   Logger LOGGER = LoggerFactory.getLogger(HttpTemplateConfiguration.class);
 
@@ -24,6 +35,10 @@ public final class HttpTemplateConfiguration extends Configuration {
     setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
   }
 
+  /**
+   * accessor.
+   * @return the template configuration instance
+   */
   public static HttpTemplateConfiguration getInstance() {
     return HttpTemplateConfigufationHolder.config;
   }

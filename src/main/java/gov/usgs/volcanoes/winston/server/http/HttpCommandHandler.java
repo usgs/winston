@@ -62,6 +62,12 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
     connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
   }
 
+  /**
+   * Constructor.
+   * 
+   * @param configFile my config file
+   * @param winstonDatabasePool my database pool
+   */
   public HttpCommandHandler(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     this.winstonDatabasePool = winstonDatabasePool;
     this.configFile = configFile;

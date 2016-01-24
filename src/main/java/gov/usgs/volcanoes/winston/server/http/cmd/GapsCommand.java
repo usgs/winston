@@ -72,6 +72,9 @@ public final class GapsCommand extends HttpBaseCommand {
   private ChannelHandlerContext ctx;
   private FullHttpRequest request;
 
+  /**
+   * Constructor.
+   */
   public GapsCommand() {
     super();
   }
