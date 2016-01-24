@@ -1,12 +1,9 @@
-/**
- * I waive copyright and related rights in the this work worldwide through the CC0 1.0 Universal
- * public domain dedication. https://creativecommons.org/publicdomain/zero/1.0/legalcode
- */
-
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
 
@@ -14,31 +11,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.message.TraceBuf;
+import gov.usgs.plot.data.Wave;
+import gov.usgs.volcanoes.core.time.Ew;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.UtilException;
-import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
-import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
 import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;
 
 /**
- * Answers requests using the earthworm WSV GETSCNLRAW command.
  * 
  * @author Tom Parker
  *
  */
-public class GetScnlRawCommand extends EwDataRequest {
+public class GetScnlCommand extends EwDataRequest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRawCommand.class);
 
   /**
    * Constructor.
    */
-  public GetScnlRawCommand() {
+  public GetScnlCommand() {
     super();
     isScnl = true;
   }
@@ -78,47 +75,66 @@ public class GetScnlRawCommand extends EwDataRequest {
       return;
     }
 
-    final List<byte[]> bufs;
+    final Wave wave;
     try {
-      bufs = databasePool.doCommand(new WinstonConsumer<List<byte[]>>() {
-        public List<byte[]> execute(WinstonDatabase winston) throws UtilException {
+      wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
+        public Wave execute(WinstonDatabase winston) throws UtilException {
           double st = Math.max(startTime, timeSpan[0]);
           double et = Math.min(endTime, timeSpan[1]);
-          return new Data(winston).getTraceBufBytes(code, st, et, 0);
+          return new Data(winston).getWave(chanId, startTime, endTime, 0);
         }
       });
     } catch (Exception e) {
       throw new UtilException("Unable to get chanId");
     }
 
-    if (bufs == null || bufs.size() == 0) {
+
+    if (wave == null) {
       ctx.writeAndFlush(hdrPreamble + "FG s4\n");
       LOGGER.debug("Returning empty trace list");
       return;
     }
 
-    final TraceBuf firstBuf;
-    final TraceBuf lastBuf;
-    try {
-      firstBuf = new TraceBuf(bufs.get(0));
-      lastBuf = new TraceBuf(bufs.get(bufs.size() - 1));
-    } catch (IOException e) {
-      throw new UtilException("Unable to get bufs.");
-    }
+    final NumberFormat numberFormat = new DecimalFormat("#.######");
+    String sts = null;
 
-    int total = 0;
-    for (final byte[] buf : bufs) {
-      total += buf.length;
+    // find first sample time
+    double ct = wave.getStartTime() - wave.getRegistrationOffset();
+    final double dt = 1 / wave.getSamplingRate();
+    for (int i = 0; i < wave.numSamples(); i++) {
+      if (ct >= (startTime - dt / 2))
+        break;
+      ct += dt;
     }
-
-    String hdr = hdrPreamble + " F " + firstBuf.dataType() + " " + firstBuf.getStartTime() + " "
-        + lastBuf.getEndTime() + " " + total + '\n';
-    ctx.write(hdr);
-
-    final ByteBuffer bb = ByteBuffer.allocate(total);
-    for (final Iterator<byte[]> it = bufs.iterator(); it.hasNext();) {
-      bb.put((byte[]) it.next());
+    sts = numberFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ct)));
+    final ByteBuffer bb = ByteBuffer.allocate(wave.numSamples() * 13 + 256);
+    bb.put(id.getBytes());
+    bb.put((byte) ' ');
+    bb.put(Integer.toString(chanId).getBytes());
+    bb.put(chan.getBytes());
+    bb.put(" F s4 ".getBytes());
+    bb.put(sts.getBytes());
+    bb.put((byte) ' ');
+    bb.put(Double.toString(wave.getSamplingRate()).getBytes());
+    bb.put(" ".getBytes());
+    int sample;
+    ct = wave.getStartTime();
+    // int samples = 0;
+    for (int i = 0; i < wave.numSamples(); i++) {
+      if (ct >= (startTime - dt / 2)) {
+        // samples++;
+        sample = wave.buffer[i];
+        if (sample == Wave.NO_DATA)
+          bb.put(cmd.getString(isScnl ? 8 : 7).getBytes());
+        else
+          bb.put(Integer.toString(wave.buffer[i]).getBytes());
+        bb.put((byte) ' ');
+      }
+      ct += dt;
+      if (ct >= endTime)
+        break;
     }
+    bb.put((byte) '\n');
     bb.flip();
     ctx.writeAndFlush(bb.array());
   }

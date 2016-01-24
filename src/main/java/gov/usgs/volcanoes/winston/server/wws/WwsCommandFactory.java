@@ -8,7 +8,9 @@ package gov.usgs.volcanoes.winston.server.wws;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import gov.usgs.volcanoes.winston.server.wws.cmd.GetChannelsCommand;
 import gov.usgs.volcanoes.winston.server.wws.cmd.GetMetadataCommand;
+import gov.usgs.volcanoes.winston.server.wws.cmd.GetScnCommand;
 import gov.usgs.volcanoes.winston.server.wws.cmd.GetScnRawCommand;
+import gov.usgs.volcanoes.winston.server.wws.cmd.GetScnlCommand;
 import gov.usgs.volcanoes.winston.server.wws.cmd.GetScnlHeliRawCommand;
 import gov.usgs.volcanoes.winston.server.wws.cmd.GetScnlRawCommand;
 import gov.usgs.volcanoes.winston.server.wws.cmd.GetScnlRsamRawCommand;
@@ -33,8 +35,8 @@ public enum WwsCommandFactory {
   GETSCNLRSAMRAW(GetScnlRsamRawCommand.class), 
   GETSCNRAW(GetScnRawCommand.class),
   GETSCNLRAW(GetScnlRawCommand.class),
-                  // GETSCN("GETSCN", StatusCommand.class),
-                  // GETSCNL("GETSCNL", StatusCommand.class),
+  GETSCN(GetScnCommand.class),
+  GETSCNL(GetScnlCommand.class),
   ;
 
   private Class<? extends WwsBaseCommand> clazz;
