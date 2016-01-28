@@ -44,6 +44,8 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.AttributeKey;
 
 /**
+ * Receives an HTTP command from the pipeline and passes it to the correct HTTP command class for execution.
+ * 
  * Derived from HttpSnoopServerHandler
  *
  * @author Tom Parker

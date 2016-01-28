@@ -11,6 +11,7 @@ import java.util.List;
 
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
+import gov.usgs.volcanoes.winston.server.http.cmd.FdsnwsCommand;
 import gov.usgs.volcanoes.winston.server.http.cmd.GapsCommand;
 import gov.usgs.volcanoes.winston.server.http.cmd.HeliCommand;
 import gov.usgs.volcanoes.winston.server.http.cmd.MenuCommand;
@@ -34,12 +35,14 @@ public enum HttpCommandFactory {
   /** rsam */
   RSAM(RsamCommand.class, "RSAM"), 
   
-  
   /** status */
   STATUS(StatusCommand.class, "Server Status"), 
   
   /** gaps */
   GAPS(GapsCommand.class, "Data Gaps"),
+  
+  /** FDSNWS */
+  FDSNWS(FdsnwsCommand.class, "FDSN Web Service")
   ;
 
 
@@ -82,6 +85,12 @@ public enum HttpCommandFactory {
     if (cmdEnd != -1) {
       command = command.substring(0, cmdEnd);
     }
+    
+    cmdEnd = command.indexOf('/');
+    if (cmdEnd != -1) {
+      command = command.substring(0, cmdEnd);
+    }
+    
     for (HttpCommandFactory cmd : HttpCommandFactory.values()) {
       if (cmd.toString().toLowerCase().equals(command)) {
         HttpBaseCommand baseCommand;
