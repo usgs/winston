@@ -44,6 +44,8 @@ import io.netty.handler.codec.http.HttpVersion;
 import io.netty.util.AttributeKey;
 
 /**
+ * Receives an HTTP command from the pipeline and passes it to the correct HTTP command class for execution.
+ * 
  * Derived from HttpSnoopServerHandler
  *
  * @author Tom Parker
@@ -62,6 +64,12 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
     connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
   }
 
+  /**
+   * Constructor.
+   * 
+   * @param configFile my config file
+   * @param winstonDatabasePool my database pool
+   */
   public HttpCommandHandler(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     this.winstonDatabasePool = winstonDatabasePool;
     this.configFile = configFile;
@@ -170,7 +178,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
     try {
       HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();
-      Template template = cfg.getTemplate("usage.ftl");
+      Template template = cfg.getTemplate("www/usage.ftl");
       Writer sw = new StringWriter();
       template.process(root, sw);
       html = sw.toString();

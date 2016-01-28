@@ -1,3 +1,9 @@
+/**
+ * I waive copyright and related rights in the this work worldwide
+ * through the CC0 1.0 Universal public domain dedication.
+ * https://creativecommons.org/publicdomain/zero/1.0/legalcode
+ */
+
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
 import gov.usgs.volcanoes.core.util.UtilException;
@@ -8,6 +14,12 @@ import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
 import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
 
+/**
+ * Abstract request for data using an Earthworm WSV command
+ * 
+ * @author Tom Parker
+ *
+ */
 public abstract class EwDataRequest extends WwsBaseCommand {
   protected boolean isScnl;
 

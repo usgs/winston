@@ -10,21 +10,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 import gov.usgs.volcanoes.core.util.UtilException;
-import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
+import gov.usgs.volcanoes.winston.server.http.cmd.FdsnwsCommand;
 import gov.usgs.volcanoes.winston.server.http.cmd.GapsCommand;
 import gov.usgs.volcanoes.winston.server.http.cmd.HeliCommand;
 import gov.usgs.volcanoes.winston.server.http.cmd.MenuCommand;
 import gov.usgs.volcanoes.winston.server.http.cmd.RsamCommand;
 import gov.usgs.volcanoes.winston.server.http.cmd.StatusCommand;
 
+/**
+ * Factory class for HTTP commands
+ * 
+ * @author Tom Parker
+ *
+ */
 public enum HttpCommandFactory {
 
+  /** menu */
   MENU(MenuCommand.class, "Server Menu"), 
+  
+  /** heli */
   HELI(HeliCommand.class, "Helicorder"), 
+  
+  /** rsam */
   RSAM(RsamCommand.class, "RSAM"), 
+  
+  /** status */
   STATUS(StatusCommand.class, "Server Status"), 
+  
+  /** gaps */
   GAPS(GapsCommand.class, "Data Gaps"),
+  
+  /** FDSNWS */
+  FDSNWS(FdsnwsCommand.class, "FDSN Web Service")
   ;
 
 
@@ -36,20 +54,43 @@ public enum HttpCommandFactory {
     this.commandName = commandName;
   }
 
+  /**
+   * Class accessor.
+   * @return the class
+   */
   public Class<? extends HttpBaseCommand> getCommandClass() {
     return clazz;
   }
 
+  /**
+   * Name accessor.
+   * @return the name
+   */
   public String commandName() {
     return commandName;
   }
 
+  /**
+   * Instantiate the HTTP command class.
+   * 
+   * @param databasePool database pool 
+   * @param command received command string
+   * @return an instantiated command object
+   * @throws UtilException when things go wrong
+   * @throws UnknownCommandException when no known class can service the request
+   */
   public static HttpBaseCommand get(WinstonDatabasePool databasePool, String command)
       throws UtilException, UnknownCommandException {
     int cmdEnd = command.indexOf('?');
     if (cmdEnd != -1) {
       command = command.substring(0, cmdEnd);
     }
+    
+    cmdEnd = command.indexOf('/');
+    if (cmdEnd != -1) {
+      command = command.substring(0, cmdEnd);
+    }
+    
     for (HttpCommandFactory cmd : HttpCommandFactory.values()) {
       if (cmd.toString().toLowerCase().equals(command)) {
         HttpBaseCommand baseCommand;
@@ -67,6 +108,10 @@ public enum HttpCommandFactory {
     throw new UnknownCommandException();
   }
 
+  /**
+   * Return list of known command names
+   * @return name list
+   */
   public static List<String> getNames() {
     List<String> names = new ArrayList<String>();
     for (HttpCommandFactory command : HttpCommandFactory.values()) {

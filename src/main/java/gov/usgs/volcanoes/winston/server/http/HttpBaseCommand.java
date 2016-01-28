@@ -44,6 +44,9 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
   private int maxDays;
   protected ConfigFile configFile;
 
+  /**
+   * Constructor.
+   */
   public HttpBaseCommand() {
     super();
   }
@@ -52,8 +55,10 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
   /**
    * Do the work. Return response to the browser.
    * 
-   * @throws MalformedCommandException
-   * @throws UtilException
+   * @param ctx handler context
+   * @param request my request
+   * @throws MalformedCommandException when cannot parse command
+   * @throws UtilException when things go wrong
    */
   public void respond(ChannelHandlerContext ctx, FullHttpRequest request)
       throws MalformedCommandException, UtilException {
@@ -198,6 +203,11 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
   }
 
 
+  /**
+   * Configfile mutator.
+   * 
+   * @param configFile my new config file
+   */
   public void setConfig(ConfigFile configFile) {
     this.configFile = configFile;
   }

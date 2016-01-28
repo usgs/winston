@@ -8,10 +8,21 @@ package gov.usgs.volcanoes.winston.server.wws;
 
 import java.io.IOException;
 
+/**
+ * Thrown when no class can handle the command.
+ * 
+ * @author Tom Parker
+ *
+ */
 public class UnsupportedCommandException extends IOException {
 
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Constructor.
+   * 
+   * @param msg brief explanation
+   */
   public UnsupportedCommandException(String msg) {
     super(msg);
   }

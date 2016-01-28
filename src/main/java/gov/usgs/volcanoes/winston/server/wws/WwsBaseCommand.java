@@ -28,10 +28,17 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
 
   protected int maxDays;
 
+  /**
+   * Constructor.
+   */
   public WwsBaseCommand() {
     super();
   }
 
+  /**
+   * maxDays mutator.
+   * @param maxDays apparent data retention
+   */
   public void setMaxDays(int maxDays) {
     this.maxDays = maxDays;
   }
@@ -39,8 +46,10 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
   /**
    * Do the work. Return response to the client.
    * 
-   * @throws MalformedCommandException
-   * @throws UtilException
+   * @param ctx my context
+   * @param req the request
+   * @throws MalformedCommandException when I cannot understand the command
+   * @throws UtilException when things go wrong
    */
   public void respond(ChannelHandlerContext ctx, WwsCommandString req)
       throws MalformedCommandException, UtilException {

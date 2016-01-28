@@ -1,16 +1,12 @@
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Iterator;
-import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
@@ -81,7 +77,7 @@ public class GetScnlCommand extends EwDataRequest {
         public Wave execute(WinstonDatabase winston) throws UtilException {
           double st = Math.max(startTime, timeSpan[0]);
           double et = Math.min(endTime, timeSpan[1]);
-          return new Data(winston).getWave(chanId, startTime, endTime, 0);
+          return new Data(winston).getWave(chanId, st, et, 0);
         }
       });
     } catch (Exception e) {

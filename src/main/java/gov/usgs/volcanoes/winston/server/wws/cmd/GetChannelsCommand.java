@@ -31,6 +31,9 @@ import io.netty.channel.ChannelHandlerContext;
 public class GetChannelsCommand extends WwsBaseCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetChannelsCommand.class);
 
+  /**
+   * Constructor.
+   */
   public GetChannelsCommand() {
     super();
   }

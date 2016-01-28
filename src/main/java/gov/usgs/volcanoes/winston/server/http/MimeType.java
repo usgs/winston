@@ -1,3 +1,8 @@
+/**
+ * I waive copyright and related rights in the this work worldwide through the CC0 1.0 Universal
+ * public domain dedication. https://creativecommons.org/publicdomain/zero/1.0/legalcode
+ */
+
 package gov.usgs.volcanoes.winston.server.http;
 
 import java.util.Collections;
@@ -7,6 +12,12 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Guess a mime type given a file name.
+ * 
+ * @author Tom Parker
+ *
+ */
 public class MimeType {
   private static final Logger LOGGER = LoggerFactory.getLogger(MimeType.class);
     private static final Map<String, String> mimeTypes;
@@ -24,6 +35,11 @@ public class MimeType {
         mimeTypes = Collections.unmodifiableMap(map);
     }
     
+    /**
+     * Guess mime type
+     * @param fileName filename hint
+     * @return mime-type string
+     */
     public static String guessMimeType(String fileName) {
       LOGGER.info("guessing mime-type for {}", fileName);
         int index = fileName.indexOf('.');

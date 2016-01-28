@@ -30,6 +30,9 @@ import io.netty.channel.ChannelHandlerContext;
 public class GetScnlHeliRawCommand extends WwsBaseCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlHeliRawCommand.class);
 
+  /**
+   * Constructor.
+   */
   public GetScnlHeliRawCommand() {
     super();
   }

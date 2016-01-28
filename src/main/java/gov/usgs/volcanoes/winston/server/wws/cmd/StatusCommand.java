@@ -23,6 +23,12 @@ import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.AttributeKey;
 
+/**
+ * Status command.
+ * 
+ * @author Tom Parker
+ *
+ */
 public class StatusCommand extends WwsBaseCommand {
 
   private ConnectionStatistics connectionStatistics;
@@ -33,6 +39,9 @@ public class StatusCommand extends WwsBaseCommand {
     connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
   }
 
+  /**
+   * Constructor.
+   */
   public StatusCommand() {
     super();
   }

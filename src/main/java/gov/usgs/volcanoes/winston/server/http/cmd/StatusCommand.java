@@ -53,6 +53,9 @@ public final class StatusCommand extends HttpBaseCommand {
     connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
   }
 
+  /**
+   * Constructor.
+   */
   public StatusCommand() {
     super();
   }
@@ -122,7 +125,7 @@ public final class StatusCommand extends HttpBaseCommand {
 
     try {
       HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();
-      Template template = cfg.getTemplate("status.ftl");
+      Template template = cfg.getTemplate("www/status.ftl");
       Writer sw = new StringWriter();
       template.process(root, sw);
       String html = sw.toString();

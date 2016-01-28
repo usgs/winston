@@ -31,6 +31,9 @@ import io.netty.channel.ChannelHandlerContext;
 public class GetScnlRsamRawCommand extends WwsBaseCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRsamRawCommand.class);
 
+  /**
+   * Constructor.
+   */
   public GetScnlRsamRawCommand() {
     super();
   }
@@ -67,8 +70,10 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
     if (cmd.getInt(9) == 1)
       bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
-    LOGGER.warn("returning {} rsam bytes", bb.limit());
-    ctx.write(cmd.getID() + " " + bb.limit() + '\n');
-    ctx.writeAndFlush(bb.array());
+    if (bb != null) {
+      LOGGER.warn("returning {} rsam bytes", bb.limit());
+      ctx.write(cmd.getID() + " " + bb.limit() + '\n');
+      ctx.writeAndFlush(bb.array());
+    }
   }
 }

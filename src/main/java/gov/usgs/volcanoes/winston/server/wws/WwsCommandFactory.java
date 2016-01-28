@@ -25,17 +25,41 @@ import gov.usgs.volcanoes.winston.server.wws.cmd.VersionCommand;
  *
  */
 public enum WwsCommandFactory {
+  
+  /** menu */
   MENU(MenuCommand.class), 
+  
+  /** version */
   VERSION(VersionCommand.class), 
+  
+  /** getchannels */
   GETCHANNELS(GetChannelsCommand.class), 
+  
+  /** getmetadata */
   GETMETADATA(GetMetadataCommand.class), 
+  
+  /** get heli */
   GETSCNLHELIRAW(GetScnlHeliRawCommand.class), 
+  
+  /** returns a wave */
   GETWAVERAW(GetWaveRawCommand.class), 
+  
+  /** status */
   STATUS(StatusCommand.class), 
+  
+  /** get rsam */
   GETSCNLRSAMRAW(GetScnlRsamRawCommand.class), 
+  
+  /** get scn tracebufs */
   GETSCNRAW(GetScnRawCommand.class),
+  
+  /** get scnl tracebufs */
   GETSCNLRAW(GetScnlRawCommand.class),
+  
+  /** get scn samples */
   GETSCN(GetScnCommand.class),
+  
+  /** get scnl samples */
   GETSCNL(GetScnlCommand.class),
   ;
 
@@ -46,13 +70,14 @@ public enum WwsCommandFactory {
   }
 
   /**
+   * Return the appropriate initialized object.
    * 
-   * @param winstonDatabasePool
-   * @param command
-   * @return
-   * @throws InstantiationException
-   * @throws IllegalAccessException
-   * @throws UnsupportedCommandException
+   * @param databasePool database pool
+   * @param command the WWS command
+   * @return the initialized object
+   * @throws InstantiationException when I cannot create object
+   * @throws IllegalAccessException when I cannot create object
+   * @throws UnsupportedCommandException when no classes can service the command
    */
   public static WwsBaseCommand get(WinstonDatabasePool databasePool, WwsCommandString command)
       throws InstantiationException, IllegalAccessException, UnsupportedCommandException {

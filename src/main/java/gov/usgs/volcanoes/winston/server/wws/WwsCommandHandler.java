@@ -18,6 +18,12 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.util.AttributeKey;
 
+/**
+ * 
+ * 
+ * @author Tom Parker
+ *
+ */
 public class WwsCommandHandler extends SimpleChannelInboundHandler<WwsCommandString> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WwsCommandHandler.class);
@@ -33,6 +39,12 @@ public class WwsCommandHandler extends SimpleChannelInboundHandler<WwsCommandStr
     connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
   }
 
+  /**
+   * Constructor.
+   * 
+   * @param configFile my config file
+   * @param winstonDatabasePool my database pool
+   */
   public WwsCommandHandler(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     this.winstonDatabasePool = winstonDatabasePool;
     this.configFile = configFile;

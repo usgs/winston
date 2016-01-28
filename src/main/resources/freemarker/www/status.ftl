@@ -1,4 +1,4 @@
-<htmlL>
+<html>
 	<head>
 		<title>Winston Status</title>
 		<script language="javascript" type="text/javascript">

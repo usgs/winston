@@ -4,6 +4,7 @@ import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.math.Goertzel;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
 
 /**
@@ -40,7 +41,7 @@ public class McCalPulseFilter extends TraceBufFilter {
 
     if (tb.channel().contains("EHZ") && (g / (g2 + g3 + g4)) > threshold) // TOMPTEMP
     {
-      addMetadata("calPulse", String.format("%.2f", J2kSec.asEpoch(tb.firstSampleTime())));
+      addMetadata("calPulse", String.format("%.2f", Time.j2kToEw(tb.firstSampleTime())));
       return true;
     } else
       return false;

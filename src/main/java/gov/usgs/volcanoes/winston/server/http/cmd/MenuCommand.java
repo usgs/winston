@@ -5,9 +5,6 @@
 
 package gov.usgs.volcanoes.winston.server.http.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -15,6 +12,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.Time;
@@ -31,11 +31,9 @@ import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
-import io.netty.handler.codec.http.DefaultHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
@@ -48,6 +46,9 @@ public final class MenuCommand extends HttpBaseCommand {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MenuCommand.class);
 
+  /**
+   * Constructor.
+   */
   public MenuCommand() {
     super();
   }

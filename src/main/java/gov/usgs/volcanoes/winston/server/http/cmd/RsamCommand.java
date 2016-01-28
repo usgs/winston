@@ -43,11 +43,6 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  */
 public final class RsamCommand extends HttpBaseCommand {
 
-  public static final int MAX_HOURS = 144;
-  public static final int MIN_HOURS = 1;
-  public static final double MAX_TC = 21600;
-
-
   private TimeZone timeZone;
   private int timeZoneOffset;
   private Double endTime;
@@ -67,6 +62,9 @@ public final class RsamCommand extends HttpBaseCommand {
   private RSAMData rsamData;
   private FullHttpRequest request;
 
+  /**
+   * Constructor.
+   */
   public RsamCommand() {
     super();
   }
