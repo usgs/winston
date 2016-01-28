@@ -31,6 +31,9 @@ import io.netty.channel.ChannelHandlerContext;
 public class GetScnlRsamRawCommand extends WwsBaseCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRsamRawCommand.class);
 
+  /**
+   * Constructor.
+   */
   public GetScnlRsamRawCommand() {
     super();
   }

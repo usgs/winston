@@ -22,6 +22,9 @@ import io.netty.channel.ChannelHandlerContext;
 public class VersionCommand extends WwsBaseCommand {
   private static final int PROTOCOL_VERSION = 3;
 
+  /**
+   * Constructor.
+   */
   public VersionCommand() {
     super();
   }

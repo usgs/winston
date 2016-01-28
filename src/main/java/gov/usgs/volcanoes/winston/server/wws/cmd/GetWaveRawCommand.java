@@ -30,6 +30,9 @@ import io.netty.channel.ChannelHandlerContext;
 public class GetWaveRawCommand extends WwsBaseCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetWaveRawCommand.class);
 
+  /**
+   * Constructor.
+   */
   public GetWaveRawCommand() {
     super();
   }

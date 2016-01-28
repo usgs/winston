@@ -6,9 +6,11 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 
 public class DataselectService extends FdsnwsService {
   private static final String VERSION = "1.1.2";
+  private static final String SERVICE = "dataselect";
 
   static {
     version = VERSION;
+    service = SERVICE;
   }
 
   public static void dispatch(ChannelHandlerContext ctx, FullHttpRequest request) {
@@ -18,14 +20,17 @@ public class DataselectService extends FdsnwsService {
       case "version":
         sendVersion(ctx, request);
         break;
-        default:
-          ErrorResponse error = new ErrorResponse(ctx);
-          error.request(request);
-          error.version(VERSION);
-          error.status(HttpResponseStatus.BAD_REQUEST);
-          error.shortDescription("Bad request");
-          error.detailedDescription("Request cannot be parsed.");
-          error.sendError();
+      case "application.wadl":
+        sendWadl(ctx, request);
+        break;
+      default:
+        ErrorResponse error = new ErrorResponse(ctx);
+        error.request(request);
+        error.version(VERSION);
+        error.status(HttpResponseStatus.BAD_REQUEST);
+        error.shortDescription("Bad request");
+        error.detailedDescription("Request cannot be parsed.");
+        error.sendError();
     }
   }
 }

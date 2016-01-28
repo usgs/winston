@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<link href="/style.css" rel="stylesheet" type="text/css">
-		<link href="/fdsnws/fdsnws.css" rel="stylesheet" type="text/css">
+		<link href="/fdsnws.css" rel="stylesheet" type="text/css">
 		<script>
 			function init() { 
 				initTabs(); 
@@ -32,11 +32,11 @@
 			<div id="tabscontent">
 		
     		<div class="tabpage" id="tabpage_1">
-				<#include UrlBuilderTemplate>
+				<#include service + "_UrlBuilder">
 			</div>
 			
 			<div class="tabpage" id="tabpage_2">
-				<#include InterfaceDescriptionTemplate>
+				<#include service + "_InterfaceDescription">
 			</div>
 
 		</div>

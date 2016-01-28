@@ -5,17 +5,34 @@
 
 package gov.usgs.volcanoes.winston.server.http.cmd;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
+import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.volcanoes.winston.server.http.HttpBaseCommand;
+import gov.usgs.volcanoes.winston.server.http.HttpConstants;
+import gov.usgs.volcanoes.winston.server.http.HttpTemplateConfiguration;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.DataselectService;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.ErrorResponse;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnwsRequest;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.StationService;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpResponseStatus;
 
 /**
@@ -57,7 +74,38 @@ public final class FdsnwsCommand extends HttpBaseCommand {
   }
 
   private void sendUsage(String service, ChannelHandlerContext ctx, FullHttpRequest request) {
-    
+    Map<String, Object> root = new HashMap<String, Object>();
+    root.put("service", service);
+    root.put("baseUrl", "http://" + ctx.channel().localAddress().toString().substring(1) + "/");
+    root.put("UrlBuilderTemplate", service + "_UrlBuilder");
+    root.put("InterfaceDescriptionTemplate", service + "_InterfaceDescription");
+    root.put("versionString", Version.VERSION_STRING);
+
+
+    try {
+      HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();
+      Template template = cfg.getTemplate("fdsnws/usage.ftl");
+      
+      Writer sw = new StringWriter();
+      template.process(root, sw);
+      String html = sw.toString();
+      sw.close();
+
+      FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
+          HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
+      response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, html.length());
+      response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
+
+      if (HttpHeaders.isKeepAlive(request)) {
+        response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
+      }
+      ctx.writeAndFlush(response);
+    } catch (IOException e) {
+      LOGGER.error(e.getLocalizedMessage());
+    } catch (TemplateException e) {
+      LOGGER.error(e.getLocalizedMessage());
+    }
+
   }
   
   private void dispatch(String service, ChannelHandlerContext ctx, FullHttpRequest request) {

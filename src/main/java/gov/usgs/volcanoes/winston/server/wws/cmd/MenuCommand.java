@@ -36,6 +36,9 @@ public class MenuCommand extends WwsBaseCommand {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MenuCommand.class);
 
+  /** 
+   * Constructor.
+   */
   public MenuCommand() {
     super();
   }
@@ -72,6 +75,14 @@ public class MenuCommand extends WwsBaseCommand {
     ctx.writeAndFlush('\n');
   }
 
+  /**
+   * Return server menu as list of strings.
+   * 
+   * @param channels list of Channels
+   * @param isScnl if ture assume locaion code is present
+   * @return list of channel names
+   * @throws UtilException when things go wrong
+   */
   public static List<String> generateMenu(List<Channel> channels, boolean isScnl)
       throws UtilException {
 

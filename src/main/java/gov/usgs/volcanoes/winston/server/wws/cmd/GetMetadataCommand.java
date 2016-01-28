@@ -28,6 +28,9 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Tom Parker
  */
 public class GetMetadataCommand extends WwsBaseCommand {
+  /**
+   * Constructor.
+   */
   public GetMetadataCommand() {
     super();
   }

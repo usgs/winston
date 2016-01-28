@@ -178,7 +178,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
     try {
       HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();
-      Template template = cfg.getTemplate("usage.ftl");
+      Template template = cfg.getTemplate("www/usage.ftl");
       Writer sw = new StringWriter();
       template.process(root, sw);
       html = sw.toString();

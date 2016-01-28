@@ -11,6 +11,12 @@ import java.util.List;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 
+/**
+ * WWS command decoder.
+ * 
+ * @author Tom Parker
+ *
+ */
 public class WwsCommandStringDecoder extends MessageToMessageDecoder<String> {
 
   @Override

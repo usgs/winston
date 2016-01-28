@@ -196,7 +196,7 @@ public final class GapsCommand extends HttpBaseCommand {
 
     try {
       HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();
-      Template template = cfg.getTemplate("gaps.ftl");
+      Template template = cfg.getTemplate("www/gaps.ftl");
       Writer sw = new StringWriter();
       template.process(root, sw);
       String html = sw.toString();
