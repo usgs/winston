@@ -2,7 +2,7 @@
 <application xmlns="http://wadl.dev.java.net/2009/02">
     <doc title="FDSN station web service 1.0"/>
     <grammars/>
-    <resources base="http://%%HOST%%/fdsnws/station/1/">
+    <resources base="http://${host}/fdsnws/station/1/">
         <resource path="/">
             <method name="GET" id="root">
                 <response>

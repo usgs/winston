@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
   <application xmlns="http://wadl.dev.java.net/2009/02">
     <doc title="FDSN dataselect web service 1.1"/>
-    <resources base="http://%%HOST%%/fdsnws/dataselect/1/">
+    <resources base="http://${host}/fdsnws/dataselect/1/">
       <resource path="/">
         <method name="GET" id="root">
           <response>
