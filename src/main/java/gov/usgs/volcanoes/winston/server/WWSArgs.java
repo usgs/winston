@@ -6,10 +6,10 @@
 
 package gov.usgs.volcanoes.winston.server;
 
-import com.martiansoftware.jsap.JSAPResult;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.martiansoftware.jsap.JSAPResult;
 
 import gov.usgs.volcanoes.core.args.Args;
 import gov.usgs.volcanoes.core.args.Arguments;

@@ -6,15 +6,15 @@
 package gov.usgs.volcanoes.winston.server;
 
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.apache.log4j.Level;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Console;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.Log;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;

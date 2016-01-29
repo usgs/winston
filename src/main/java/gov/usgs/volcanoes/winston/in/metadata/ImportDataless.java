@@ -1,20 +1,19 @@
 package gov.usgs.volcanoes.winston.in.metadata;
 
-import edu.iris.Fissures.seed.builder.SeedObjectBuilder;
-import edu.iris.Fissures.seed.container.Blockette;
-import edu.iris.Fissures.seed.container.SeedObjectContainer;
-import edu.iris.Fissures.seed.director.ImportDirector;
-import edu.iris.Fissures.seed.director.SeedImportDirector;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.iris.Fissures.seed.builder.SeedObjectBuilder;
+import edu.iris.Fissures.seed.container.Blockette;
+import edu.iris.Fissures.seed.container.SeedObjectContainer;
+import edu.iris.Fissures.seed.director.ImportDirector;
+import edu.iris.Fissures.seed.director.SeedImportDirector;
 import gov.usgs.volcanoes.winston.Instrument;
 
 @SuppressWarnings("deprecation")

@@ -1,12 +1,5 @@
 package gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.station;
 
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSOutput;
-import org.w3c.dom.ls.LSSerializer;
-
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Date;
@@ -14,6 +7,13 @@ import java.util.Date;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.DOMImplementation;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
@@ -23,8 +23,8 @@ import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
-import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.FdsnException;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.command.FdsnQueryCommand;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 
 /**
  *

@@ -1,6 +1,13 @@
 package gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.dataselect;
 
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import edu.iris.dmc.seedcodec.B1000Types;
 import edu.iris.dmc.seedcodec.Steim2;
 import edu.iris.dmc.seedcodec.SteimException;
@@ -10,14 +17,6 @@ import edu.sc.seis.seisFile.mseed.Btime;
 import edu.sc.seis.seisFile.mseed.DataHeader;
 import edu.sc.seis.seisFile.mseed.DataRecord;
 import edu.sc.seis.seisFile.mseed.SeedFormatException;
-
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.net.HttpResponse;
 import gov.usgs.net.NetTools;
@@ -26,10 +25,10 @@ import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
-import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.FdsnException;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.command.FdsnQueryCommand;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.constraint.FdsnChannelConstraint;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.constraint.FdsnTimeSimpleConstraint;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 
 /**
  * TODO: convert to chunked encoding see:

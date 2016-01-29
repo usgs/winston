@@ -1,9 +1,9 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
+import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.regex.Pattern;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;

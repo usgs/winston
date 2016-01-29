@@ -5,12 +5,12 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;

@@ -1,24 +1,40 @@
-package gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.constraint;
+/**
+ * I waive copyright and related rights in the this work worldwide through the CC0 1.0 Universal
+ * public domain dedication. https://creativecommons.org/publicdomain/zero/1.0/legalcode
+ */
+
+package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint;
 
 import java.text.ParseException;
 
+import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 
 /**
- *
+ * Constrain results to a time window.
+ * 
  * @author Tom Parker
  *
  */
-public class FdsnTimeWindowConstraint extends FdsnTimeConstraint {
+public class TimeWindowConstraint extends TimeConstraint {
 
-  double startBefore;
-  double startAfter;
-  double endBefore;
-  double endAfter;
+  private double startBefore;
+  private double startAfter;
+  private double endBefore;
+  private double endAfter;
 
-  public FdsnTimeWindowConstraint(final String startBefore, final String startAfter,
+  /**
+   * Constructor.
+   * 
+   * @param startBefore latest start
+   * @param startAfter earliest start
+   * @param endBefore latest end
+   * @param endAfter earliest end
+   * @throws FdsnException when things go wrong
+   */
+  public TimeWindowConstraint(final String startBefore, final String startAfter,
       final String endBefore, final String endAfter) throws FdsnException {
     super();
     try {
@@ -50,4 +66,5 @@ public class FdsnTimeWindowConstraint extends FdsnTimeConstraint {
         + J2kSec.toDateString(startAfter) + " : " + J2kSec.toDateString(endBefore) + " : "
         + J2kSec.toDateString(endAfter);
   }
+
 }

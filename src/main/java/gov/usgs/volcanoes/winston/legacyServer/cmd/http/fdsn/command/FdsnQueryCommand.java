@@ -12,13 +12,13 @@ import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.legacyServer.WWS;
-import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.FdsnException;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.constraint.FdsnChannelConstraint;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.constraint.FdsnConstraint;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.constraint.FdsnGeographicCircleConstraint;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.constraint.FdsnGeographicSquareConstraint;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.constraint.FdsnTimeSimpleConstraint;
 import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.constraint.FdsnTimeWindowConstraint;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 
 /**
  *

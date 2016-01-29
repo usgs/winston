@@ -3,7 +3,6 @@ package gov.usgs.volcanoes.winston.in.ew;
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.math.Goertzel;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
-import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
 

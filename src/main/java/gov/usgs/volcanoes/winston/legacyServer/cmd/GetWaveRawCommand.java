@@ -1,10 +1,10 @@
 package gov.usgs.volcanoes.winston.legacyServer.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.net.NetTools;
 import gov.usgs.plot.data.Wave;

@@ -1,8 +1,5 @@
 package gov.usgs.volcanoes.winston.legacyServer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
@@ -15,6 +12,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.WaveServer;
 import gov.usgs.net.ReadListener;

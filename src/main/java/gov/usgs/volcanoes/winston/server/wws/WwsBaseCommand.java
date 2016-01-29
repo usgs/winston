@@ -5,11 +5,11 @@
 
 package gov.usgs.volcanoes.winston.server.wws;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.server.BaseCommand;

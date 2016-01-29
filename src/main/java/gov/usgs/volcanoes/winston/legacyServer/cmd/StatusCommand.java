@@ -1,13 +1,13 @@
 package gov.usgs.volcanoes.winston.legacyServer.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.net.ConnectionStatistics;
 import gov.usgs.net.Connections;
