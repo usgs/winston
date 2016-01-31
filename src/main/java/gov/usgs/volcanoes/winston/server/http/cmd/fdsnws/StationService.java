@@ -5,6 +5,7 @@
 
 package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +32,9 @@ import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.ChannelConstraint;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.FdsnConstraint;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.GeographicCircleConstraint;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.GeographicConstraint;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.GeographicSquareConstraint;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeConstraint;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeSimpleConstraint;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeWindowConstraint;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
@@ -44,6 +47,12 @@ import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.handler.codec.http.multipart.Attribute;
+import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
+import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData;
+import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
+import io.netty.util.CharsetUtil;
 
 /**
  * Implement FDSN-WS station service.
@@ -105,8 +114,9 @@ public class StationService extends FdsnwsService {
       FullHttpRequest request) throws UtilException, FdsnException {
     Map<String, String> arguments = parseRequest(request);
     final String level = StringUtils.stringToString(arguments.get("level"), DEFAULT_LEVEL);
-    
+
     List<FdsnConstraint> constraints = buildConstraints(arguments);
+    LOGGER.debug("got constraints");
     List<Channel> channels;
     try {
       channels = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
@@ -143,7 +153,7 @@ public class StationService extends FdsnwsService {
       double stationEnd = -Double.MAX_VALUE;
       String net = null;
       String sta = null;
- 
+
       for (final Channel c : channels) {
         boolean prune = false;
         Iterator<FdsnConstraint> it = constraints.iterator();
@@ -213,45 +223,11 @@ public class StationService extends FdsnwsService {
   private static List<FdsnConstraint> buildConstraints(Map<String, String> arguments)
       throws FdsnException {
     List<FdsnConstraint> constraints = new ArrayList<FdsnConstraint>();
-
-    String station = getArg(arguments, "station", "sta");
-    String channel = getArg(arguments, "channel", "cha");
-    String network = getArg(arguments, "network", "net");
-    String location = getArg(arguments, "location", "loc");
-    ChannelConstraint channelConstraint =
-        new ChannelConstraint(station, channel, network, location);
-    constraints.add(channelConstraint);
-
-    final String startBefore = arguments.get("startbefore");
-    final String startAfter = arguments.get("startafter");
-    final String endBefore = arguments.get("endbefore");
-    final String endAfter = arguments.get("andafter");
-    if (startBefore != null || startAfter != null || endBefore != null || endAfter != null) {
-      constraints.add(new TimeWindowConstraint(startBefore, startAfter, endBefore, endAfter));
-    } else {
-      String startTime = getArg(arguments, "starttime", "start");
-      String endTime = getArg(arguments, "endtime", "end");
-
-      channelConstraint.setTimeConstraint(new TimeSimpleConstraint(startTime, endTime));
-    }
-
-    final String latitude = getArg(arguments, "latitude", "lat");
-    final String longitude = getArg(arguments, "longitude", "lon");
-    final String minRadius = arguments.get("minradius");
-    final String maxRadius = arguments.get("maxradius");
-    if (!(latitude == null && longitude == null && minRadius == null && maxRadius == null)) {
-      constraints.add(new GeographicCircleConstraint(latitude, longitude, minRadius, maxRadius));
-    } else {
-      final String minLatitude = getArg(arguments, "minlatitude", "minLat");
-      final String maxLatitude = getArg(arguments, "maxlatitude", "maxLat");
-      final String minLongitude = getArg(arguments, "minlongitude", "minLon");
-      final String maxLongitude = getArg(arguments, "maxlongitude", "maxLon");
-
-      constraints.add(
-          new GeographicSquareConstraint(minLatitude, maxLatitude, minLongitude, maxLongitude));
-    }
-
-
+    constraints.add(ChannelConstraint.build(arguments));
+    constraints.add(TimeConstraint.build(arguments));
+    constraints.add(GeographicConstraint.build(arguments));
+    constraints.addAll(ChannelConstraint.buildMulti(arguments));
+    
     return constraints;
   }
 
@@ -320,6 +296,19 @@ public class StationService extends FdsnwsService {
         LOGGER.info("{} : {}", name, decoder.parameters().get(name).get(0));
       }
     } else if (request.getMethod() == HttpMethod.POST) {
+      String[] lines = request.content().toString(CharsetUtil.UTF_8).split("\n");
+      StringBuffer chans = new StringBuffer();
+      for (String list : lines) {
+        int idx = list.indexOf('=');
+        if (idx != -1) {
+          arguments.put(list.substring(0, idx), list.substring(idx, list.length()));
+        } else {
+          chans.append(list);
+        }
+      }
+      if (chans.length() > 0) {
+        arguments.put("chans", chans.toString());
+      }
     }
 
     return arguments;

@@ -5,11 +5,16 @@
 
 package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.winston.Channel;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 
 /**
  * Channel constraint.
@@ -17,10 +22,10 @@ import gov.usgs.volcanoes.winston.Channel;
  * @author Tom Parker
  *
  */
-public class ChannelConstraint implements FdsnConstraint {
+public class ChannelConstraint extends FdsnConstraint {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(ChannelConstraint.class);
-  
+
   private final String network;
   private final String station;
   private final String channel;
@@ -43,7 +48,34 @@ public class ChannelConstraint implements FdsnConstraint {
     this.network = stringToString(network, ".*");
     this.location = stringToString(location, ".*");
 
-    LOGGER.info("channel constraint: {}:{}:{}:{}", this.station, this.channel, this.network, this.location);
+    LOGGER.info("channel constraint: {}:{}:{}:{}", this.station, this.channel, this.network,
+        this.location);
+  }
+
+  public static ChannelConstraint build(Map<String, String> arguments) {
+    String station = getArg(arguments, "station", "sta");
+    String channel = getArg(arguments, "channel", "cha");
+    String network = getArg(arguments, "network", "net");
+    String location = getArg(arguments, "location", "loc");
+    
+    return new ChannelConstraint(station, channel, network, location);
+  }
+
+  public static List<ChannelConstraint> buildMulti(Map<String, String> arguments) throws FdsnException {
+    List<ChannelConstraint> constraints = new ArrayList<ChannelConstraint>();
+    
+    final String chans = arguments.get("chans");
+    if (chans != null) {
+      String[] chan = chans.split("\n");
+      for (String ch : chan) {
+        String[] chanParts = ch.split("\\s");
+        ChannelConstraint channelConstraint = new ChannelConstraint(chanParts[1], chanParts[3], chanParts[0], chanParts[2]);
+        TimeSimpleConstraint timeConstraint = new TimeSimpleConstraint(chanParts[4], chanParts[5]);
+        channelConstraint.setTimeConstraint(timeConstraint);
+        constraints.add(channelConstraint);
+      }
+    }
+    return constraints;
   }
 
   /**
@@ -69,6 +101,7 @@ public class ChannelConstraint implements FdsnConstraint {
 
   /**
    * match Channel.
+   * 
    * @param chan Channel
    * @return true if matches
    */
@@ -101,6 +134,7 @@ public class ChannelConstraint implements FdsnConstraint {
 
   /**
    * match TraceBuf.
+   * 
    * @param buf tracebuf
    * @return true if matches
    */
@@ -145,4 +179,4 @@ public class ChannelConstraint implements FdsnConstraint {
     return "FdsnChannelConstraint: " + station + ":" + channel + ":" + network + ":" + location;
   }
 
-}
+ }

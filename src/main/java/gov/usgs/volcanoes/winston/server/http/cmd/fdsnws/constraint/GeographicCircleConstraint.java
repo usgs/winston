@@ -18,7 +18,7 @@ import gov.usgs.volcanoes.winston.Instrument;
  * @author Tom Parker
  *
  */
-public class GeographicCircleConstraint implements FdsnConstraint {
+public class GeographicCircleConstraint extends GeographicConstraint {
 
   private static double DEFAULT_LATITUDE = 0;
   private static double DEFAULT_LONGITUDE = 0;

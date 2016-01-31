@@ -7,6 +7,9 @@ package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint;
 
 import java.text.ParseException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.winston.Channel;
@@ -20,6 +23,7 @@ import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
  */
 public class TimeSimpleConstraint extends TimeConstraint {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(TimeSimpleConstraint.class);
 
   private final double endTimeJ2k;
   private final double startTimeJ2k;
@@ -38,7 +42,8 @@ public class TimeSimpleConstraint extends TimeConstraint {
       this.startTimeJ2k = dateStringToDouble(startTimeJ2k, FAR_IN_PAST);
       this.endTimeJ2k = dateStringToDouble(endTimeJ2k, FAR_IN_FUTURE);
     } catch (final ParseException e) {
-      throw new FdsnException(400, "Can't parse time constraint: " + this);
+      LOGGER.debug("Can't parse time constraint \"{}\"", this.toString());
+      throw new FdsnException(400, "Can't parse time constraint: " + this.toString());
     }
   }
 
