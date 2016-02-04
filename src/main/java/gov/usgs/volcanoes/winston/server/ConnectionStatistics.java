@@ -95,7 +95,7 @@ public class ConnectionStatistics {
   }
 
   public ConnectionStatistics() {
-    LOGGER.warn("Creating new connection stats");
+    LOGGER.debug("Creating new connection stats");
     connectionCount = new AtomicLong(0);
     wwsCount = new AtomicLong(0);
     httpCount = new AtomicLong(0);
@@ -141,7 +141,7 @@ public class ConnectionStatistics {
 
   public void mapChannel(InetSocketAddress remoteAddress,
       ChannelTrafficShapingHandler trafficCounter2) {
-    LOGGER.warn("mapping " + remoteAddress);
+    LOGGER.debug("mapping " + remoteAddress);
     connectionMap.put(remoteAddress, new Connection(remoteAddress.toString(), trafficCounter2));
   }
 
