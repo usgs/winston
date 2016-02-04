@@ -85,6 +85,8 @@ public class GetWaveRawCommand extends WwsBaseCommand {
     ByteBuffer bb = null;
     if (wave != null && wave.numSamples() > 0)
       bb = (ByteBuffer) wave.toBinary().flip();
+    else 
+      bb = ByteBuffer.allocate(0);
 
     String id = cmd.getID();
 
