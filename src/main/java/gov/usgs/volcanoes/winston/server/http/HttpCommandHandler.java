@@ -111,8 +111,9 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
         response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST,
             e.getLocalizedMessage());
       } catch (UtilException e) {
+        LOGGER.debug(e.getLocalizedMessage());
         response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST,
-            e.getLocalizedMessage());
+            "" + e.getLocalizedMessage());
       }
 
     }

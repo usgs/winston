@@ -16,7 +16,7 @@ import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
  * @author Tom Parker
  *
  */
-public class GeographicSquareConstraint implements FdsnConstraint {
+public class GeographicSquareConstraint extends GeographicConstraint {
 
   private static final double DEFAULT_MINLATITUDE = -90;
   private static final double DEFAULT_MAXLATITUDE = 90;
