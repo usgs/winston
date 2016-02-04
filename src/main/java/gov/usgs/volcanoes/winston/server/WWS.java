@@ -89,12 +89,16 @@ public class WWS {
           // wws.toggleTrace(s);
         } else if (s.equals("0")) {
           org.apache.log4j.Logger.getRootLogger().setLevel(Level.ERROR);
+          System.out.println("Logging level set to \"Error\"");
         } else if (s.equals("1")) {
           org.apache.log4j.Logger.getRootLogger().setLevel(Level.WARN);
+          System.out.println("Logging level set to \"Warn\"");
         } else if (s.equals("2")) {
           org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
+          System.out.println("Logging level set to \"Info\"");
         } else if (s.equals("3")) {
           org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+          System.out.println("Logging level set to \"All\"");
         } else if (s.equals("?")) {
           WWS.printKeys();
         } else {
