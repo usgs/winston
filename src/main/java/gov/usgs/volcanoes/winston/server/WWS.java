@@ -58,7 +58,7 @@ public class WWS {
 
     final WWSArgs config = new WWSArgs(args);
     if (config.isVerbose) {
-      org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+      org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
     }
 
     final WWS wws = new WWS(config.configFileName);
