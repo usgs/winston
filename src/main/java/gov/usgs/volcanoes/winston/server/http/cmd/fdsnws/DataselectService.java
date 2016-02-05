@@ -18,23 +18,21 @@ import edu.sc.seis.seisFile.mseed.SeedFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import gov.usgs.plot.data.Wave;
 import gov.usgs.util.Util;
-import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
-import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.FdsnConstraint;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.ChannelConstraint;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeConstraint;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeSimpleConstraint;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -94,43 +92,56 @@ public class DataselectService extends FdsnwsService {
 
   private static void sendQueryResponse(WinstonDatabasePool databasePool, ChannelHandlerContext ctx,
       FullHttpRequest request) throws FdsnException, UtilException {
-//    Map<String, String> arguments = parseRequest(request);
-//
-//    List<FdsnConstraint> constraints = buildConstraints(arguments);
-//    LOGGER.debug("got constraints");
-//
-//    List<Channel> channels = getChannels(databasePool);
-//    if (channels == null) {
-//      ErrorResponse error = new ErrorResponse(ctx);
-//      error.request(request);
-//      error.version(VERSION);
-//      error.status(HttpResponseStatus.NOT_FOUND);
-//      error.shortDescription("No data");
-//      error.detailedDescription("No matching data found.");
-//      error.sendError();
-//      return;
-//    }
-//
-//    int seq = 1;
-//    for (final Channel c : channels) {
-//      if (pruneChannel(constraints, c)) {
-//        continue;
-//      }
-//
-//      Wave wave;
-//      try {
-//        wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
-//
-//          public Wave execute(WinstonDatabase winston) throws UtilException {
-//            Data data = new Data(winston);
-//            return data.getWave(c.getSID(), st, et, 0);
-//          }
-//        });
-//      } catch (Exception e1) {
-//        throw new UtilException(e1.getMessage());
-//      }
-//
-//
+    Map<String, String> arguments = parseRequest(request);
+
+
+    List<ChannelConstraint> chanConstraints = new ArrayList<ChannelConstraint>();
+    chanConstraints.add(ChannelConstraint.build(arguments));
+    chanConstraints.addAll(ChannelConstraint.buildMulti(arguments));
+
+    List<Channel> channels = getChannels(databasePool);
+    if (channels == null) {
+      ErrorResponse error = new ErrorResponse(ctx);
+      error.request(request);
+      error.version(VERSION);
+      error.status(HttpResponseStatus.NOT_FOUND);
+      error.shortDescription("No data");
+      error.detailedDescription("No matching data found.");
+      error.sendError();
+      return;
+    }
+
+    int seq = 1;
+    for (ChannelConstraint chanConstraint : chanConstraints) {
+      sendChannel(chanConstraint, channels, databasePool, ctx);
+    }
+  }
+
+  private static void sendChannel(ChannelConstraint chanConstraint, List<Channel> channels,
+      WinstonDatabasePool databasePool, ChannelHandlerContext ctx) throws UtilException {
+    for (final Channel c : channels) {
+      if (!chanConstraint.nameMatches(c)) {
+        continue;
+      }
+
+      TimeSimpleConstraint timeConstraint = chanConstraint.getTimeSimpleConstraint();
+      final double st = timeConstraint.startTimeJ2k;
+      final double et = timeConstraint.endTimeJ2k;
+
+      Wave wave;
+      try {
+        wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
+
+          public Wave execute(WinstonDatabase winston) throws UtilException {
+            Data data = new Data(winston);
+            return data.getWave(c.getSID(), st, et, 0);
+          }
+        });
+      } catch (Exception e1) {
+        throw new UtilException(e1.getMessage());
+      }
+
+
 //      DataHeader header = new DataHeader(seq++, 'D', false);
 //
 //      header.setStationIdentifier(c.station);
@@ -152,8 +163,8 @@ public class DataselectService extends FdsnwsService {
 //
 //        // todo:fix this
 //        // pad data or split
-//        blockette1000
-//            .setDataRecordLength((byte) (Math.ceil(Math.log(wave.buffer.length * 5) / Math.log(2))));
+//        blockette1000.setDataRecordLength(
+//            (byte) (Math.ceil(Math.log(wave.buffer.length * 5) / Math.log(2))));
 //
 //        record.addBlockette(blockette1000);
 //
@@ -170,6 +181,15 @@ public class DataselectService extends FdsnwsService {
 //        e.printStackTrace();
 //      } finally {
 //      }
-//    }
+    }
+  }
+
+  protected static boolean pruneChannel(List<ChannelConstraint> constraints, final Channel c) {
+    Iterator<ChannelConstraint> it = constraints.iterator();
+    while (it.hasNext()) {
+      if (!it.next().nameMatches(c))
+        return false;
+    }
+    return true;
   }
 }

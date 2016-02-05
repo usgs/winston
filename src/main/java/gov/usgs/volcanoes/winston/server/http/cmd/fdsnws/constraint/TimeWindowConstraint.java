@@ -6,6 +6,7 @@
 package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint;
 
 import java.text.ParseException;
+import java.util.Map;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.J2kSec;
@@ -66,5 +67,14 @@ public class TimeWindowConstraint extends TimeConstraint {
         + J2kSec.toDateString(startAfter) + " : " + J2kSec.toDateString(endBefore) + " : "
         + J2kSec.toDateString(endAfter);
   }
+
+  public static TimeWindowConstraint build(Map<String, String> arguments) throws FdsnException {
+    final String startBefore = arguments.get("startbefore");
+    final String startAfter = arguments.get("startafter");
+    final String endBefore = arguments.get("endbefore");
+    final String endAfter = arguments.get("andafter");
+    return new TimeWindowConstraint(startBefore, startAfter, endBefore, endAfter);
+  }
+
 
 }

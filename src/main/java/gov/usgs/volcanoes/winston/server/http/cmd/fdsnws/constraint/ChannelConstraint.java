@@ -43,22 +43,28 @@ public class ChannelConstraint extends FdsnConstraint {
   public ChannelConstraint(final String station, final String channel, final String network,
       final String location) {
 
-    this.station = stringToString(station, ".*");
-    this.channel = stringToString(channel, ".*");
-    this.network = stringToString(network, ".*");
-    this.location = stringToString(location, ".*");
+    this.station = stringToString(station, "*");
+    this.channel = stringToString(channel, "*");
+    this.network = stringToString(network, "*");
+    this.location = stringToString(location, "*");
 
     LOGGER.info("channel constraint: {}:{}:{}:{}", this.station, this.channel, this.network,
         this.location);
   }
 
-  public static ChannelConstraint build(Map<String, String> arguments) {
-    String station = getArg(arguments, "station", "sta");
-    String channel = getArg(arguments, "channel", "cha");
-    String network = getArg(arguments, "network", "net");
-    String location = getArg(arguments, "location", "loc");
+  public static ChannelConstraint build(Map<String, String> arguments) throws FdsnException {
+    String station = regExify(getArg(arguments, "station", "sta"));
+    String channel = regExify(getArg(arguments, "channel", "cha"));
+    String network = regExify(getArg(arguments, "network", "net"));
+    String location = regExify(getArg(arguments, "location", "loc"));
     
-    return new ChannelConstraint(station, channel, network, location);
+    String startTime = getArg(arguments, "starttime", "start");
+    String endTime = getArg(arguments, "endtime", "end");
+
+    ChannelConstraint chanConstraint = new ChannelConstraint(station, channel, network, location);
+    chanConstraint.setTimeConstraint(new TimeSimpleConstraint(startTime, endTime));
+    
+    return chanConstraint;
   }
 
   public static List<ChannelConstraint> buildMulti(Map<String, String> arguments) throws FdsnException {
@@ -107,6 +113,13 @@ public class ChannelConstraint extends FdsnConstraint {
    */
   public boolean matches(final Channel chan) {
 
+    if (timeConstraint.matches(chan))
+      return nameMatches(chan);
+    else
+      return false;
+  }
+
+  public boolean nameMatches(final Channel chan) {
     if (chan == null)
       return false;
 
@@ -125,13 +138,10 @@ public class ChannelConstraint extends FdsnConstraint {
     final String loc = chan.location;
     if (loc != null && !loc.matches(location))
       return false;
-
-    if (timeConstraint != null)
-      return timeConstraint.matches(chan);
-
+    
     return true;
   }
-
+  
   /**
    * match TraceBuf.
    * 
@@ -170,7 +180,7 @@ public class ChannelConstraint extends FdsnConstraint {
    *
    * @return timeConstraint
    */
-  public TimeConstraint getTimeConstraint() {
+  public TimeSimpleConstraint getTimeSimpleConstraint() {
     return timeConstraint;
   }
 
@@ -179,4 +189,10 @@ public class ChannelConstraint extends FdsnConstraint {
     return "FdsnChannelConstraint: " + station + ":" + channel + ":" + network + ":" + location;
   }
 
+  private static String regExify(String inString) {
+    String outString = inString.replace("*", ".*");
+    outString = outString.replace("?", ".{1}*");
+
+    return outString;
+  }
  }

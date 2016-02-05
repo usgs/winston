@@ -25,8 +25,8 @@ public class TimeSimpleConstraint extends TimeConstraint {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TimeSimpleConstraint.class);
 
-  private final double endTimeJ2k;
-  private final double startTimeJ2k;
+  public final double endTimeJ2k;
+  public final double startTimeJ2k;
 
   /**
    * Constructor.

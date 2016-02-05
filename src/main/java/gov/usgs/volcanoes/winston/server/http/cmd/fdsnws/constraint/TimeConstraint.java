@@ -24,7 +24,7 @@ import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnwsDate;
  */
 abstract public class TimeConstraint extends FdsnConstraint {
   private static final Logger LOGGER = LoggerFactory.getLogger(TimeConstraint.class);
-  
+
   protected static final String FAR_IN_FUTURE = "2070-01-01T00:00:00.0000";
   protected static final String FAR_IN_PAST = "1970-01-01T00:00:00.0000";
 
@@ -44,20 +44,4 @@ abstract public class TimeConstraint extends FdsnConstraint {
 
     return J2kSec.fromDate(FdsnwsDate.parse(s));
   }
-  
-  public static TimeConstraint build(Map<String, String> arguments) throws FdsnException {
-    final String startBefore = arguments.get("startbefore");
-    final String startAfter = arguments.get("startafter");
-    final String endBefore = arguments.get("endbefore");
-    final String endAfter = arguments.get("andafter");
-    if (startBefore != null || startAfter != null || endBefore != null || endAfter != null) {
-      return new TimeWindowConstraint(startBefore, startAfter, endBefore, endAfter);
-    } else {
-      String startTime = getArg(arguments, "starttime", "start");
-      String endTime = getArg(arguments, "endtime", "end");
-
-      return new TimeSimpleConstraint(startTime, endTime);
-    }
-  }
-
 }

@@ -181,16 +181,6 @@ abstract public class FdsnwsService {
     return arguments;
   }
 
-  protected static List<FdsnConstraint> buildConstraints(Map<String, String> arguments)
-      throws FdsnException {
-    List<FdsnConstraint> constraints = new ArrayList<FdsnConstraint>();
-    constraints.add(ChannelConstraint.build(arguments));
-    constraints.add(TimeConstraint.build(arguments));
-    constraints.add(GeographicConstraint.build(arguments));
-    constraints.addAll(ChannelConstraint.buildMulti(arguments));
-    
-    return constraints;
-  }
 
   protected static List<Channel> getChannels(WinstonDatabasePool databasePool)
       throws UtilException {
@@ -209,15 +199,6 @@ abstract public class FdsnwsService {
     return channels;
   }
 
-  protected static boolean pruneChannel(List<FdsnConstraint> constraints, final Channel c) {
-    boolean prune = false;
-    Iterator<FdsnConstraint> it = constraints.iterator();
-    while (!prune && it.hasNext()) {
-      if (!it.next().matches(c))
-        prune = true;
-    }
-    return prune;
-  }
 
 
 }

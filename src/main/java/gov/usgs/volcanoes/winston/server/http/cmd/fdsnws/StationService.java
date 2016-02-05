@@ -255,4 +255,26 @@ public class StationService extends FdsnwsService {
 
     return channelElement;
   }
+  
+  private static boolean pruneChannel(List<FdsnConstraint> constraints, final Channel c) {
+    boolean prune = false;
+    Iterator<FdsnConstraint> it = constraints.iterator();
+    while (!prune && it.hasNext()) {
+      if (!it.next().matches(c))
+        prune = true;
+    }
+    return prune;
+  }
+
+  protected static List<FdsnConstraint> buildConstraints(Map<String, String> arguments)
+      throws FdsnException {
+    List<FdsnConstraint> constraints = new ArrayList<FdsnConstraint>();
+    constraints.add(ChannelConstraint.build(arguments));
+    constraints.add(TimeWindowConstraint.build(arguments));
+    constraints.add(GeographicConstraint.build(arguments));
+    constraints.addAll(ChannelConstraint.buildMulti(arguments));
+    
+    return constraints;
+  }
+
 }
