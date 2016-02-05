@@ -9,8 +9,11 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -24,15 +27,28 @@ import org.w3c.dom.ls.LSSerializer;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import gov.usgs.volcanoes.core.util.UtilException;
+import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.Version;
+import gov.usgs.volcanoes.winston.db.Channels;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import gov.usgs.volcanoes.winston.server.http.HttpTemplateConfiguration;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.ChannelConstraint;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.FdsnConstraint;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.GeographicConstraint;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeConstraint;
+import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
+import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.QueryStringDecoder;
+import io.netty.util.CharsetUtil;
 
 /**
  * Abstract FDSN WS class.
@@ -134,5 +150,74 @@ abstract public class FdsnwsService {
 
     return arg;
   }
+  
+  protected static Map<String, String> parseRequest(FullHttpRequest request) {
+    Map<String, String> arguments = new HashMap<String, String>();
+
+
+    if (request.getMethod() == HttpMethod.GET) {
+      QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
+
+      for (String name : decoder.parameters().keySet()) {
+        arguments.put(name, decoder.parameters().get(name).get(0));
+        LOGGER.info("{} : {}", name, decoder.parameters().get(name).get(0));
+      }
+    } else if (request.getMethod() == HttpMethod.POST) {
+      String[] lines = request.content().toString(CharsetUtil.UTF_8).split("\n");
+      StringBuffer chans = new StringBuffer();
+      for (String list : lines) {
+        int idx = list.indexOf('=');
+        if (idx != -1) {
+          arguments.put(list.substring(0, idx), list.substring(idx, list.length()));
+        } else {
+          chans.append(list);
+        }
+      }
+      if (chans.length() > 0) {
+        arguments.put("chans", chans.toString());
+      }
+    }
+
+    return arguments;
+  }
+
+  protected static List<FdsnConstraint> buildConstraints(Map<String, String> arguments)
+      throws FdsnException {
+    List<FdsnConstraint> constraints = new ArrayList<FdsnConstraint>();
+    constraints.add(ChannelConstraint.build(arguments));
+    constraints.add(TimeConstraint.build(arguments));
+    constraints.add(GeographicConstraint.build(arguments));
+    constraints.addAll(ChannelConstraint.buildMulti(arguments));
+    
+    return constraints;
+  }
+
+  protected static List<Channel> getChannels(WinstonDatabasePool databasePool)
+      throws UtilException {
+    List<Channel> channels;
+    try {
+      channels = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
+
+        public List<Channel> execute(WinstonDatabase winston) throws UtilException {
+          return new Channels(winston).getChannels();
+        }
+
+      });
+    } catch (Exception e) {
+      throw new UtilException(e.getMessage());
+    }
+    return channels;
+  }
+
+  protected static boolean pruneChannel(List<FdsnConstraint> constraints, final Channel c) {
+    boolean prune = false;
+    Iterator<FdsnConstraint> it = constraints.iterator();
+    while (!prune && it.hasNext()) {
+      if (!it.next().matches(c))
+        prune = true;
+    }
+    return prune;
+  }
+
 
 }

@@ -117,7 +117,11 @@ public final class FdsnwsCommand extends HttpBaseCommand {
     ErrorResponse error;
     switch (service) {
       case "dataselect":
-        DataselectService.dispatch(databasePool, ctx, request);
+        try {
+          DataselectService.dispatch(databasePool, ctx, request);
+        } catch (FdsnException e) {
+          throw new UtilException(e.getLocalizedMessage());
+        }
         break;
       case "station":
         try {

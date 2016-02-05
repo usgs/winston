@@ -117,19 +117,8 @@ public class StationService extends FdsnwsService {
 
     List<FdsnConstraint> constraints = buildConstraints(arguments);
     LOGGER.debug("got constraints");
-    List<Channel> channels;
-    try {
-      channels = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
 
-        public List<Channel> execute(WinstonDatabase winston) throws UtilException {
-          return new Channels(winston).getChannels();
-        }
-
-      });
-    } catch (Exception e) {
-      throw new UtilException(e.getMessage());
-    }
-
+    List<Channel> channels = getChannels(databasePool);
     if (channels == null) {
       ErrorResponse error = new ErrorResponse(ctx);
       error.request(request);
@@ -155,14 +144,7 @@ public class StationService extends FdsnwsService {
       String sta = null;
 
       for (final Channel c : channels) {
-        boolean prune = false;
-        Iterator<FdsnConstraint> it = constraints.iterator();
-        while (!prune && it.hasNext()) {
-          if (!it.next().matches(c))
-            prune = true;
-        }
-
-        if (prune) {
+        if (pruneChannel(constraints, c)) {
           continue;
         }
 
@@ -220,18 +202,8 @@ public class StationService extends FdsnwsService {
 
   }
 
-  private static List<FdsnConstraint> buildConstraints(Map<String, String> arguments)
-      throws FdsnException {
-    List<FdsnConstraint> constraints = new ArrayList<FdsnConstraint>();
-    constraints.add(ChannelConstraint.build(arguments));
-    constraints.add(TimeConstraint.build(arguments));
-    constraints.add(GeographicConstraint.build(arguments));
-    constraints.addAll(ChannelConstraint.buildMulti(arguments));
-    
-    return constraints;
-  }
 
-  private static Element createStationElement(final Channel c, final Document doc) {
+   private static Element createStationElement(final Channel c, final Document doc) {
     final Element station = doc.createElement("Station");
     station.setAttribute("code", c.station);
 
@@ -282,35 +254,5 @@ public class StationService extends FdsnwsService {
     channelElement.appendChild(e);
 
     return channelElement;
-  }
-
-  private static Map<String, String> parseRequest(FullHttpRequest request) {
-    Map<String, String> arguments = new HashMap<String, String>();
-
-
-    if (request.getMethod() == HttpMethod.GET) {
-      QueryStringDecoder decoder = new QueryStringDecoder(request.getUri());
-
-      for (String name : decoder.parameters().keySet()) {
-        arguments.put(name, decoder.parameters().get(name).get(0));
-        LOGGER.info("{} : {}", name, decoder.parameters().get(name).get(0));
-      }
-    } else if (request.getMethod() == HttpMethod.POST) {
-      String[] lines = request.content().toString(CharsetUtil.UTF_8).split("\n");
-      StringBuffer chans = new StringBuffer();
-      for (String list : lines) {
-        int idx = list.indexOf('=');
-        if (idx != -1) {
-          arguments.put(list.substring(0, idx), list.substring(idx, list.length()));
-        } else {
-          chans.append(list);
-        }
-      }
-      if (chans.length() > 0) {
-        arguments.put("chans", chans.toString());
-      }
-    }
-
-    return arguments;
   }
 }
