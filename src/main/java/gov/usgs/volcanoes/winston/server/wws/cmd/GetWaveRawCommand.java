@@ -65,22 +65,22 @@ public class GetWaveRawCommand extends WwsBaseCommand {
       throw new UtilException(e1.getMessage());
     }
 
-
-    try {
-      winston = databasePool.borrowObject();
-      if (!winston.checkConnect()) {
-        LOGGER.error("WinstonDatabase unable to connect to MySQL.");
-      } else {
-        Data data = new Data(winston);
-        wave = data.getWave(cmd.getWinstonSCNL(), st, et, 0);
-      }
-    } catch (Exception e) {
-      LOGGER.error("Unable to fulfill command.", e);
-    } finally {
-      if (winston != null) {
-        databasePool.returnObject(winston);
-      }
-    }
+//
+//    try {
+//      winston = databasePool.borrowObject();
+//      if (!winston.checkConnect()) {
+//        LOGGER.error("WinstonDatabase unable to connect to MySQL.");
+//      } else {
+//        Data data = new Data(winston);
+//        wave = data.getWave(cmd.getWinstonSCNL(), st, et, 0);
+//      }
+//    } catch (Exception e) {
+//      LOGGER.error("Unable to fulfill command.", e);
+//    } finally {
+//      if (winston != null) {
+//        databasePool.returnObject(winston);
+//      }
+//    }
 
     ByteBuffer bb = null;
     if (wave != null && wave.numSamples() > 0)
