@@ -314,9 +314,9 @@ public class Channels {
     try {
       winston.useRootDatabase();
       winston.getStatement()
-          .execute("INSERT INTO channels (code, st, et) VALUES ('" + code + "', 1E300, -1E300)");
+      .execute("CREATE DATABASE `" + winston.databasePrefix + "_" + code + "`");
       winston.getStatement()
-          .execute("CREATE DATABASE `" + winston.databasePrefix + "_" + code + "`");
+          .execute("INSERT INTO channels (code, st, et) VALUES ('" + code + "', 1E300, -1E300)");
       winston.getStatement().execute("USE `" + winston.databasePrefix + "_" + code + "`");
     } catch (final Exception e) {
       LOGGER.error("Could not create channel.  Are permissions set properly?");
