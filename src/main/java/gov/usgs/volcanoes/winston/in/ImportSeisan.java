@@ -44,6 +44,14 @@ public class ImportSeisan extends StaticImporter{
   }
 
   public static void main(final String[] args) {
+
+    instructions.append("Winston ImportSeisan\n\n");
+    instructions.append("This program imports data from Seisan files into a Winston database.\n");
+    instructions.append("Information about connecting to the Winston database must be present\n");
+    instructions.append("in Winston.config in the current directory.\n\n");
+    instructions.append("Usage:\n");
+    instructions.append("  java gov.usgs.volcanoes.winston.in.ImportSeisan [files]\n");
+
     final ImportSeisan is = new ImportSeisan();
     final Arguments arguments = new Arguments(args, null, null);
     final List<String> files = arguments.unused();
