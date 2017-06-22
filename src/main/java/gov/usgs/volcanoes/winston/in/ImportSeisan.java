@@ -8,11 +8,15 @@ import gov.usgs.volcanoes.core.legacy.Arguments;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ImportSeisan extends StaticImporter{
 
+  private String network="XX";
+  
   public ImportSeisan()  {
     // TODO Auto-generated constructor stub
   }
@@ -30,10 +34,9 @@ public class ImportSeisan extends StaticImporter{
         list.add(file.getWave(channel));
         channel = channel.replace('_', '$');
         if(channel.matches("^.*\\$...\\$$")){
-          channel = channel+"XX";
+          channel = channel+network;
         }
-        System.out.println(channel);
-        map.put(channel, list);
+         map.put(channel, list);
       }
       return map;
     } catch (final Exception e) {
@@ -50,10 +53,18 @@ public class ImportSeisan extends StaticImporter{
     instructions.append("Information about connecting to the Winston database must be present\n");
     instructions.append("in Winston.config in the current directory.\n\n");
     instructions.append("Usage:\n");
-    instructions.append("  java gov.usgs.volcanoes.winston.in.ImportSeisan [files]\n");
+    instructions.append("  java gov.usgs.volcanoes.winston.in.ImportSeisan -n [network code override] [files]\n");
 
     final ImportSeisan is = new ImportSeisan();
-    final Arguments arguments = new Arguments(args, null, null);
+    final Set<String> kvs = is.getArgumentSet();
+    kvs.add("-n");
+    final Set<String> flags = new HashSet<String>();
+
+    final Arguments arguments = new Arguments(args, flags, kvs);
+    String network = arguments.get("-n");
+    if(network != null){
+      is.network = network;
+    }
     final List<String> files = arguments.unused();
     process(files, is);
   }
