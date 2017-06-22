@@ -32,10 +32,6 @@ public class ImportWin extends StaticImporter {
         final List<Wave> list = new ArrayList<Wave>();
         list.add(file.getWave(channel));
         channel = channel.replace('_', '$');
-        if(channel.matches("^.*\\$...\\$$")){
-          channel = channel+"XX";
-        }
-        System.out.println(channel);
         map.put(channel, list);
       }
       return map;
