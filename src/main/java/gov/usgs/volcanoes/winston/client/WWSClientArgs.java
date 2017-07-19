@@ -38,9 +38,9 @@ public class WWSClientArgs {
 	private static final String EXPLANATION = "I am the Winston Wave Server client.\n";
 
 	private static final Parameter[] PARAMETERS = new Parameter[] {
-			new FlaggedOption("port", JSAP.STRING_PARSER, "16022", false, 'p', "port", "Remote port."),
 			new FlaggedOption("server", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, true, 's', "server", "Remote server."),
-			new Switch("sac", 's', "sac", "Write SAC output."), new Switch("txt", 't', "txt", "Write TEXT output.") };
+			new FlaggedOption("port", JSAP.INTEGER_PARSER, "16022", false, 'p', "port", "Remote port."),
+			new Switch("sac", JSAP.NO_SHORTFLAG, "sac", "Write SAC output."), new Switch("txt", JSAP.NO_SHORTFLAG, "txt", "Write TEXT output.") };
 
 	/** If true, log more. */
 	public final boolean verbose;
@@ -82,23 +82,26 @@ public class WWSClientArgs {
 		jsapResult = args.parse(commandLineArgs);
 
 		verbose = jsapResult.getBoolean("verbose");
-		LOGGER.debug("Setting: verbose={}", verbose);
-
 		timeSpan = (TimeSpan) jsapResult.getObject("timeSpan");
-		LOGGER.debug("Setting: timeSpan={}", timeSpan);
-		
 		server = jsapResult.getString("server");
-		LOGGER.debug("Setting: server={}", server);
-
 		port = jsapResult.getInt("port");
-		LOGGER.debug("Setting: port={}", port);
-		
 		channel = (Scnl) jsapResult.getObject("channel");
-		
 		sacOutput = jsapResult.getBoolean("sac");
-		LOGGER.debug("Setting sacOutput={}", sacOutput);
-		
 		txtOutput = jsapResult.getBoolean("txt");
-		LOGGER.debug("Setting txtOutput={}", txtOutput);
+
+		if (!jsapResult.getBoolean("help")) {
+			LOGGER.debug("Setting: verbose={}", verbose);
+	
+			LOGGER.debug("Setting: timeSpan={}", timeSpan);
+			
+			LOGGER.debug("Setting: server={}", server);
+	
+			LOGGER.debug("Setting: port={}", port);
+			
+			
+			LOGGER.debug("Setting sacOutput={}", sacOutput);
+			
+			LOGGER.debug("Setting txtOutput={}", txtOutput);
+		}
 	}
 }
