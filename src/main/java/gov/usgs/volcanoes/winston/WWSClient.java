@@ -1,6 +1,7 @@
 package gov.usgs.volcanoes.winston;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
@@ -26,8 +27,10 @@ import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.Retriable;
 import gov.usgs.volcanoes.core.util.UtilException;
+import gov.usgs.volcanoes.winston.client.MenuHandler;
 import gov.usgs.volcanoes.winston.client.WWSClientArgs;
 import gov.usgs.volcanoes.winston.client.WWSClientHandler;
+import gov.usgs.volcanoes.winston.client.WWSCommandHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -36,6 +39,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.string.StringEncoder;
+import io.netty.util.AttributeKey;
 
 /**
  * A class that extends the Earthworm Wave Server to include a get helicorder
@@ -48,10 +53,15 @@ public class WWSClient extends WaveServer {
 	private static final int DEFAULT_WWS_PORT = 16022;
 
 	protected ReadListener readListener;
+	private final String server;
+	private final int port;
 
-	public WWSClient(final String h, final int p) {
-		super(h, p);
+	public WWSClient(final String server, final int port) {
+		super(server, port);
 		setTimeout(60000);
+		//
+		this.server = server;
+		this.port = port;
 	}
 
 	public void setReadListener(final ReadListener rl) {
@@ -130,63 +140,55 @@ public class WWSClient extends WaveServer {
 		return ret;
 	}
 
+	/**
+	 * Retrieve a list of channels from a remote Winston.
+	 * 
+	 * @return List of channels
+	 */
 	public List<Channel> getChannels() {
 		return getChannels(false);
 	}
 
+	/**
+	 * Retrieve a list of channels from Winston.
+	 * 
+	 * @param meta
+	 *            if true, request metadata
+	 * @return List of channels
+	 */
 	public List<Channel> getChannels(final boolean meta) {
-		String[] result = null;
-		final Retriable<String[]> rt = new Retriable<String[]>("WWSClient.getChannels()", maxRetries) {
-			@Override
-			public void attemptFix() {
-				close();
-			}
+		EventLoopGroup workerGroup = new NioEventLoopGroup();
+		List<Channel> channels = new ArrayList<Channel>();
 
-			@Override
-			public boolean attempt() throws UtilException {
-				try {
-					if (!connected())
-						connect();
-
-					String cmd = "GETCHANNELS: GC";
-					if (meta)
-						cmd += " METADATA";
-					writeString(cmd + "\n");
-					final String info = readString();
-					String[] ss = info.split(" ");
-					final int lines = Integer.parseInt(ss[1]);
-					if (lines == 0)
-						return true;
-					ss = new String[lines];
-					for (int i = 0; i < ss.length; i++)
-						ss[i] = readString();
-
-					result = ss;
-					return true;
-				} catch (final SocketTimeoutException e) {
-					logger.warning("WWSClient.getChannels() timeout.");
-				} catch (final IOException e) {
-					logger.warning("WWSClient.getChannels() IOException: " + e.getMessage());
-				}
-				return false;
-			}
-		};
 		try {
-			result = rt.go();
-		} catch (final UtilException e) {
-			// Do nothing
+			Bootstrap b = new Bootstrap();
+			b.group(workerGroup);
+			b.channel(NioSocketChannel.class);
+			b.option(ChannelOption.SO_KEEPALIVE, true);
+			b.handler(new ChannelInitializer<SocketChannel>() {
+				@Override
+				public void initChannel(SocketChannel ch) throws Exception {
+					ch.pipeline().addLast(new StringEncoder()).addLast(new WWSClientHandler());
+				}
+			});
+
+			AttributeKey<WWSCommandHandler> handlerKey = WWSClientHandler.handlerKey;
+			// Start the client.
+			io.netty.channel.Channel ch = b.connect(host, port).sync().channel();
+			String req = String.format("GETCHANNELS: GC%s\r\n", meta ? " METADATA" : "");
+			ch.attr(handlerKey).set(new MenuHandler(ch, channels));
+			System.err.println("Sending: " + req);
+			ChannelFuture lastWriteFuture = ch.writeAndFlush(req);
+			// Wait until the connection is closed.
+			ch.closeFuture().sync();
+		} catch (InterruptedException ex) {
+			Thread.currentThread().interrupt();
+			throw new RuntimeException(ex);
+		} finally {
+			workerGroup.shutdownGracefully();
 		}
 
-		if (result == null)
-			return null;
-
-		final List<Channel> chs = new ArrayList<Channel>(result.length);
-		for (final String s : result) {
-			final Channel ch = new Channel(s);
-			chs.add(ch);
-		}
-
-		return chs;
+		return channels;
 	}
 
 	public Wave getWave(final String station, final String comp, final String network, final String location,
@@ -391,34 +393,13 @@ public class WWSClient extends WaveServer {
 		}
 	}
 
-	private void ex() throws InterruptedException {
-		String host = "LOCALHOST";
-		int port = 16024;
-		EventLoopGroup workerGroup = new NioEventLoopGroup();
-
-		try {
-			Bootstrap b = new Bootstrap(); // (1)
-			b.group(workerGroup); // (2)
-			b.channel(NioSocketChannel.class); // (3)
-			b.option(ChannelOption.SO_KEEPALIVE, true); // (4)
-			b.handler(new ChannelInitializer<SocketChannel>() {
-				@Override
-				public void initChannel(SocketChannel ch) throws Exception {
-					ch.pipeline().addLast(new WWSClientHandler());
-				}
-			});
-
-			// Start the client.
-			ChannelFuture f = b.connect(host, port).sync(); // (5)
-
-			// Wait until the connection is closed.
-			f.channel().closeFuture().sync();
-		} finally {
-			workerGroup.shutdownGracefully();
-		}
-	}
-
 	public static void main(final String[] args) {
+		WWSClient wws = new WWSClient("pubavo1.wr.usgs.gov", 16022);
+		List<Channel> channels = wws.getChannels();
+		for (Channel chan : channels) {
+			System.out.println(chan.toMetadataString());
+		}
+		System.exit(1);
 		try {
 			final WWSClientArgs config = new WWSClientArgs(args);
 
@@ -428,8 +409,11 @@ public class WWSClient extends WaveServer {
 				outputSac(config.server, config.port, config.timeSpan, config.channel);
 			}
 
-			if (config.txtOutput)
+			if (config.txtOutput) {
+				LOGGER.debug("Requesting {} from {}:{} for {} and writing to TXT.", config.channel, config.server,
+						config.port, config.timeSpan);
 				outputText(config.server, config.port, config.timeSpan, config.channel);
+			}
 		} catch (Exception e) {
 			LOGGER.error(e.getLocalizedMessage());
 		}
