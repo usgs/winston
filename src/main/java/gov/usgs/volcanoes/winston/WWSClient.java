@@ -225,7 +225,7 @@ public class WWSClient extends WaveServer {
 		final String req = String.format(Locale.US, "GETWAVERAW: GS %s %f %f %s\n", scnl.toString(" "), st, et,
 				(doCompress ? "1" : "0"));
 		sendRequest(req, new GetWaveHandler(wave, doCompress));
-
+		wave.setStartTime(st);
 		return new Wave(wave);
 	}
 
@@ -296,112 +296,44 @@ public class WWSClient extends WaveServer {
 		return new RSAMData(ByteBuffer.wrap(buf), period);
 	}
 
-	public static void outputSac(final String server, final int port, final TimeSpan timespan, final Scnl scnl) {
+	
+	/**
+	 * Retrieve a wave and write to a SAC file.
+	 * 
+	 * @param server Winston address
+	 * @param port Winston port
+	 * @param timeSpan time span to request
+	 * @param scnl SCNL to request
+	 */
+	private static void outputSac(final String server, final int port, final TimeSpan timeSpan, final Scnl scnl) {
 		final DateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
-		final String date = df.format(new Date(timespan.startTime)) + "-" + df.format(new Date(timespan.endTime));
+		final String date = df.format(new Date(timeSpan.startTime)) + "-" + df.format(new Date(timeSpan.endTime));
 
 		String filename = scnl.toString("_") + "_" + date + ".sac";
-		outputSac(server, port, timespan, scnl, filename);
-	}
-
-	public static void outputSac(final String server, final int port, final TimeSpan timeSpan, final Scnl scnl,
-			final String fn) {
-		final WWSClient winston = new WWSClient(server, port);
-		winston.connect();
-
-		double st = J2kSec.fromEpoch(timeSpan.startTime);
-		double et = J2kSec.fromEpoch(timeSpan.endTime);
-		Wave wave = winston.getWave(scnl.station, scnl.channel, scnl.network, scnl.location, st, et, false);
-
-		if (wave != null) {
-			wave = wave.subset(st, et);
-
-			final SeismicDataFile file = SeismicDataFile.getFile(fn, FileType.SAC);
-			String channel = scnl.toString("_");
-
-			file.putWave(channel, wave);
-			try {
-				file.write();
-			} catch (final IOException e) {
-				System.err.println("Couldn't write file: " + e.getLocalizedMessage());
-				e.printStackTrace();
-			}
-		} else {
-			System.out.println("Wave not found");
+		System.out.println("Writing wave to SAC\n");
+		final WWSClient wws = new WWSClient(server, port);
+		Wave wave = wws.getWave(scnl, timeSpan, true);
+		System.err.println("Date: " + J2kSec.toDateString(wave.getStartTime()));
+		final SeismicDataFile file = SeismicDataFile.getFile(filename, FileType.SAC);
+		file.putWave(scnl.toString("$"), wave);
+		try {
+			file.write();
+		} catch (final IOException e) {
+			System.err.println("Couldn't write file: " + e.getLocalizedMessage());
+			e.printStackTrace();
 		}
 	}
 
-	public static void outputSac(final String server, final int port, final Double st, final Double et, final String c,
-			final String fn, final double gulpSize, final double gulpDelay) {
-		final WWSClient winston = new WWSClient(server, port);
-		winston.connect();
-
-		final String[] chan = c.split("\\$");
-		final String sta = chan[0];
-		final String comp = chan[1];
-		final String net = chan[2];
-		final String loc = chan.length == 4 ? chan[3] : null;
-
-		final List<Wave> waves = new ArrayList<Wave>();
-
-		final double duration = et - st;
-		final int N = (int) Math.ceil(duration / gulpSize) - 1;
-		double t1 = st;
-		double t2 = 0;
-		Wave wavelet;
-		System.out.printf("Gulp size: %f (s), Gulp delay: %d (ms), Number of gulps: %d\n", gulpSize,
-				(long) (gulpDelay * 1000), N + 1);
-		for (int i = 0; i < N; i++) {
-			t2 = t1 + gulpSize;
-			System.out.printf("Gulp #%d starting ... ", i + 1);
-			wavelet = winston.getWave(sta, comp, net, loc, t1, t2, false);
-			System.out.printf("done.\n");
-			if (wavelet != null)
-				waves.add(wavelet);
-			t1 = t2;
-			if (gulpDelay != 0)
-				try {
-					System.out.printf("Waiting ... ");
-					Thread.sleep((long) (gulpDelay * 1000));
-					System.out.println("done.");
-
-				} catch (final InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-		}
-		t2 = et;
-		System.out.printf("Gulp #%d starting ... ", N + 1);
-		wavelet = winston.getWave(sta, comp, net, loc, t1, t2, false);
-		System.out.printf("done.\n");
-
-		if (wavelet != null)
-			waves.add(wavelet);
-
-		Wave wave = Wave.join(waves);
-
-		if (wave != null) {
-			wave = wave.subset(st, et);
-
-			final SeismicDataFile file = SeismicDataFile.getFile(fn, FileType.SAC);
-			String channel = sta + "_" + comp + "_" + net;
-			if (loc != null)
-				channel += "_" + loc;
-
-			file.putWave(channel, wave);
-			try {
-				file.write();
-			} catch (final IOException e) {
-				System.err.println("Couldn't write file: " + e.getLocalizedMessage());
-				e.printStackTrace();
-			}
-		} else {
-			System.out.println("Wave not found");
-		}
-	}
-
-	public static void outputText(final String server, final int port, final TimeSpan timeSpan, final Scnl scnl) {
+	
+	/**
+	 * Retrieve a wave and write to STDOUT.
+	 * 
+	 * @param server Winston address
+	 * @param port Winston port
+	 * @param timeSpan time span to request
+	 * @param scnl SCNL to request
+	 */
+	private static void outputText(final String server, final int port, final TimeSpan timeSpan, final Scnl scnl) {
 		System.out.println("dumping samples as text\n");
 		final WWSClient wws = new WWSClient(server, port);
 		Wave wave = wws.getWave(scnl, timeSpan, true);
@@ -411,7 +343,7 @@ public class WWSClient extends WaveServer {
 		}
 	}
 
-	public static void displayMenu() {
+	private static void displayMenu() {
 		WWSClient wws = new WWSClient("pubavo1.wr.usgs.gov", 16022);
 		List<Channel> channels = wws.getChannels();
 		for (Channel chan : channels) {
