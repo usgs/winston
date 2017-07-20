@@ -97,15 +97,11 @@ public class WWSClientArgs {
 
 		if (!jsapResult.getBoolean("help")) {
 			LOGGER.debug("Setting: verbose={}", verbose);
-
 			LOGGER.debug("Setting: timeSpan={}", timeSpan);
-
 			LOGGER.debug("Setting: server={}", server);
-
 			LOGGER.debug("Setting: port={}", port);
-
+			LOGGER.debug("Setting menu={}", menu);
 			LOGGER.debug("Setting sacOutput={}", sacOutput);
-
 			LOGGER.debug("Setting txtOutput={}", txtOutput);
 		}
 

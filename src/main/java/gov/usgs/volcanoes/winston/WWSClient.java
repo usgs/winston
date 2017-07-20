@@ -1,7 +1,6 @@
 package gov.usgs.volcanoes.winston;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.text.DateFormat;
@@ -28,6 +27,7 @@ import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.Retriable;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.client.MenuHandler;
+import gov.usgs.volcanoes.winston.client.GetWaveHandler;
 import gov.usgs.volcanoes.winston.client.WWSClientArgs;
 import gov.usgs.volcanoes.winston.client.WWSClientHandler;
 import gov.usgs.volcanoes.winston.client.WWSCommandHandler;
@@ -86,6 +86,38 @@ public class WWSClient extends WaveServer {
 			}
 		}
 		return version;
+	}
+
+	private void sendRequest(String req, WWSCommandHandler handler) {
+		EventLoopGroup workerGroup = new NioEventLoopGroup();
+
+		try {
+			Bootstrap b = new Bootstrap();
+			b.group(workerGroup);
+			b.channel(NioSocketChannel.class);
+			b.option(ChannelOption.SO_KEEPALIVE, true);
+			b.handler(new ChannelInitializer<SocketChannel>() {
+				@Override
+				public void initChannel(SocketChannel ch) throws Exception {
+					ch.pipeline().addLast(new StringEncoder()).addLast(new WWSClientHandler());
+				}
+			});
+
+			AttributeKey<WWSCommandHandler> handlerKey = WWSClientHandler.handlerKey;
+			// Start the client.
+			io.netty.channel.Channel ch = b.connect(host, port).sync().channel();
+			handler.setChannel(ch);
+			ch.attr(handlerKey).set(handler);
+			System.err.println("Sending: " + req);
+			ChannelFuture lastWriteFuture = ch.writeAndFlush(req);
+			// Wait until the connection is closed.
+			ch.closeFuture().sync();
+		} catch (InterruptedException ex) {
+			Thread.currentThread().interrupt();
+			throw new RuntimeException(ex);
+		} finally {
+			workerGroup.shutdownGracefully();
+		}
 	}
 
 	protected byte[] getData(final String req, final boolean compressed) {
@@ -157,37 +189,10 @@ public class WWSClient extends WaveServer {
 	 * @return List of channels
 	 */
 	public List<Channel> getChannels(final boolean meta) {
-		EventLoopGroup workerGroup = new NioEventLoopGroup();
 		List<Channel> channels = new ArrayList<Channel>();
+		String req = String.format("GETCHANNELS: GC%s\r\n", meta ? " METADATA" : "");
 
-		try {
-			Bootstrap b = new Bootstrap();
-			b.group(workerGroup);
-			b.channel(NioSocketChannel.class);
-			b.option(ChannelOption.SO_KEEPALIVE, true);
-			b.handler(new ChannelInitializer<SocketChannel>() {
-				@Override
-				public void initChannel(SocketChannel ch) throws Exception {
-					ch.pipeline().addLast(new StringEncoder()).addLast(new WWSClientHandler());
-				}
-			});
-
-			AttributeKey<WWSCommandHandler> handlerKey = WWSClientHandler.handlerKey;
-			// Start the client.
-			io.netty.channel.Channel ch = b.connect(host, port).sync().channel();
-			String req = String.format("GETCHANNELS: GC%s\r\n", meta ? " METADATA" : "");
-			ch.attr(handlerKey).set(new MenuHandler(ch, channels));
-			System.err.println("Sending: " + req);
-			ChannelFuture lastWriteFuture = ch.writeAndFlush(req);
-			// Wait until the connection is closed.
-			ch.closeFuture().sync();
-		} catch (InterruptedException ex) {
-			Thread.currentThread().interrupt();
-			throw new RuntimeException(ex);
-		} finally {
-			workerGroup.shutdownGracefully();
-		}
-
+		sendRequest(req, new MenuHandler(channels));
 		return channels;
 	}
 
@@ -200,6 +205,28 @@ public class WWSClient extends WaveServer {
 			return null;
 
 		return new Wave(ByteBuffer.wrap(buf));
+	}
+
+	/**
+	 * Fetch a wave data from a Winston.
+	 * 
+	 * @param scnl
+	 *            channel to query
+	 * @param timeSpan
+	 *            time span to query
+	 * @param doCompress
+	 *            if true, compress data over the network
+	 * @return wave data, empty if no data is avilable
+	 */
+	public Wave getWave(final Scnl scnl, final TimeSpan timeSpan, final boolean doCompress) {
+		Wave wave = new Wave();
+		double st = J2kSec.fromEpoch(timeSpan.startTime);
+		double et = J2kSec.fromEpoch(timeSpan.endTime);
+		final String req = String.format(Locale.US, "GETWAVERAW: GS %s %f %f %s\n", scnl.toString(" "), st, et,
+				(doCompress ? "1" : "0"));
+		sendRequest(req, new GetWaveHandler(wave, doCompress));
+
+		return new Wave(wave);
 	}
 
 	public HelicorderData getHelicorder(final String station, final String comp, final String network,
@@ -374,22 +401,13 @@ public class WWSClient extends WaveServer {
 		}
 	}
 
-	public static void outputText(final String s, final int p, final TimeSpan timeSpan, final Scnl scnl) {
+	public static void outputText(final String server, final int port, final TimeSpan timeSpan, final Scnl scnl) {
 		System.out.println("dumping samples as text\n");
-		final WWSClient winston = new WWSClient(s, p);
-		winston.connect();
+		final WWSClient wws = new WWSClient(server, port);
+		Wave wave = wws.getWave(scnl, timeSpan, true);
 
-		double st = J2kSec.fromEpoch(timeSpan.startTime);
-		double et = J2kSec.fromEpoch(timeSpan.endTime);
-		Wave wave = winston.getWave(scnl.station, scnl.channel, scnl.network, scnl.location, st, et, false);
-
-		if (wave != null) {
-			wave = wave.subset(st, et);
-			for (final int i : wave.buffer)
-				System.out.println(i);
-
-		} else {
-			System.out.println("Wave not found");
+		for (final int i : wave.buffer) {
+			System.out.println(i);
 		}
 	}
 
@@ -399,8 +417,9 @@ public class WWSClient extends WaveServer {
 		for (Channel chan : channels) {
 			System.out.println(chan.toMetadataString());
 		}
-		
+
 	}
+
 	public static void main(final String[] args) {
 		try {
 			final WWSClientArgs config = new WWSClientArgs(args);
@@ -409,7 +428,7 @@ public class WWSClient extends WaveServer {
 				LOGGER.debug("Requesting menu from {}:{}.", config.server, config.port);
 				displayMenu();
 			}
-			
+
 			if (config.sacOutput) {
 				LOGGER.debug("Requesting {} from {}:{} for {} and writing to SAC.", config.channel, config.server,
 						config.port, config.timeSpan);

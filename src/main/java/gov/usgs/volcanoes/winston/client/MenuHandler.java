@@ -16,20 +16,28 @@ public class MenuHandler implements WWSCommandHandler {
 	private int linesTotal;
 	private int linesRead;
 	private Channel channel;
-	private List<gov.usgs.volcanoes.winston.Channel> channels;
+	private final List<gov.usgs.volcanoes.winston.Channel> channels;
 	private StringBuffer menu;
 
-	public MenuHandler(Channel channel, List<gov.usgs.volcanoes.winston.Channel> channels) {
+	public MenuHandler(List<gov.usgs.volcanoes.winston.Channel> channels) {
 		linesTotal = -Integer.MAX_VALUE;
 		linesRead = 0;
 		menu = new StringBuffer();
-		this.channel = channel;
 		this.channels = channels;
+	}
+
+	public void setChannel(Channel channel) {
+		this.channel = channel;
 	}
 
 	@Override
 	public void handle(Object msg) throws IOException {
+		if (channel == null) {
+			throw new RuntimeException("Channel is not set. That's a bug.");
+		}
+		
 		ByteBuf msgBuf = (ByteBuf) msg;
+
 		if (linesTotal < 0) {
 			String header = ClientUtils.readResponseHeader(msgBuf);
 			if (header == null) {
@@ -48,6 +56,7 @@ public class MenuHandler implements WWSCommandHandler {
 			for (String line : menu.toString().split("\n")) {
 				channels.add(new gov.usgs.volcanoes.winston.Channel(line));
 			}
+
 			channel.close();
 		} else {
 			LOGGER.debug("Read {} of {} channels", linesRead, linesTotal);
