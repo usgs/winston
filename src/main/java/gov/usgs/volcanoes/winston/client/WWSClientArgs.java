@@ -38,9 +38,11 @@ public class WWSClientArgs {
 	private static final String EXPLANATION = "I am the Winston Wave Server client.\n";
 
 	private static final Parameter[] PARAMETERS = new Parameter[] {
-			new FlaggedOption("server", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, true, 's', "server", "Remote server."),
-			new FlaggedOption("port", JSAP.INTEGER_PARSER, "16022", false, 'p', "port", "Remote port."),
-			new Switch("sac", JSAP.NO_SHORTFLAG, "sac", "Write SAC output."), new Switch("txt", JSAP.NO_SHORTFLAG, "txt", "Write TEXT output.") };
+			new FlaggedOption("server", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 's', "server", "Remote server."),
+			new FlaggedOption("port", JSAP.INTEGER_PARSER, "16022", JSAP.NOT_REQUIRED, 'p', "port", "Remote port."),
+			new Switch("sac", JSAP.NO_SHORTFLAG, "sac", "Write SAC output."),
+			new Switch("txt", JSAP.NO_SHORTFLAG, "txt", "Write TEXT output."),
+			new Switch("menu", JSAP.NO_SHORTFLAG, "menu", "Retrieve server menu.") };
 
 	/** If true, log more. */
 	public final boolean verbose;
@@ -56,13 +58,16 @@ public class WWSClientArgs {
 
 	/** channel to query */
 	public final Scnl channel;
+
+	/** If true, print server menu */
+	public final boolean menu;
 	
 	/** If true, write SAC output. */
 	public final boolean sacOutput;
-	
+
 	/** If true, write TXT output. */
 	public final boolean txtOutput;
-	
+
 	/**
 	 * Class constructor.
 	 * 
@@ -74,8 +79,8 @@ public class WWSClientArgs {
 	public WWSClientArgs(final String[] commandLineArgs) throws Exception {
 		Arguments args = null;
 		args = new Args(PROGRAM_NAME, EXPLANATION, PARAMETERS);
-		args = new ScnlArg(true, args);
-		args = new TimeSpanArg(INPUT_TIME_FORMAT, true, args);
+		args = new ScnlArg(false, args);
+		args = new TimeSpanArg(INPUT_TIME_FORMAT, false, args);
 		args = new VerboseArg(args);
 
 		JSAPResult jsapResult = null;
@@ -86,22 +91,32 @@ public class WWSClientArgs {
 		server = jsapResult.getString("server");
 		port = jsapResult.getInt("port");
 		channel = (Scnl) jsapResult.getObject("channel");
+		menu = jsapResult.getBoolean("menu");
 		sacOutput = jsapResult.getBoolean("sac");
 		txtOutput = jsapResult.getBoolean("txt");
 
 		if (!jsapResult.getBoolean("help")) {
 			LOGGER.debug("Setting: verbose={}", verbose);
-	
+
 			LOGGER.debug("Setting: timeSpan={}", timeSpan);
-			
+
 			LOGGER.debug("Setting: server={}", server);
-	
+
 			LOGGER.debug("Setting: port={}", port);
-			
-			
+
 			LOGGER.debug("Setting sacOutput={}", sacOutput);
-			
+
 			LOGGER.debug("Setting txtOutput={}", txtOutput);
 		}
+
+		if (sacOutput || txtOutput) {
+			if (channel == null) {
+				throw new RuntimeException("No channel provided.");
+			}
+			if (timeSpan == null) {
+				throw new RuntimeException("No time span provided.");
+			}
+		}
+		
 	}
 }

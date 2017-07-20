@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
 public class MenuHandler implements WWSCommandHandler {
+	private static final Logger LOGGER = LoggerFactory.getLogger(MenuHandler.class);
 
 	private int linesTotal;
 	private int linesRead;
@@ -27,7 +31,14 @@ public class MenuHandler implements WWSCommandHandler {
 	public void handle(Object msg) throws IOException {
 		ByteBuf msgBuf = (ByteBuf) msg;
 		if (linesTotal < 0) {
-			linesTotal = readLineCount(msgBuf);
+			String header = ClientUtils.readResponseHeader(msgBuf);
+			if (header == null) {
+				LOGGER.debug("Still waiting for full response line.");
+				return;
+			} else {
+				linesTotal = Integer.parseInt(header.split(" ")[1]);
+				LOGGER.debug("Server has {} channels.", linesTotal);
+			}
 		}
 
 		String chunk = msgBuf.toString(Charset.forName("US-ASCII"));
@@ -38,29 +49,14 @@ public class MenuHandler implements WWSCommandHandler {
 				channels.add(new gov.usgs.volcanoes.winston.Channel(line));
 			}
 			channel.close();
+		} else {
+			LOGGER.debug("Read {} of {} channels", linesRead, linesTotal);
 		}
-	}
-
-	private int readLineCount(ByteBuf msgBuf) {
-		byte ch = msgBuf.readByte();
-		while (ch != ' ') {
-			ch = msgBuf.readByte();
-		}
-
-		StringBuffer lenBuf = new StringBuffer();
-		ch = msgBuf.readByte();
-		while (ch != '\n') {
-			lenBuf.append((char) ch);
-			ch = msgBuf.readByte();
-		}
-		return Integer.parseInt(lenBuf.toString());
-
 	}
 
 	private int countLines(String buf) {
 		int lines = 0;
 		for (int pos = 0; pos < buf.length(); pos++) {
-			char c = buf.charAt(pos);
 			if (buf.charAt(pos) == '\n') {
 				lines++;
 			}

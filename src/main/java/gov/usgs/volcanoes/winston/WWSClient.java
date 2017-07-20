@@ -393,16 +393,23 @@ public class WWSClient extends WaveServer {
 		}
 	}
 
-	public static void main(final String[] args) {
+	public static void displayMenu() {
 		WWSClient wws = new WWSClient("pubavo1.wr.usgs.gov", 16022);
 		List<Channel> channels = wws.getChannels();
 		for (Channel chan : channels) {
 			System.out.println(chan.toMetadataString());
 		}
-		System.exit(1);
+		
+	}
+	public static void main(final String[] args) {
 		try {
 			final WWSClientArgs config = new WWSClientArgs(args);
 
+			if (config.menu) {
+				LOGGER.debug("Requesting menu from {}:{}.", config.server, config.port);
+				displayMenu();
+			}
+			
 			if (config.sacOutput) {
 				LOGGER.debug("Requesting {} from {}:{} for {} and writing to SAC.", config.channel, config.server,
 						config.port, config.timeSpan);
