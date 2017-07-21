@@ -198,17 +198,6 @@ public class WWSClient extends WaveServer {
 		return rt.go();
 	}
 
-	public RSAMData getRSAMData(final String station, final String comp, final String network, final String location,
-			final double start, final double end, final int period, final boolean compress) {
-		final String req = String.format(Locale.US, "GETSCNLRSAMRAW: GS %s %s %s %s %f %f %d %s\n", station, comp,
-				network, location, start, end, period, (compress ? "1" : "0"));
-		final byte[] buf = getData(req, compress);
-		if (buf == null)
-			return null;
-
-		return new RSAMData(ByteBuffer.wrap(buf), period);
-	}
-
 	
 	/**
 	 * Send a request to Winston.
@@ -234,12 +223,13 @@ public class WWSClient extends WaveServer {
 			AttributeKey<WWSCommandHandler> handlerKey = WWSClientHandler.handlerKey;
 			// Start the client.
 			io.netty.channel.Channel ch = b.connect(host, port).sync().channel();
-			handler.setChannel(ch);
 			ch.attr(handlerKey).set(handler);
 			System.err.println("Sending: " + req);
 			ChannelFuture lastWriteFuture = ch.writeAndFlush(req);
-			// Wait until the connection is closed.
-			ch.closeFuture().sync();
+
+			// wait until response has been received
+			handler.responseWait();
+			ch.close();
 		} catch (InterruptedException ex) {
 			Thread.currentThread().interrupt();
 			throw new RuntimeException(ex);
@@ -247,6 +237,30 @@ public class WWSClient extends WaveServer {
 			workerGroup.shutdownGracefully();
 		}
 	}
+	
+	
+	/**
+	 * 
+	 * @param scnl
+	 * @param timeSpan
+	 * @param period
+	 * @param doCompress
+	 * @return
+	 */
+//	public RSAMData getRSAMData(final Scnl scnl, final TimeSpan timeSpan,final int period, final boolean doCompress) {
+//		double st = J2kSec.fromEpoch(timeSpan.startTime);
+//		double et = J2kSec.fromEpoch(timeSpan.endTime);
+//		final String req = String.format(Locale.US, "GETSCNLRSAMRAW: GS %s %f %f %d %s\n", scnl.toString(" "), st, et, period, (doCompress ? "1" : "0"));
+//		sendRequest(req, new GetWaveHandler(wave, doCompress));
+//		wave.setStartTime(st);
+//		return new Wave(wave);
+//
+//		final byte[] buf = getData(req, doCompress);
+//		if (buf == null)
+//			return null;
+//
+//		return new RSAMData(ByteBuffer.wrap(buf), period);
+//	}
 	
 	
 	/**
@@ -375,6 +389,7 @@ public class WWSClient extends WaveServer {
 	private static void displayMenu(final String server, final int port) {
 		WWSClient wws = new WWSClient(server, port);
 		List<Channel> channels = wws.getChannels();
+		System.out.println("GOT channels: " + channels.size());
 		for (Channel chan : channels) {
 			System.out.println(chan.toMetadataString());
 		}

@@ -12,16 +12,15 @@ import gov.usgs.volcanoes.core.Zip;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 
-public class GetWaveHandler implements WWSCommandHandler {
+public class GetWaveHandler extends WWSCommandHandler {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GetWaveHandler.class);
 
 	private final Wave wave;
-	private Channel channel;
 	private int length;
 	private final boolean isCompressed;
 	private ByteArrayOutputStream buf;
 	private int bytesRead;
-	
+
 	public GetWaveHandler(Wave wave, boolean isCompressed) {
 		this.wave = wave;
 		this.isCompressed = isCompressed;
@@ -32,9 +31,6 @@ public class GetWaveHandler implements WWSCommandHandler {
 
 	@Override
 	public void handle(Object msg) throws IOException {
-		if (channel == null) {
-			throw new RuntimeException("Channel not set. That's a bug.");
-		}
 		ByteBuf msgBuf = (ByteBuf) msg;
 		if (length < 0) {
 			String header = ClientUtils.readResponseHeader(msgBuf);
@@ -56,17 +52,13 @@ public class GetWaveHandler implements WWSCommandHandler {
 			byte[] bytes = buf.toByteArray();
 			if (isCompressed) {
 				bytes = Zip.decompress(bytes);
-			} 
+			}
 			wave.fromBinary(ByteBuffer.wrap(bytes));
-			channel.close();
+			sem.release();
 		} else {
 			LOGGER.debug("Still waiting for bytes. {}/{}", buf.size(), length);
-		}		
+		}
+
 	}
 
-
-	@Override
-	public void setChannel(Channel channel) {
-		this.channel = channel;
-	}
 }
