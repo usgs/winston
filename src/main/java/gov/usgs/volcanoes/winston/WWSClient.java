@@ -13,11 +13,9 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.earthworm.SCNL;
 import gov.usgs.earthworm.WaveServer;
 import gov.usgs.net.ReadListener;
 import gov.usgs.plot.data.HelicorderData;
-import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.plot.data.file.FileType;
 import gov.usgs.plot.data.file.SeismicDataFile;
@@ -27,8 +25,8 @@ import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.Retriable;
 import gov.usgs.volcanoes.core.util.UtilException;
-import gov.usgs.volcanoes.winston.client.MenuHandler;
 import gov.usgs.volcanoes.winston.client.GetWaveHandler;
+import gov.usgs.volcanoes.winston.client.MenuHandler;
 import gov.usgs.volcanoes.winston.client.WWSClientArgs;
 import gov.usgs.volcanoes.winston.client.WWSClientHandler;
 import gov.usgs.volcanoes.winston.client.WWSCommandHandler;
@@ -225,6 +223,8 @@ public class WWSClient extends WaveServer {
 			io.netty.channel.Channel ch = b.connect(host, port).sync().channel();
 			ch.attr(handlerKey).set(handler);
 			System.err.println("Sending: " + req);
+			
+			@SuppressWarnings("unused")
 			ChannelFuture lastWriteFuture = ch.writeAndFlush(req);
 
 			// wait until response has been received

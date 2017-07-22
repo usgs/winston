@@ -10,8 +10,12 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 
+/**
+ * Receive and process response from a winston GETWAVE request.
+ *
+ * @author Tom Parker
+ */
 public class GetWaveHandler extends WWSCommandHandler {
 	private static final Logger LOGGER = LoggerFactory.getLogger(GetWaveHandler.class);
 
@@ -19,14 +23,12 @@ public class GetWaveHandler extends WWSCommandHandler {
 	private int length;
 	private final boolean isCompressed;
 	private ByteArrayOutputStream buf;
-	private int bytesRead;
 
 	public GetWaveHandler(Wave wave, boolean isCompressed) {
 		this.wave = wave;
 		this.isCompressed = isCompressed;
 		length = -Integer.MAX_VALUE;
 		buf = null;
-		bytesRead = 0;
 	}
 
 	@Override

@@ -8,8 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.Channel;
 
+/**
+ * Receive and process response from a winston GETMENU request.
+ *
+ * @author Tom Parker
+ */
 public class MenuHandler extends WWSCommandHandler {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MenuHandler.class);
 
