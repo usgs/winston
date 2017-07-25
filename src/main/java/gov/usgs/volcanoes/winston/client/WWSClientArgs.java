@@ -22,6 +22,7 @@ import gov.usgs.volcanoes.core.args.decorator.TimeSpanArg;
 import gov.usgs.volcanoes.core.args.decorator.VerboseArg;
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.TimeSpan;
+import gov.usgs.volcanoes.core.util.StringUtils;
 
 /**
  * Argument processor for WWSClient.
@@ -41,7 +42,9 @@ public class WWSClientArgs {
 			new FlaggedOption("server", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.REQUIRED, 's', "server", "Remote server."),
 			new FlaggedOption("port", JSAP.INTEGER_PARSER, "16022", JSAP.NOT_REQUIRED, 'p', "port", "Remote port."),
 			new Switch("sac", JSAP.NO_SHORTFLAG, "sac", "Write SAC output."),
-			new Switch("txt", JSAP.NO_SHORTFLAG, "txt", "Write TEXT output."),
+			new Switch("txt", JSAP.NO_SHORTFLAG, "txt", "Write samples as text output."),
+			new Switch("rsam", JSAP.NO_SHORTFLAG, "rsam", "Write RSAM output."),
+			new FlaggedOption("rsamPeriod", JSAP.INTEGER_PARSER, "300", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "rsamPeriod", "RSAM period."),
 			new Switch("menu", JSAP.NO_SHORTFLAG, "menu", "Retrieve server menu.") };
 
 	/** If true, log more. */
@@ -68,6 +71,12 @@ public class WWSClientArgs {
 	/** If true, write TXT output. */
 	public final boolean txtOutput;
 
+	/** If true, write RSAM output. */
+	public final boolean rsamOutput;
+
+	/** RSAM period in seconds*/
+	public final int rsamPeriod;
+	
 	/**
 	 * Class constructor.
 	 * 
@@ -94,7 +103,9 @@ public class WWSClientArgs {
 		menu = jsapResult.getBoolean("menu");
 		sacOutput = jsapResult.getBoolean("sac");
 		txtOutput = jsapResult.getBoolean("txt");
-
+		rsamOutput = jsapResult.getBoolean("rsam");
+		rsamPeriod = jsapResult.getInt("rsamPeriod");
+		
 		if (!jsapResult.getBoolean("help")) {
 			LOGGER.debug("Setting: verbose={}", verbose);
 			LOGGER.debug("Setting: timeSpan={}", timeSpan);
@@ -103,9 +114,10 @@ public class WWSClientArgs {
 			LOGGER.debug("Setting menu={}", menu);
 			LOGGER.debug("Setting sacOutput={}", sacOutput);
 			LOGGER.debug("Setting txtOutput={}", txtOutput);
+			LOGGER.debug("Setting rsamOutput={}", rsamOutput);
 		}
 
-		if (sacOutput || txtOutput) {
+		if (sacOutput || txtOutput || rsamOutput) {
 			if (channel == null) {
 				throw new RuntimeException("No channel provided.");
 			}

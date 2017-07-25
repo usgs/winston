@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.earthworm.WaveServer;
 import gov.usgs.net.ReadListener;
 import gov.usgs.plot.data.HelicorderData;
+import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.plot.data.file.FileType;
 import gov.usgs.plot.data.file.SeismicDataFile;
@@ -25,6 +26,7 @@ import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.Retriable;
 import gov.usgs.volcanoes.core.util.UtilException;
+import gov.usgs.volcanoes.winston.client.GetScnlRsamRawHandler;
 import gov.usgs.volcanoes.winston.client.GetWaveHandler;
 import gov.usgs.volcanoes.winston.client.MenuHandler;
 import gov.usgs.volcanoes.winston.client.WWSClientArgs;
@@ -198,7 +200,7 @@ public class WWSClient extends WaveServer {
 
 	
 	/**
-	 * Send a request to Winston.
+	 * Send a request to Winston and block until the response has been processed.
 	 * 
 	 * @param req Request string
 	 * @param handler Object to handle server response
@@ -240,27 +242,24 @@ public class WWSClient extends WaveServer {
 	
 	
 	/**
+	 * Request RSAM from winston.
 	 * 
-	 * @param scnl
-	 * @param timeSpan
-	 * @param period
-	 * @param doCompress
+	 * @param scnl channel to request
+	 * @param timeSpan time span to request
+	 * @param period RSAM period
+	 * @param doCompress if true, compress data transmitted over the network
 	 * @return
 	 */
-//	public RSAMData getRSAMData(final Scnl scnl, final TimeSpan timeSpan,final int period, final boolean doCompress) {
-//		double st = J2kSec.fromEpoch(timeSpan.startTime);
-//		double et = J2kSec.fromEpoch(timeSpan.endTime);
-//		final String req = String.format(Locale.US, "GETSCNLRSAMRAW: GS %s %f %f %d %s\n", scnl.toString(" "), st, et, period, (doCompress ? "1" : "0"));
-//		sendRequest(req, new GetWaveHandler(wave, doCompress));
-//		wave.setStartTime(st);
-//		return new Wave(wave);
-//
-//		final byte[] buf = getData(req, doCompress);
-//		if (buf == null)
-//			return null;
-//
-//		return new RSAMData(ByteBuffer.wrap(buf), period);
-//	}
+	public RSAMData getRSAMData(final Scnl scnl, final TimeSpan timeSpan,final int period, final boolean doCompress) {
+		RSAMData rsam = new RSAMData();
+		double st = J2kSec.fromEpoch(timeSpan.startTime);
+		double et = J2kSec.fromEpoch(timeSpan.endTime);
+		final String req = String.format(Locale.US, "GETSCNLRSAMRAW: GS %s %f %f %d %s\n", scnl.toString(" "), st, et, period, (doCompress ? "1" : "0"));
+		sendRequest(req, new GetScnlRsamRawHandler(rsam, doCompress));
+		
+		return rsam;
+
+	}
 	
 	
 	/**
@@ -356,6 +355,26 @@ public class WWSClient extends WaveServer {
 	
 	
 	/**
+	 * Retrieve RSAM and write to STDOUT.
+	 * 
+	 * @param server Winston address
+	 * @param port Winston port
+	 * @param timeSpan time span to request
+	 * @param scnl SCNL to request
+	 */
+	private static void outputRsam(final String server, final int port, final TimeSpan timeSpan, final int period, final Scnl scnl) {
+		System.out.println("dumping RSAM as text\n");
+		final WWSClient wws = new WWSClient(server, port);
+		RSAMData rsam = wws.getRSAMData(scnl, timeSpan, period, true);
+
+		System.out.println(rsam.toCSV());
+//		for (final int i : wave.buffer) {
+//			System.out.println(i);
+//		}
+	}
+	
+	
+	/**
 	 * Retrieve a list of channels from a remote Winston.
 	 * 
 	 * @return List of channels
@@ -420,6 +439,13 @@ public class WWSClient extends WaveServer {
 						config.port, config.timeSpan);
 				outputText(config.server, config.port, config.timeSpan, config.channel);
 			}
+			
+			if (config.rsamOutput) {
+				LOGGER.debug("Requesting RSAM {} from {}:{} for {} and writing to TXT.", config.channel, config.server,
+						config.port, config.timeSpan);
+				outputRsam(config.server, config.port, config.timeSpan, config.rsamPeriod, config.channel);
+			}
+
 		} catch (Exception e) {
 			LOGGER.error(e.getLocalizedMessage());
 		}
