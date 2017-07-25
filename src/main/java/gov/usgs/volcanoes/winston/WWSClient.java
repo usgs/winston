@@ -1,8 +1,6 @@
 package gov.usgs.volcanoes.winston;
 
 import java.io.IOException;
-import java.net.SocketTimeoutException;
-import java.nio.ByteBuffer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -13,23 +11,21 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.earthworm.WaveServer;
 import gov.usgs.net.ReadListener;
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.plot.data.file.FileType;
 import gov.usgs.plot.data.file.SeismicDataFile;
-import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
-import gov.usgs.volcanoes.core.util.Retriable;
-import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.client.GetScnlHeliRawHandler;
 import gov.usgs.volcanoes.winston.client.GetScnlRsamRawHandler;
 import gov.usgs.volcanoes.winston.client.GetWaveHandler;
 import gov.usgs.volcanoes.winston.client.MenuHandler;
+import gov.usgs.volcanoes.winston.client.VersionHandler;
+import gov.usgs.volcanoes.winston.client.VersionHolder;
 import gov.usgs.volcanoes.winston.client.WWSClientArgs;
 import gov.usgs.volcanoes.winston.client.WWSClientHandler;
 import gov.usgs.volcanoes.winston.client.WWSCommandHandler;
@@ -51,7 +47,7 @@ import io.netty.util.AttributeKey;
  * @author Dan Cervelli
  * @author Tom Parker
  */
-public class WWSClient extends WaveServer {
+public class WWSClient {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WWSClient.class);
 
 	protected ReadListener readListener;
@@ -59,98 +55,8 @@ public class WWSClient extends WaveServer {
 	private final int port;
 
 	public WWSClient(final String server, final int port) {
-		super(server, port);
-		setTimeout(60000);
-		//
 		this.server = server;
 		this.port = port;
-	}
-
-	public void setReadListener(final ReadListener rl) {
-		readListener = rl;
-	}
-
-	public int getProtocolVersion() {
-		int version = 1;
-		try {
-			if (!connected())
-				connect();
-
-			socket.setSoTimeout(1000);
-			writeString("VERSION\n");
-			final String result = readString();
-			version = Integer.parseInt(result.split(" ")[1]);
-		} catch (final Exception e) {
-		} finally {
-			try {
-				socket.setSoTimeout(timeout);
-			} catch (final Exception e) {
-			}
-		}
-		return version;
-	}
-
-	protected byte[] getData(final String req, final boolean compressed) {
-		byte[] ret = null;
-		final Retriable<byte[]> rt = new Retriable<byte[]>("WWSClient.getData()", maxRetries) {
-			@Override
-			public void attemptFix() {
-				close();
-			}
-
-			@Override
-			public boolean attempt() throws UtilException {
-				try {
-					if (!connected())
-						connect();
-
-					writeString(req);
-					final String info = readString();
-					if (info.startsWith("ERROR")) {
-						logger.warning("Sent: " + req);
-						logger.warning("Got: " + info);
-						return false;
-					}
-
-					final String[] ss = info.split(" ");
-					final int bytes = Integer.parseInt(ss[1]);
-					if (bytes == 0)
-						return true;
-
-					byte[] buf = readBinary(bytes, readListener);
-					if (compressed)
-						buf = Zip.decompress(buf);
-
-					result = buf;
-					return true;
-				} catch (final SocketTimeoutException e) {
-					logger.warning("WWSClient.getData() timeout.");
-				} catch (final IOException e) {
-					logger.warning("WWSClient.getData() IOException: " + e.getMessage());
-				} catch (final NumberFormatException e) {
-					logger.warning(
-							"WWSClent.getData() couldn't parse server response. Is remote server a Winston Wave Server?");
-				}
-				return false;
-			}
-		};
-		try {
-			ret = rt.go();
-		} catch (final UtilException e) {
-			// Do nothing
-		}
-		return ret;
-	}
-
-	public HelicorderData getHelicorder(final String station, final String comp, final String network,
-			final String location, final double start, final double end, final boolean compress) {
-		final String req = String.format(Locale.US, "GETSCNLHELIRAW: GS %s %s %s %s %f %f %s\n", station, comp, network,
-				location, start, end, (compress ? "1" : "0"));
-		final byte[] buf = getData(req, compress);
-		if (buf == null)
-			return null;
-
-		return new HelicorderData(ByteBuffer.wrap(buf));
 	}
 
 	/**
@@ -179,7 +85,7 @@ public class WWSClient extends WaveServer {
 
 			AttributeKey<WWSCommandHandler> handlerKey = WWSClientHandler.handlerKey;
 			// Start the client.
-			io.netty.channel.Channel ch = b.connect(host, port).sync().channel();
+			io.netty.channel.Channel ch = b.connect(server, port).sync().channel();
 			ch.attr(handlerKey).set(handler);
 			System.err.println("Sending: " + req);
 
@@ -197,6 +103,20 @@ public class WWSClient extends WaveServer {
 		}
 	}
 
+	
+	/**
+	 * Return protocol version used by remote winston.
+	 * 
+	 * @return protocol version
+	 */
+	public int getProtocolVersion() {
+		VersionHolder version = new VersionHolder();
+		sendRequest("VERSION", new VersionHandler(version));
+
+		return version.version;
+	}
+
+	
 	/**
 	 * Request RSAM from winston.
 	 * 
@@ -263,6 +183,26 @@ public class WWSClient extends WaveServer {
 		sendRequest(req, new GetWaveHandler(wave, doCompress));
 		wave.setStartTime(st);
 		return new Wave(wave);
+	}
+
+	/**
+	 * Fetch helicorder data from Winston.
+	 * 
+	 * @param station
+	 * @param comp
+	 * @param network
+	 * @param location
+	 * @param start
+	 * @param end
+	 * @param doCompress
+	 * @return
+	 */
+	public HelicorderData getHelicorder(final String station, final String comp, final String network,
+			final String location, final double start, final double end, final boolean doCompress) {
+		Scnl scnl = new Scnl(station, comp, network, location);
+		TimeSpan timeSpan = new TimeSpan(J2kSec.asEpoch(start), J2kSec.asEpoch(end));
+
+		return getHelicorder(scnl, timeSpan, doCompress);
 	}
 
 	/**
