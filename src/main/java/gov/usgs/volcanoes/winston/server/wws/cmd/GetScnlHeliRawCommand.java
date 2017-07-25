@@ -5,10 +5,10 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
+import java.nio.ByteBuffer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
 
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.volcanoes.core.Zip;
@@ -71,7 +71,7 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
       if (cmd.getInt(8) == 1)
         bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
-      LOGGER.warn("returning {} heli bytes", bb.limit());
+      LOGGER.debug("returning {} heli bytes", bb.limit());
       ctx.write(cmd.getID() + " " + bb.limit() + "\n");
       ctx.writeAndFlush(bb.array());
     } else {

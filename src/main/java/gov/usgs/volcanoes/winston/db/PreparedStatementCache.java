@@ -1,9 +1,9 @@
 package gov.usgs.volcanoes.winston.db;
 
-import org.apache.commons.collections.map.LRUMap;
-
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+
+import org.apache.commons.collections.map.LRUMap;
 
 import gov.usgs.volcanoes.core.CodeTimer;
 

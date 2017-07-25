@@ -6,15 +6,15 @@
 package gov.usgs.volcanoes.winston.server;
 
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.apache.log4j.Level;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Console;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.Log;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
@@ -58,7 +58,7 @@ public class WWS {
 
     final WWSArgs config = new WWSArgs(args);
     if (config.isVerbose) {
-      org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+      org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
     }
 
     final WWS wws = new WWS(config.configFileName);
@@ -89,12 +89,16 @@ public class WWS {
           // wws.toggleTrace(s);
         } else if (s.equals("0")) {
           org.apache.log4j.Logger.getRootLogger().setLevel(Level.ERROR);
+          System.out.println("Logging level set to \"Error\"");
         } else if (s.equals("1")) {
           org.apache.log4j.Logger.getRootLogger().setLevel(Level.WARN);
+          System.out.println("Logging level set to \"Warn\"");
         } else if (s.equals("2")) {
           org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
+          System.out.println("Logging level set to \"Info\"");
         } else if (s.equals("3")) {
           org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+          System.out.println("Logging level set to \"All\"");
         } else if (s.equals("?")) {
           WWS.printKeys();
         } else {
@@ -180,7 +184,7 @@ public class WWS {
           public void initChannel(SocketChannel ch) throws Exception {
             connectionStatistics.incrOpenCount();
             final ChannelTrafficShapingHandler trafficCounter =
-                new ChannelTrafficShapingHandler(1000);
+                new ChannelTrafficShapingHandler(3000);
             final InetSocketAddress remoteAddress = ch.remoteAddress();
             connectionStatistics.mapChannel(remoteAddress, trafficCounter);
 

@@ -1,8 +1,5 @@
 package gov.usgs.volcanoes.winston.legacyServer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
@@ -15,6 +12,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.WaveServer;
 import gov.usgs.net.ReadListener;
@@ -86,7 +86,6 @@ public class WWSClient extends WaveServer {
 
           writeString(req);
           final String info = readString();
-System.out.println("Got info: " + info);
           if (info.startsWith("ERROR")) {
             logger.warning("Sent: " + req);
             logger.warning("Got: " + info);
@@ -98,9 +97,7 @@ System.out.println("Got info: " + info);
           if (bytes == 0)
             return true;
           
-System.out.println("start read: " + bytes);
           byte[] buf = readBinary(bytes, readListener);
-System.out.println("Got bytes: " + buf.length);
           if (compressed)
             buf = Zip.decompress(buf);
 

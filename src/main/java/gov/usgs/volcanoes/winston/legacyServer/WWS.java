@@ -4,7 +4,6 @@ package gov.usgs.volcanoes.winston.legacyServer;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.apache.log4j.Level;
@@ -16,14 +15,6 @@ import gov.usgs.volcanoes.core.Log;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Version;
-import gov.usgs.volcanoes.winston.server.PortUnificationDecoder;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.util.concurrent.Future;
 
 /**
  * The Winston Wave Server. This program mimics the network protocol of the Earthworm Wave Server.

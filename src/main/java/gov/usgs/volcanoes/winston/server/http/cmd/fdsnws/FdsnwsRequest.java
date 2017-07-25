@@ -19,6 +19,11 @@ public class FdsnwsRequest {
   public final int majorVersion;
   public final String method;
 
+  /**
+   * Constructor.
+   * 
+   * @param request HTTP request
+   */
   public FdsnwsRequest(FullHttpRequest request) {
     this.request = request;
 

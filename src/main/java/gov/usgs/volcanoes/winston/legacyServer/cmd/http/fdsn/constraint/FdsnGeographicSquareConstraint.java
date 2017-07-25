@@ -3,7 +3,7 @@ package gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.constraint;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.Instrument;
-import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.FdsnException;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 
 /**
  *

@@ -110,9 +110,11 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
       } catch (MalformedCommandException e) {
         response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST,
             e.getLocalizedMessage());
+	LOGGER.debug(e.getLocalizedMessage());
       } catch (UtilException e) {
+        LOGGER.debug(e.getLocalizedMessage());
         response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST,
-            e.getLocalizedMessage());
+            "" + e.getLocalizedMessage());
       }
 
     }

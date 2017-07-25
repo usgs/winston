@@ -76,7 +76,7 @@ public class WwsCommandHandler extends SimpleChannelInboundHandler<WwsCommandStr
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    LOGGER.error("Exception caught in WwsServerHandler.", cause);
+    LOGGER.error("Exception caught in WwsCommandHandler.", cause);
     ctx.close();
   }
 }

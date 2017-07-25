@@ -4,7 +4,7 @@ import java.text.ParseException;
 
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.winston.Channel;
-import gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.FdsnException;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 
 /**
  *

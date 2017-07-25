@@ -1,10 +1,5 @@
 package gov.usgs.volcanoes.winston.tools;
 
-import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -12,6 +7,11 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
 
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.winston.Version;

@@ -17,15 +17,13 @@ import org.slf4j.LoggerFactory;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
-import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.volcanoes.winston.server.http.HttpBaseCommand;
-import gov.usgs.volcanoes.winston.server.http.HttpConstants;
 import gov.usgs.volcanoes.winston.server.http.HttpTemplateConfiguration;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.DataselectService;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.ErrorResponse;
-import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnwsRequest;
+import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.StationService;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -55,6 +53,13 @@ public final class FdsnwsCommand extends HttpBaseCommand {
   }
 
 
+  /**
+   * Execute the command.
+   * 
+   * @param ctx handler context
+   * @param request HTTP request
+   * @throws UtilException when things go wrong
+   */
   public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws UtilException {
     String[] splits = request.getUri().split("/");
     
@@ -108,14 +113,22 @@ public final class FdsnwsCommand extends HttpBaseCommand {
 
   }
   
-  private void dispatch(String service, ChannelHandlerContext ctx, FullHttpRequest request) {
+  private void dispatch(String service, ChannelHandlerContext ctx, FullHttpRequest request) throws UtilException {
     ErrorResponse error;
     switch (service) {
       case "dataselect":
-        DataselectService.dispatch(ctx, request);
+        try {
+          DataselectService.dispatch(databasePool, ctx, request);
+        } catch (FdsnException e) {
+          throw new UtilException(e.getLocalizedMessage());
+        }
         break;
       case "station":
-        StationService.dispatch(ctx, request);
+        try {
+          StationService.dispatch(databasePool, ctx, request);
+        } catch (FdsnException e) {
+          throw new UtilException(e.getLocalizedMessage());
+        }
         break;
       case "event":
         error = new ErrorResponse(ctx);
@@ -132,7 +145,7 @@ public final class FdsnwsCommand extends HttpBaseCommand {
         error.version(VERSION);
         error.status(HttpResponseStatus.BAD_REQUEST);
         error.shortDescription("Bad request");
-        error.detailedDescription("Request cannot be parsed.");
+        error.detailedDescription("Service cannot be parsed.");
         error.sendError();
     }
   }

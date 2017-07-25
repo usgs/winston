@@ -260,7 +260,7 @@ public final class RsamCommand extends HttpBaseCommand {
         HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
     response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, html.length());
     response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/csv; charset=utf-8");
-    response.headers().set("content-Disposition:", "attachment; filename='" + fileName + "'");
+    response.headers().set("content-Disposition", "attachment; filename='" + fileName + "'");
 
     if (HttpHeaders.isKeepAlive(request)) {
       response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);

@@ -1,8 +1,5 @@
 package gov.usgs.volcanoes.winston.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,8 +8,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Locale;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
-import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.Retriable;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;

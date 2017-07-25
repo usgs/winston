@@ -5,10 +5,10 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
+import java.nio.ByteBuffer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
 
 import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
@@ -65,26 +65,28 @@ public class GetWaveRawCommand extends WwsBaseCommand {
       throw new UtilException(e1.getMessage());
     }
 
-
-    try {
-      winston = databasePool.borrowObject();
-      if (!winston.checkConnect()) {
-        LOGGER.error("WinstonDatabase unable to connect to MySQL.");
-      } else {
-        Data data = new Data(winston);
-        wave = data.getWave(cmd.getWinstonSCNL(), st, et, 0);
-      }
-    } catch (Exception e) {
-      LOGGER.error("Unable to fulfill command.", e);
-    } finally {
-      if (winston != null) {
-        databasePool.returnObject(winston);
-      }
-    }
+//
+//    try {
+//      winston = databasePool.borrowObject();
+//      if (!winston.checkConnect()) {
+//        LOGGER.error("WinstonDatabase unable to connect to MySQL.");
+//      } else {
+//        Data data = new Data(winston);
+//        wave = data.getWave(cmd.getWinstonSCNL(), st, et, 0);
+//      }
+//    } catch (Exception e) {
+//      LOGGER.error("Unable to fulfill command.", e);
+//    } finally {
+//      if (winston != null) {
+//        databasePool.returnObject(winston);
+//      }
+//    }
 
     ByteBuffer bb = null;
     if (wave != null && wave.numSamples() > 0)
       bb = (ByteBuffer) wave.toBinary().flip();
+    else 
+      bb = ByteBuffer.allocate(0);
 
     String id = cmd.getID();
 

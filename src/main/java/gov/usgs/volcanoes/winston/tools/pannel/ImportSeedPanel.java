@@ -1,9 +1,6 @@
 package gov.usgs.volcanoes.winston.tools.pannel;
 
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.layout.FormLayout;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -14,6 +11,9 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.FormLayout;
 
 import gov.usgs.volcanoes.winston.in.ImportSeed;
 import gov.usgs.volcanoes.winston.in.StaticImporter;

@@ -6,12 +6,12 @@
 
 package gov.usgs.volcanoes.winston.legacyServer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Parameter;
 import com.martiansoftware.jsap.Switch;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.args.Args;
 import gov.usgs.volcanoes.core.args.Arguments;

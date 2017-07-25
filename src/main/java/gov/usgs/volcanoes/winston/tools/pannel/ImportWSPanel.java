@@ -1,8 +1,5 @@
 package gov.usgs.volcanoes.winston.tools.pannel;
 
-import com.jgoodies.forms.builder.DefaultFormBuilder;
-import com.jgoodies.forms.layout.FormLayout;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -23,6 +20,9 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import com.jgoodies.forms.builder.DefaultFormBuilder;
+import com.jgoodies.forms.layout.FormLayout;
 
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.time.Time;

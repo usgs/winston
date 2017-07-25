@@ -1,13 +1,13 @@
 package gov.usgs.volcanoes.winston.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.DataUtils;

@@ -5,9 +5,6 @@
 
 package gov.usgs.volcanoes.winston.server;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
@@ -17,6 +14,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.time.Time;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
@@ -95,7 +95,7 @@ public class ConnectionStatistics {
   }
 
   public ConnectionStatistics() {
-    LOGGER.warn("Creating new connection stats");
+    LOGGER.debug("Creating new connection stats");
     connectionCount = new AtomicLong(0);
     wwsCount = new AtomicLong(0);
     httpCount = new AtomicLong(0);
@@ -141,7 +141,7 @@ public class ConnectionStatistics {
 
   public void mapChannel(InetSocketAddress remoteAddress,
       ChannelTrafficShapingHandler trafficCounter2) {
-    LOGGER.warn("mapping " + remoteAddress);
+    LOGGER.debug("mapping " + remoteAddress);
     connectionMap.put(remoteAddress, new Connection(remoteAddress.toString(), trafficCounter2));
   }
 

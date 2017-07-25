@@ -41,7 +41,7 @@ public class ImportSAC extends StaticImporter {
         sw.setStartTime(sw.getStartTime() - 1);
       final List<Wave> list = sw.split(1000);
       final Map<String, List<Wave>> map = new HashMap<String, List<Wave>>();
-      map.put(ch, list);
+      map.put(channel, list);
       return map;
     } catch (final Exception e) {
       System.err.println("Error reading file: " + fn);

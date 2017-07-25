@@ -5,9 +5,6 @@
 
 package gov.usgs.volcanoes.winston.server.http.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -17,6 +14,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;

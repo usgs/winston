@@ -1,8 +1,5 @@
 package gov.usgs.volcanoes.winston.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -11,6 +8,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.GroupNode;
@@ -314,9 +314,9 @@ public class Channels {
     try {
       winston.useRootDatabase();
       winston.getStatement()
-          .execute("INSERT INTO channels (code, st, et) VALUES ('" + code + "', 1E300, -1E300)");
+      .execute("CREATE DATABASE `" + winston.databasePrefix + "_" + code + "`");
       winston.getStatement()
-          .execute("CREATE DATABASE `" + winston.databasePrefix + "_" + code + "`");
+          .execute("INSERT INTO channels (code, st, et) VALUES ('" + code + "', 1E300, -1E300)");
       winston.getStatement().execute("USE `" + winston.databasePrefix + "_" + code + "`");
     } catch (final Exception e) {
       LOGGER.error("Could not create channel.  Are permissions set properly?");

@@ -1,8 +1,5 @@
 package gov.usgs.volcanoes.winston.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.sql.Blob;
 import java.sql.PreparedStatement;
@@ -13,6 +10,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.math.DownsamplingType;

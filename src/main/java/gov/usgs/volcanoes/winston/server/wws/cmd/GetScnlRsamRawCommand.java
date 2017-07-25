@@ -5,10 +5,10 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
+import java.nio.ByteBuffer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
 
 import gov.usgs.math.DownsamplingType;
 import gov.usgs.plot.data.RSAMData;
@@ -71,7 +71,7 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
       bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
     if (bb != null) {
-      LOGGER.warn("returning {} rsam bytes", bb.limit());
+      LOGGER.debug("returning {} rsam bytes", bb.limit());
       ctx.write(cmd.getID() + " " + bb.limit() + '\n');
       ctx.writeAndFlush(bb.array());
     }
