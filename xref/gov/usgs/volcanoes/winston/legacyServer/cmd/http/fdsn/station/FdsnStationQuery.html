@@ -8,20 +8,20 @@
 <div id="overview"><a href="../../../../../../../../../../apidocs/gov/usgs/volcanoes/winston/legacyServer/cmd/http/fdsn/station/FdsnStationQuery.html">View Javadoc</a></div><pre>
 <a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.station;
 <a class="jxr_linenumber" name="L2" href="#L2">2</a>   
-<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> org.w3c.dom.DOMImplementation;
-<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> org.w3c.dom.Document;
-<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> org.w3c.dom.Element;
-<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> org.w3c.dom.ls.DOMImplementationLS;
-<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> org.w3c.dom.ls.LSOutput;
-<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> org.w3c.dom.ls.LSSerializer;
-<a class="jxr_linenumber" name="L9" href="#L9">9</a>   
-<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> java.io.StringWriter;
-<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> java.io.Writer;
-<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> java.util.Date;
-<a class="jxr_linenumber" name="L13" href="#L13">13</a>  
-<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> javax.xml.parsers.DocumentBuilder;
-<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> javax.xml.parsers.DocumentBuilderFactory;
-<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> javax.xml.parsers.ParserConfigurationException;
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> java.io.StringWriter;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> java.io.Writer;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> java.util.Date;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> javax.xml.parsers.DocumentBuilder;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> javax.xml.parsers.DocumentBuilderFactory;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> javax.xml.parsers.ParserConfigurationException;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> org.w3c.dom.DOMImplementation;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> org.w3c.dom.Document;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> org.w3c.dom.Element;
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> org.w3c.dom.ls.DOMImplementationLS;
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> org.w3c.dom.ls.LSOutput;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> org.w3c.dom.ls.LSSerializer;
 <a class="jxr_linenumber" name="L17" href="#L17">17</a>  
 <a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> gov.usgs.net.HttpResponse;
 <a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> gov.usgs.net.NetTools;
@@ -31,8 +31,8 @@
 <a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.Channels;
 <a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.db.WinstonDatabase;
 <a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.legacyServer.WWS;
-<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.FdsnException;
-<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.command.FdsnQueryCommand;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.command.FdsnQueryCommand;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 <a class="jxr_linenumber" name="L28" href="#L28">28</a>  
 <a class="jxr_linenumber" name="L29" href="#L29">29</a>  <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L30" href="#L30">30</a>  <em class="jxr_javadoccomment"> *</em>
@@ -66,7 +66,7 @@
 <a class="jxr_linenumber" name="L58" href="#L58">58</a>  
 <a class="jxr_linenumber" name="L59" href="#L59">59</a>    <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> sendText() <strong class="jxr_keyword">throws</strong> FdsnException {
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>      <strong class="jxr_keyword">if</strong> (prunedChanList.length == 0)
-<a class="jxr_linenumber" name="L61" href="#L61">61</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../../../gov/usgs/volcanoes/winston/legacyServer/cmd/http/fdsn/FdsnException.html">FdsnException</a>(404, <span class="jxr_string">"no data"</span>);
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../../../gov/usgs/volcanoes/winston/server/http/cmd/fdsnws/FdsnException.html">FdsnException</a>(404, <span class="jxr_string">"no data"</span>);
 <a class="jxr_linenumber" name="L62" href="#L62">62</a>  
 <a class="jxr_linenumber" name="L63" href="#L63">63</a>      String responseText = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>      <strong class="jxr_keyword">final</strong> String level = arguments.get(<span class="jxr_string">"level"</span>);
@@ -78,7 +78,7 @@
 <a class="jxr_linenumber" name="L70" href="#L70">70</a>      <strong class="jxr_keyword">else</strong> <strong class="jxr_keyword">if</strong> (<span class="jxr_string">"station"</span>.equals(level))
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>        responseText = generateStationText();
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>      <strong class="jxr_keyword">else</strong>
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../../../gov/usgs/volcanoes/winston/legacyServer/cmd/http/fdsn/FdsnException.html">FdsnException</a>(404, <span class="jxr_string">"no data"</span>);
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>        <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../../../gov/usgs/volcanoes/winston/server/http/cmd/fdsnws/FdsnException.html">FdsnException</a>(404, <span class="jxr_string">"no data"</span>);
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>  
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>      <strong class="jxr_keyword">final</strong> HttpResponse response = <strong class="jxr_keyword">new</strong> HttpResponse(<span class="jxr_string">"text/plain"</span>);
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>      response.setLength(responseText.length());
@@ -182,14 +182,14 @@
 <a class="jxr_linenumber" name="L174" href="#L174">174</a> 
 <a class="jxr_linenumber" name="L175" href="#L175">175</a>   <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> sendXml() <strong class="jxr_keyword">throws</strong> FdsnException {
 <a class="jxr_linenumber" name="L176" href="#L176">176</a>     <strong class="jxr_keyword">if</strong> (prunedChanList.length == 0)
-<a class="jxr_linenumber" name="L177" href="#L177">177</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../../../gov/usgs/volcanoes/winston/legacyServer/cmd/http/fdsn/FdsnException.html">FdsnException</a>(404, <span class="jxr_string">"no data"</span>);
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../../../gov/usgs/volcanoes/winston/server/http/cmd/fdsnws/FdsnException.html">FdsnException</a>(404, <span class="jxr_string">"no data"</span>);
 <a class="jxr_linenumber" name="L178" href="#L178">178</a> 
 <a class="jxr_linenumber" name="L179" href="#L179">179</a>     <strong class="jxr_keyword">final</strong> DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 <a class="jxr_linenumber" name="L180" href="#L180">180</a>     DocumentBuilder dBuilder = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L181" href="#L181">181</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L182" href="#L182">182</a>       dBuilder = dbFactory.newDocumentBuilder();
 <a class="jxr_linenumber" name="L183" href="#L183">183</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> ParserConfigurationException e) {
-<a class="jxr_linenumber" name="L184" href="#L184">184</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../../../gov/usgs/volcanoes/winston/legacyServer/cmd/http/fdsn/FdsnException.html">FdsnException</a>(404, <span class="jxr_string">"no data"</span>);
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../../../gov/usgs/volcanoes/winston/server/http/cmd/fdsnws/FdsnException.html">FdsnException</a>(404, <span class="jxr_string">"no data"</span>);
 <a class="jxr_linenumber" name="L185" href="#L185">185</a>     }
 <a class="jxr_linenumber" name="L186" href="#L186">186</a> 
 <a class="jxr_linenumber" name="L187" href="#L187">187</a>     <strong class="jxr_keyword">final</strong> Document doc = dBuilder.newDocument();
@@ -254,7 +254,7 @@
 <a class="jxr_linenumber" name="L246" href="#L246">246</a>     <strong class="jxr_keyword">final</strong> String responseXml = stringWriter.toString();
 <a class="jxr_linenumber" name="L247" href="#L247">247</a> 
 <a class="jxr_linenumber" name="L248" href="#L248">248</a>     <strong class="jxr_keyword">if</strong> (responseXml == <strong class="jxr_keyword">null</strong> || responseXml.length() == 0)
-<a class="jxr_linenumber" name="L249" href="#L249">249</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../../../gov/usgs/volcanoes/winston/legacyServer/cmd/http/fdsn/FdsnException.html">FdsnException</a>(404, <span class="jxr_string">"no data"</span>);
+<a class="jxr_linenumber" name="L249" href="#L249">249</a>       <strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> <a href="../../../../../../../../../gov/usgs/volcanoes/winston/server/http/cmd/fdsnws/FdsnException.html">FdsnException</a>(404, <span class="jxr_string">"no data"</span>);
 <a class="jxr_linenumber" name="L250" href="#L250">250</a>     <strong class="jxr_keyword">else</strong> {
 <a class="jxr_linenumber" name="L251" href="#L251">251</a> 
 <a class="jxr_linenumber" name="L252" href="#L252">252</a>       <strong class="jxr_keyword">final</strong> HttpResponse response = <strong class="jxr_keyword">new</strong> HttpResponse(<span class="jxr_string">"application/xml"</span>);
@@ -351,6 +351,6 @@
 <a class="jxr_linenumber" name="L343" href="#L343">343</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2016. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2017. All rights reserved.</div>
 </body>
 </html>

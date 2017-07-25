@@ -8,17 +8,17 @@
 <div id="overview"><a href="../../../../../../apidocs/gov/usgs/volcanoes/winston/db/Channels.html">View Javadoc</a></div><pre>
 <a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> gov.usgs.volcanoes.winston.db;
 <a class="jxr_linenumber" name="L2" href="#L2">2</a>   
-<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> org.slf4j.Logger;
-<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> org.slf4j.LoggerFactory;
-<a class="jxr_linenumber" name="L5" href="#L5">5</a>   
-<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> java.sql.PreparedStatement;
-<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> java.sql.ResultSet;
-<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> java.util.ArrayList;
-<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> java.util.Collections;
-<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> java.util.Comparator;
-<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> java.util.HashMap;
-<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> java.util.List;
-<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> java.util.Map;
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> java.sql.PreparedStatement;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> java.sql.ResultSet;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> java.util.ArrayList;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> java.util.Collections;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> java.util.Comparator;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> java.util.HashMap;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> java.util.Map;
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> org.slf4j.Logger;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> org.slf4j.LoggerFactory;
 <a class="jxr_linenumber" name="L14" href="#L14">14</a>  
 <a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.Channel;
 <a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> gov.usgs.volcanoes.winston.GroupNode;
@@ -322,9 +322,9 @@
 <a class="jxr_linenumber" name="L314" href="#L314">314</a>     <strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L315" href="#L315">315</a>       winston.useRootDatabase();
 <a class="jxr_linenumber" name="L316" href="#L316">316</a>       winston.getStatement()
-<a class="jxr_linenumber" name="L317" href="#L317">317</a>           .execute(<span class="jxr_string">"INSERT INTO channels (code, st, et) VALUES ('"</span> + code + <span class="jxr_string">"', 1E300, -1E300)"</span>);
+<a class="jxr_linenumber" name="L317" href="#L317">317</a>       .execute(<span class="jxr_string">"CREATE DATABASE `"</span> + winston.databasePrefix + <span class="jxr_string">"_"</span> + code + <span class="jxr_string">"`"</span>);
 <a class="jxr_linenumber" name="L318" href="#L318">318</a>       winston.getStatement()
-<a class="jxr_linenumber" name="L319" href="#L319">319</a>           .execute(<span class="jxr_string">"CREATE DATABASE `"</span> + winston.databasePrefix + <span class="jxr_string">"_"</span> + code + <span class="jxr_string">"`"</span>);
+<a class="jxr_linenumber" name="L319" href="#L319">319</a>           .execute(<span class="jxr_string">"INSERT INTO channels (code, st, et) VALUES ('"</span> + code + <span class="jxr_string">"', 1E300, -1E300)"</span>);
 <a class="jxr_linenumber" name="L320" href="#L320">320</a>       winston.getStatement().execute(<span class="jxr_string">"USE `"</span> + winston.databasePrefix + <span class="jxr_string">"_"</span> + code + <span class="jxr_string">"`"</span>);
 <a class="jxr_linenumber" name="L321" href="#L321">321</a>     } <strong class="jxr_keyword">catch</strong> (<strong class="jxr_keyword">final</strong> Exception e) {
 <a class="jxr_linenumber" name="L322" href="#L322">322</a>       LOGGER.error(<span class="jxr_string">"Could not create channel.  Are permissions set properly?"</span>);
@@ -421,6 +421,6 @@
 <a class="jxr_linenumber" name="L413" href="#L413">413</a> }
 </pre>
 <hr/>
-<div id="footer">Copyright &#169; 2016. All rights reserved.</div>
+<div id="footer">Copyright &#169; 2017. All rights reserved.</div>
 </body>
 </html>

@@ -1,4 +1,5 @@
 gov.usgs.volcanoes.winston
+gov.usgs.volcanoes.winston.client
 gov.usgs.volcanoes.winston.db
 gov.usgs.volcanoes.winston.in
 gov.usgs.volcanoes.winston.in.ew
@@ -15,6 +16,8 @@ gov.usgs.volcanoes.winston.legacyServer.cmd.http.fdsn.station
 gov.usgs.volcanoes.winston.server
 gov.usgs.volcanoes.winston.server.http
 gov.usgs.volcanoes.winston.server.http.cmd
+gov.usgs.volcanoes.winston.server.http.cmd.fdsnws
+gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint
 gov.usgs.volcanoes.winston.server.wws
 gov.usgs.volcanoes.winston.server.wws.cmd
 gov.usgs.volcanoes.winston.tools
