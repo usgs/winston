@@ -45,6 +45,7 @@ public class WWSClientArgs {
 			new Switch("txt", JSAP.NO_SHORTFLAG, "txt", "Write samples as text output."),
 			new Switch("rsam", JSAP.NO_SHORTFLAG, "rsam", "Write RSAM output."),
 			new FlaggedOption("rsamPeriod", JSAP.INTEGER_PARSER, "300", JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "rsamPeriod", "RSAM period."),
+			new Switch("heli", JSAP.NO_SHORTFLAG, "heli", "Write Helicorder output."),
 			new Switch("menu", JSAP.NO_SHORTFLAG, "menu", "Retrieve server menu.") };
 
 	/** If true, log more. */
@@ -56,7 +57,7 @@ public class WWSClientArgs {
 	/** Remote server port. */
 	public final int port;
 
-	/** Timespan to retrieve. */
+	/** Time span to retrieve. */
 	public final TimeSpan timeSpan;
 
 	/** channel to query */
@@ -77,6 +78,9 @@ public class WWSClientArgs {
 	/** RSAM period in seconds*/
 	public final int rsamPeriod;
 	
+	/** If true, write Heli output. */
+	public final boolean heliOutput;
+
 	/**
 	 * Class constructor.
 	 * 
@@ -105,6 +109,7 @@ public class WWSClientArgs {
 		txtOutput = jsapResult.getBoolean("txt");
 		rsamOutput = jsapResult.getBoolean("rsam");
 		rsamPeriod = jsapResult.getInt("rsamPeriod");
+		heliOutput = jsapResult.getBoolean("heli");
 		
 		if (!jsapResult.getBoolean("help")) {
 			LOGGER.debug("Setting: verbose={}", verbose);
@@ -115,9 +120,10 @@ public class WWSClientArgs {
 			LOGGER.debug("Setting sacOutput={}", sacOutput);
 			LOGGER.debug("Setting txtOutput={}", txtOutput);
 			LOGGER.debug("Setting rsamOutput={}", rsamOutput);
+			LOGGER.debug("Setting heliOutput={}", heliOutput);
 		}
 
-		if (sacOutput || txtOutput || rsamOutput) {
+		if (sacOutput || txtOutput || rsamOutput || heliOutput) {
 			if (channel == null) {
 				throw new RuntimeException("No channel provided.");
 			}
