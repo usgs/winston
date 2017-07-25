@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.plot.data.RSAMData;
-import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
 import io.netty.buffer.ByteBuf;
 

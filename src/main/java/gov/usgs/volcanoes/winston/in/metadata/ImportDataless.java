@@ -16,7 +16,6 @@ import edu.iris.Fissures.seed.director.ImportDirector;
 import edu.iris.Fissures.seed.director.SeedImportDirector;
 import gov.usgs.volcanoes.winston.Instrument;
 
-@SuppressWarnings("deprecation")
 public class ImportDataless extends AbstractMetadataImporter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ImportDataless.class);
 

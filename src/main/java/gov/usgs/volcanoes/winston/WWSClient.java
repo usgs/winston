@@ -11,7 +11,6 @@ import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.net.ReadListener;
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.data.Wave;
@@ -50,7 +49,6 @@ import io.netty.util.AttributeKey;
 public class WWSClient {
 	private static final Logger LOGGER = LoggerFactory.getLogger(WWSClient.class);
 
-	protected ReadListener readListener;
 	private final String server;
 	private final int port;
 

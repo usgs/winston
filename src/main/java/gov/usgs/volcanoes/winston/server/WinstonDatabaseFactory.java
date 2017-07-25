@@ -20,7 +20,6 @@ import gov.usgs.volcanoes.winston.db.WinstonDatabase;
  */
 public class WinstonDatabaseFactory extends BasePooledObjectFactory<WinstonDatabase> {
 
-  private final static int DEFAULT_MAX_AGE = Integer.MIN_VALUE;
   final private String driver;
   final private String prefix;
   final private int statementCacheCap;

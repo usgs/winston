@@ -22,7 +22,6 @@ import gov.usgs.volcanoes.core.args.decorator.TimeSpanArg;
 import gov.usgs.volcanoes.core.args.decorator.VerboseArg;
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.TimeSpan;
-import gov.usgs.volcanoes.core.util.StringUtils;
 
 /**
  * Argument processor for WWSClient.
