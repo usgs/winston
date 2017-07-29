@@ -6,6 +6,10 @@
 
 package gov.usgs.volcanoes.winston.server.wws;
 
+import java.util.Arrays;
+
+import gov.usgs.volcanoes.core.data.Scnl;
+
 /**
  * A convenience class for dealing with WWS commands.
  * fields are separated by a single space
@@ -19,9 +23,10 @@ package gov.usgs.volcanoes.winston.server.wws;
  * @author Dan Cervelli
  */
 public class WwsCommandString {
-  private final String commandString;
-  private final String command;
-  private final String[] commandSplits;
+  public final String commandString;
+  public final String command;
+  public final Scnl scnl;
+  public final String[] args;
 
   /**
    * Constructor.
@@ -29,41 +34,28 @@ public class WwsCommandString {
    */
   public WwsCommandString(final String commandString) {
     this.commandString = commandString;
-    commandSplits = commandString.split(" ");
-    String cmd = commandString;
-    int cmdEnd = cmd.indexOf(' ');
-    if (cmdEnd != -1) {
-      cmd = cmd.substring(0, cmdEnd);
-    }
+    String[] commandSplits = commandString.split(" ");
+    String cmd = commandSplits[0];
     if (cmd.endsWith(":")) {
-      cmd = cmd.substring(0, cmd.length() - 1);
+      command = cmd.substring(0, cmd.length() - 1);
+    } else {
+      command = cmd;
     }
 
-    command = cmd;
-  }
-
-  /**
-   * Command name accessor.
-   * @return the command name
-   */
-  public String getCommand() {
-    return command;
-  }
-
-  /**
-   * Full command string accessor.
-   * @return the full command string
-   */
-  public String getCommandString() {
-    return commandString;
-  }
-
-  /**
-   * Command token accessor.
-   * @return command tokens
-   */
-  public String[] getCommandSplits() {
-    return commandSplits;
+    if (commandSplits.length > 5) {
+      scnl = new Scnl(commandSplits[2], commandSplits[3], commandSplits[4], commandSplits[5]);
+      args = Arrays.copyOfRange(commandSplits, 6, commandSplits.length + 1);
+    } else if (commandSplits.length > 4) {
+      scnl = new Scnl(commandSplits[2], commandSplits[3], commandSplits[4]);
+      args = Arrays.copyOfRange(commandSplits, 5, commandSplits.length + 1);
+    } else {
+      scnl = null;
+      if (commandSplits.length > 1) {
+        args = Arrays.copyOfRange(commandSplits, 0, commandSplits.length + 1);
+      } else {
+        args = null;
+      }
+    }
   }
 
   /**
@@ -72,10 +64,10 @@ public class WwsCommandString {
    * @return command token
    */
   public String getString(final int i) {
-    if (i >= commandSplits.length)
+    if (i >= args.length)
       return null;
     else
-      return commandSplits[i];
+      return args[i];
   }
 
   /**
@@ -86,7 +78,7 @@ public class WwsCommandString {
   public int getInt(final int i) {
     int result = Integer.MIN_VALUE;
     try {
-      result = Integer.parseInt(commandSplits[i]);
+      result = Integer.parseInt(args[i]);
     } catch (final Exception e) {
     }
     return result;
@@ -100,7 +92,7 @@ public class WwsCommandString {
   public double getDouble(final int i) {
     double result = Double.NaN;
     try {
-      result = Double.parseDouble(commandSplits[i]);
+      result = Double.parseDouble(args[i]);
     } catch (final Exception e) {
     }
     return result;
@@ -111,25 +103,10 @@ public class WwsCommandString {
    * @return the Id
    */
   public String getID() {
-    if (commandSplits.length < 2)
+    if (args.length < 2)
       return null;
     else
-      return commandSplits[1];
-  }
-
-  /**
-   * $-delimited SNL accessor.
-   * @return the SCNL
-   */
-  public String getWinstonSCNL() {
-    if (commandSplits.length < 6)
-      return null;
-    else {
-      String loc = "";
-      if (!commandSplits[5].equals("--"))
-        loc = "$" + commandSplits[5];
-      return commandSplits[2] + "$" + commandSplits[3] + "$" + commandSplits[4] + loc;
-    }
+      return args[1];
   }
 
   /**
@@ -137,47 +114,19 @@ public class WwsCommandString {
    * @param isScnl if true assume location code is present
    * @return the start time
    */
-  public double getT1(final boolean isScnl) {
-    int ofs = 0;
-    if (isScnl)
-      ofs = 1;
-    if (commandSplits.length < 6 + ofs)
-      return Double.NaN;
-    else
-      return getDouble(5 + ofs);
+  public double getT1() {
+    return Double.parseDouble(args[0]);
   }
-  
+
   /**
    * endTime accessor.
    * @param isScnl if true assume location code is present
    * @return the end time
    */
-  public double getT2(final boolean isScnl) {
-    int ofs = 0;
-    if (isScnl)
-      ofs = 1;
-    if (commandSplits.length < 7 + ofs)
-      return Double.NaN;
-    else
-      return getDouble(6 + ofs);
+  public double getT2() {
+    return Double.parseDouble(args[1]);
   }
 
-  /**
-   * token count accessor.
-   * @return number of tokens
-   */
-  public int length() {
-    return commandSplits.length;
-  }
-
-  /**
-   * Validate token count.
-   * @param cnt number of tokens
-   * @return true if command has expected number of tokens
-   */
-  public boolean isLegal(final int cnt) {
-    return commandSplits.length == cnt;
-  }
 
   /**
    * Validate token count and times.
@@ -185,10 +134,10 @@ public class WwsCommandString {
    * @return true if token count correct and times are found
    */
   public boolean isLegalSCNTT(final int cnt) {
-    if (commandSplits.length != cnt)
+    if (args.length != cnt)
       return false;
 
-    if (Double.isNaN(getT1(false)) || Double.isNaN(getT2(false)))
+    if (Double.isNaN(getT1()) || Double.isNaN(getT2()))
       return false;
 
     return true;
@@ -200,62 +149,12 @@ public class WwsCommandString {
    * @return true if token count correct and times are found
    */
   public boolean isLegalSCNLTT(final int cnt) {
-    if (commandSplits.length != cnt)
+    if (args.length != cnt)
       return false;
 
-    if (Double.isNaN(getT1(true)) || Double.isNaN(getT2(true)))
+    if (Double.isNaN(getT1()) || Double.isNaN(getT2()))
       return false;
 
     return true;
-  }
-
-  /**
-   * Station accessor.
-   * @return station
-   */
-  public String getS() {
-    if (commandSplits.length <= 2)
-      return null;
-
-    return commandSplits[2];
-  }
-
-  /**
-   * Channel accessor.
-   * @return accessor
-   */
-  public String getC() {
-    if (commandSplits.length <= 3)
-      return null;
-
-    return commandSplits[3];
-  }
-
-  /**
-   * Network accessor.
-   * @return network
-   */
-  public String getN() {
-    if (commandSplits.length <= 4)
-      return null;
-
-    return commandSplits[4];
-  }
-
-  /**
-   * Location accessor.
-   * @return location
-   */
-  public String getL() {
-    if (commandSplits.length <= 5)
-      return null;
-
-    return commandSplits[5];
-  }
-
-  // TODO: fix getL() below.
-  public String getEarthwormErrorString(final int sid, final String msg) {
-    return getID() + " " + sid + " " + getS() + " " + getC() + " " + getN() + " " + getL() + " "
-        + msg + "\n";
   }
 }

@@ -41,13 +41,13 @@ public class GetChannelsCommand extends WwsBaseCommand {
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    if (!cmd.isLegal(2) && !cmd.isLegal(3)) {
-      throw new MalformedCommandException();
-    }
-
     final boolean metadata;
-    if ("METADATA".equals(cmd.getString(2))) {
-      metadata = true;
+    if (cmd.args != null) {
+      if (cmd.args.length > 1) {
+        throw new MalformedCommandException();
+      } else {
+        metadata = true;
+      }
     } else {
       metadata = false;
     }

@@ -16,6 +16,6 @@ public class GetScnRawCommand extends GetScnlRawCommand {
    */
   public GetScnRawCommand() {
     super();
-    isScnl = false;
+//    isScnl = false;
   }
 }

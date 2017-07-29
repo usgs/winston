@@ -45,10 +45,10 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
         || cmd.getInt(9) == Integer.MIN_VALUE) {
       throw new MalformedCommandException();
     }
-    final double t1 = cmd.getT1(true);
-    final double t2 = cmd.getT2(true);
+    final double t1 = cmd.getT1();
+    final double t2 = cmd.getT2();
     final int ds = (int) cmd.getDouble(8);
-    final String scnl = cmd.getWinstonSCNL();
+    final String scnl = cmd.scnl.toString("$");
     final DownsamplingType dst = (ds < 2) ? DownsamplingType.NONE : DownsamplingType.MEAN;
 
     RSAMData rsam;

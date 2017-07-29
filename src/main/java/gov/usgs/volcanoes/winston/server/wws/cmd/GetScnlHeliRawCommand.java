@@ -37,15 +37,14 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
     super();
   }
 
-  public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
+  public void doCommand(final ChannelHandlerContext ctx, final WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
     if (!cmd.isLegalSCNLTT(9)) {
       throw new MalformedCommandException();
     }
 
-    final double et = cmd.getT2(true);
-    final double st = cmd.getT1(true);
-    final String scnl = cmd.getWinstonSCNL();
+    final double et = cmd.getT2();
+    final double st = cmd.getT1();
 
     if (et <= st) {
       throw new MalformedCommandException();
@@ -57,7 +56,7 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
 
         public HelicorderData execute(WinstonDatabase winston) throws UtilException {
           Data data = new Data(winston);
-          return data.getHelicorderData(scnl, st, et, 0);
+          return data.getHelicorderData(cmd.scnl.toString("$"), st, et, 0);
         }
       });
     } catch (Exception e1) {

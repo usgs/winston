@@ -12,7 +12,6 @@ public class GetScnCommand extends GetScnlCommand {
    */
   public GetScnCommand() {
     super();
-    isScnl = false;
   }
 
 }

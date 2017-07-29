@@ -82,12 +82,12 @@ public enum WwsCommandFactory {
   public static WwsBaseCommand get(WinstonDatabasePool databasePool, WwsCommandString command)
       throws InstantiationException, IllegalAccessException, UnsupportedCommandException {
     for (WwsCommandFactory cmd : WwsCommandFactory.values()) {
-      if (cmd.toString().equals(command.getCommand())) {
+      if (cmd.toString().equals(command.command)) {
         WwsBaseCommand baseCommand = cmd.clazz.newInstance();
         baseCommand.databasePool(databasePool);
         return baseCommand;
       }
     }
-    throw new UnsupportedCommandException("Unknown WWS command " + command.getCommand());
+    throw new UnsupportedCommandException("Unknown WWS command " + command.command);
   }
 }

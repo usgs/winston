@@ -44,9 +44,9 @@ public class GetWaveRawCommand extends WwsBaseCommand {
 		if (!cmd.isLegalSCNLTT(9))
 			return; // malformed command
 
-		final double et = cmd.getT2(true);
-		final double st = cmd.getT1(true);
-		final String scnl = cmd.getWinstonSCNL();
+		final double et = cmd.getT2();
+		final double st = cmd.getT1();
+		final String scnl = cmd.scnl.toString("$");
 
 		if (st >= et) {
 			throw new MalformedCommandException();

@@ -38,20 +38,20 @@ public class GetScnlRawCommand extends EwDataRequest {
    */
   public GetScnlRawCommand() {
     super();
-    isScnl = true;
+//    isScnl = true;
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    if (cmd.length() < (isScnl ? 8 : 7))
+    if (cmd.args.length < 2)
       throw new MalformedCommandException();
 
     final String id = cmd.getID();
-    final String chan = getChan(cmd, " ");
-    final String code = getChan(cmd, "$");
+    final String chan = cmd.scnl.toString(" ");
+    final String code = cmd.scnl.toString("$");
 
-    final double startTime = Time.ewToj2k(cmd.getT1(isScnl));
-    final double endTime = Time.ewToj2k(cmd.getT2(isScnl));
+    final double startTime = Time.ewToj2k(cmd.getT1());
+    final double endTime = Time.ewToj2k(cmd.getT2());
 
     final Integer chanId = getChanId(code);
     if (chanId == -1) {

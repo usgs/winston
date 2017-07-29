@@ -56,5 +56,6 @@ public class WWSArgs {
     
     configFileName = jsapResult.getString("config-filename");
     LOGGER.debug("Setting: config-filename={}", configFileName);
+    
   }
 }
