@@ -52,7 +52,7 @@ public class MenuCommand extends WwsBaseCommand {
       if ("SCNL".equals(cmd.args[0])) {
         isScnl = true;
       }
-    } else if (cmd.args.length > 1) {
+    } else if (cmd.args != null && cmd.args.length > 1) {
       throw new MalformedCommandException();
     }
 
