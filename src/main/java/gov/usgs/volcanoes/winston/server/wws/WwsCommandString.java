@@ -17,7 +17,8 @@ import gov.usgs.volcanoes.winston.server.MalformedCommandException;
  * A convenience class for dealing with WWS commands.
  * 
  * <req> = <cmd> " " <id> " " [ <args> ] <crlf>
- * <args>  = [ <channel spec> ] <sp> [ <command-specific args> ]
+ * <args>  = <command-specific arg 1> [ <sp> <command-specific arg 2> ]
+ *         | <channel spec> <sp> [ <command-specific args> ]
  * <channel spec> = <SCNL> [ <sp> <time span> ]
  * <SCNL> = <station> <sp> <channel> <sp> <network> <sp> [ <location> ]
  * <time span> = <start time> <sp> <end time>

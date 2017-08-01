@@ -20,7 +20,7 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Tom Parker
  */
 public class VersionCommand extends WwsBaseCommand {
-  private static final int PROTOCOL_VERSION = 3;
+  public static final int PROTOCOL_VERSION = 3;
 
   /**
    * Constructor.
