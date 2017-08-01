@@ -31,13 +31,14 @@ import io.netty.util.AttributeKey;
  */
 public class StatusCommand extends WwsBaseCommand {
 
-  private ConnectionStatistics connectionStatistics;
-
+  private static final int AGE_ARG = 0;
   private static final AttributeKey<ConnectionStatistics> connectionStatsKey;
 
   static {
     connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
   }
+
+  private ConnectionStatistics connectionStatistics;
 
   /**
    * Constructor.
@@ -49,7 +50,7 @@ public class StatusCommand extends WwsBaseCommand {
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    final double ageThreshold = StringUtils.stringToDouble(cmd.getString(2), 0);
+    final double ageThreshold = StringUtils.stringToDouble(cmd.getString(AGE_ARG), 0);
     final double now = J2kSec.fromEpoch(System.currentTimeMillis());
 
     final StringBuilder sb = new StringBuilder();

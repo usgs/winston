@@ -26,6 +26,7 @@ public class WwsCommandString {
   public final String commandString;
   public final String command;
   public final Scnl scnl;
+  public final String id;
   public final String[] args;
 
   /**
@@ -42,6 +43,8 @@ public class WwsCommandString {
       command = cmd;
     }
 
+    id = commandSplits[1];
+    
     if (commandSplits.length > 5) {
       scnl = new Scnl(commandSplits[2], commandSplits[3], commandSplits[4], commandSplits[5]);
       args = Arrays.copyOfRange(commandSplits, 6, commandSplits.length + 1);
@@ -63,22 +66,25 @@ public class WwsCommandString {
    * @param i token index
    * @return command token
    */
-  public String getString(final int i) {
-    if (i >= args.length)
+  public String getString(int index) {
+    index = getIndex(index);
+
+    if (index >= args.length)
       return null;
     else
-      return args[i];
+      return args[index];
   }
 
   /**
    * Command token accessor
-   * @param i token index
+   * @param index token index
    * @return command token
    */
-  public int getInt(final int i) {
+  public int getInt(int index) {
+    index = getIndex(index);
     int result = Integer.MIN_VALUE;
     try {
-      result = Integer.parseInt(args[i]);
+      result = Integer.parseInt(args[index]);
     } catch (final Exception e) {
     }
     return result;
@@ -89,24 +95,22 @@ public class WwsCommandString {
    * @param i token index
    * @return command token
    */
-  public double getDouble(final int i) {
+  public double getDouble(int index) {
+    index = getIndex(index);
     double result = Double.NaN;
     try {
-      result = Double.parseDouble(args[i]);
+      result = Double.parseDouble(args[index]);
     } catch (final Exception e) {
     }
     return result;
   }
 
-  /**
-   * Id accessor.
-   * @return the Id
-   */
-  public String getID() {
-    if (args.length < 2)
-      return null;
-    else
-      return args[1];
+  private int getIndex(int index) {
+    if (index < 0) {
+      return index + args.length;
+    } else {
+      return index;
+    }
   }
 
   /**

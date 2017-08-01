@@ -71,10 +71,10 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
         bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
       LOGGER.debug("returning {} heli bytes", bb.limit());
-      ctx.write(cmd.getID() + " " + bb.limit() + "\n");
+      ctx.write(cmd.id + " " + bb.limit() + "\n");
       ctx.writeAndFlush(bb.array());
     } else {
-      ctx.write(cmd.getID() + " 0\n");
+      ctx.write(cmd.id + " 0\n");
     }
   }
 }

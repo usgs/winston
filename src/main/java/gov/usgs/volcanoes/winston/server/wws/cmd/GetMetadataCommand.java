@@ -46,12 +46,12 @@ public class GetMetadataCommand extends WwsBaseCommand {
     try {
       if ("INSTRUMENT".equals(cmd.args[0])) {
         List<Instrument> instruments = databasePool.doCommand(getInstrumentsConsumer());
-        sb.append(String.format("%s %d\n", cmd.getID(), instruments.size()));
+        sb.append(String.format("%s %d\n", cmd.id, instruments.size()));
         sb.append(getInstrumentMetadata(instruments));
 
       } else if ("CHANNEL".equals(cmd.args[0])) {
         List<Channel> channels = databasePool.doCommand(getChannelsConsumer());
-        sb.append(String.format("%s %d\n", cmd.getID(), channels.size()));
+        sb.append(String.format("%s %d\n", cmd.id, channels.size()));
         sb.append(getChannelMetadata(channels));
       }
     } catch (Exception e) {

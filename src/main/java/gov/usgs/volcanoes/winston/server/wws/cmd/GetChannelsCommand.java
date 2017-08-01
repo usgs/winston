@@ -66,7 +66,7 @@ public class GetChannelsCommand extends WwsBaseCommand {
     }
 
     final StringBuilder sb = new StringBuilder(chs.size() * 60);
-    sb.append(String.format("%s %d\n", cmd.getID(), chs.size()));
+    sb.append(String.format("%s %d\n", cmd.id, chs.size()));
     for (final Channel ch : chs) {
       if (metadata)
         sb.append(ch.toMetadataString() + "\n");

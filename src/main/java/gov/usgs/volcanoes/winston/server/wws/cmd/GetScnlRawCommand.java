@@ -46,7 +46,7 @@ public class GetScnlRawCommand extends EwDataRequest {
     if (cmd.args.length < 2)
       throw new MalformedCommandException();
 
-    final String id = cmd.getID();
+    final String id = cmd.id;
     final String chan = cmd.scnl.toString(" ");
     final String code = cmd.scnl.toString("$");
 

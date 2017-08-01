@@ -35,7 +35,8 @@ import io.netty.channel.ChannelHandlerContext;
 public class MenuCommand extends WwsBaseCommand {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MenuCommand.class);
-
+  private static final int SCNL_ARG = 0;
+  
   /** 
    * Constructor.
    */
@@ -49,14 +50,14 @@ public class MenuCommand extends WwsBaseCommand {
     boolean isScnl = false;
 
     if (cmd.args != null) {
-      if ("SCNL".equals(cmd.args[0])) {
+      if ("SCNL".equals(cmd.args[SCNL_ARG])) {
         isScnl = true;
       }
     } else if (cmd.args != null && cmd.args.length > 1) {
       throw new MalformedCommandException();
     }
 
-    ctx.write(cmd.getID() + " ");
+    ctx.write(cmd.id + " ");
 
     List<Channel> channels;
     try {

@@ -72,7 +72,7 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
 
     if (bb != null) {
       LOGGER.debug("returning {} rsam bytes", bb.limit());
-      ctx.write(cmd.getID() + " " + bb.limit() + '\n');
+      ctx.write(cmd.id + " " + bb.limit() + '\n');
       ctx.writeAndFlush(bb.array());
     }
   }

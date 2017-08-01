@@ -28,77 +28,60 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Tom Parker
  */
 public class GetWaveRawCommand extends WwsBaseCommand {
-	@SuppressWarnings("unused")
-	private static final Logger LOGGER = LoggerFactory.getLogger(GetWaveRawCommand.class);
+  @SuppressWarnings("unused")
+  private static final Logger LOGGER = LoggerFactory.getLogger(GetWaveRawCommand.class);
 
-	/**
-	 * Constructor.
-	 */
-	public GetWaveRawCommand() {
-		super();
-	}
+  /**
+   * Constructor.
+   */
+  public GetWaveRawCommand() {
+    super();
+  }
 
-	public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
-			throws MalformedCommandException, UtilException {
+  public void doCommand(final ChannelHandlerContext ctx, final WwsCommandString cmd)
+      throws MalformedCommandException, UtilException {
 
-		if (!cmd.isLegalSCNLTT(9))
-			return; // malformed command
+    if (cmd.args.length < 6 || cmd.args.length > 7) {
+      throw new MalformedCommandException(
+          String.format("Wring number of arguments. (%s)", cmd.commandString));
+    }
 
-		final double et = cmd.getT2();
-		final double st = cmd.getT1();
-		final String scnl = cmd.scnl.toString("$");
+    final double et = cmd.getT2();
+    final double st = cmd.getT1();
+    if (st >= et) {
+      throw new MalformedCommandException(
+          String.format("End time must be after start time. (%s)", cmd.commandString));
+    }
 
-		if (st >= et) {
-			throw new MalformedCommandException();
-		}
+    Wave wave;
+    try {
+      wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
 
-		WinstonDatabase winston = null;
-		Wave wave;
-		try {
-			wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
+        public Wave execute(WinstonDatabase winston) throws UtilException {
+          Data data = new Data(winston);
+          return data.getWave(cmd.scnl.toString("$"), st, et, 0);
+        }
+      });
+    } catch (Exception e1) {
+      throw new UtilException(e1.getMessage());
+    }
 
-				public Wave execute(WinstonDatabase winston) throws UtilException {
-					Data data = new Data(winston);
-					return data.getWave(scnl, st, et, 0);
-				}
-			});
-		} catch (Exception e1) {
-			throw new UtilException(e1.getMessage());
-		}
+    ByteBuffer bb = null;
+    if (wave != null && wave.numSamples() > 0)
+      bb = (ByteBuffer) wave.toBinary().flip();
+    else
+      bb = ByteBuffer.allocate(0);
 
-		//
-		// try {
-		// winston = databasePool.borrowObject();
-		// if (!winston.checkConnect()) {
-		// LOGGER.error("WinstonDatabase unable to connect to MySQL.");
-		// } else {
-		// Data data = new Data(winston);
-		// wave = data.getWave(cmd.getWinstonSCNL(), st, et, 0);
-		// }
-		// } catch (Exception e) {
-		// LOGGER.error("Unable to fulfill command.", e);
-		// } finally {
-		// if (winston != null) {
-		// databasePool.returnObject(winston);
-		// }
-		// }
+    String id = cmd.id;
 
-		ByteBuffer bb = null;
-		if (wave != null && wave.numSamples() > 0)
-			bb = (ByteBuffer) wave.toBinary().flip();
-		else
-			bb = ByteBuffer.allocate(0);
+    if (cmd.getInt(-1) == 1)
+      bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
-		String id = cmd.getID();
-
-		if (cmd.getInt(8) == 1)
-			bb = ByteBuffer.wrap(Zip.compress(bb.array()));
-
-		if (bb != null) {
-			ctx.write(id + " " + bb.limit() + "\n");
-			ctx.writeAndFlush(bb.array());
-		} else {
-			throw new UtilException("Unable to compress results.");
-		}
-	}
+    if (bb != null) {
+      ctx.write(id + " " + bb.limit() + "\n");
+      ctx.writeAndFlush(bb.array());
+    } else {
+      throw new UtilException("Unable to compress results.");
+    }
+  }
 }
