@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -46,20 +48,22 @@ public class GetWaveRawCommand extends WwsBaseCommand {
           String.format("Wring number of arguments. (%s)", cmd.commandString));
     }
 
-    final double et = cmd.getT2();
-    final double st = cmd.getT1();
+    TimeSpan ts = cmd.getTimeSpan();
+    final double st = J2kSec.fromEpoch(ts.startTime);
+    final double et = J2kSec.fromEpoch(ts.endTime);
     if (st >= et) {
       throw new MalformedCommandException(
           String.format("End time must be after start time. (%s)", cmd.commandString));
     }
 
+    final String code = cmd.getScnl().toString("$");
     Wave wave;
     try {
       wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
 
         public Wave execute(WinstonDatabase winston) throws UtilException {
           Data data = new Data(winston);
-          return data.getWave(cmd.scnl.toString("$"), st, et, 0);
+          return data.getWave(code, st, et, 0);
         }
       });
     } catch (Exception e1) {

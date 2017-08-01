@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -39,24 +41,26 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
 
   public void doCommand(final ChannelHandlerContext ctx, final WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    if (!cmd.isLegalSCNLTT(9)) {
+    if (cmd.args.length < 9) {
       throw new MalformedCommandException();
     }
 
-    final double et = cmd.getT2();
-    final double st = cmd.getT1();
+    TimeSpan ts = cmd.getTimeSpan();
+    final double st = J2kSec.fromEpoch(ts.startTime);
+    final double et = J2kSec.fromEpoch(ts.endTime);
 
     if (et <= st) {
       throw new MalformedCommandException();
     }
 
+    final String code = cmd.getScnl().toString("$");
     HelicorderData heli;
     try {
       heli = databasePool.doCommand(new WinstonConsumer<HelicorderData>() {
 
         public HelicorderData execute(WinstonDatabase winston) throws UtilException {
           Data data = new Data(winston);
-          return data.getHelicorderData(cmd.scnl.toString("$"), st, et, 0);
+          return data.getHelicorderData(code, st, et, 0);
         }
       });
     } catch (Exception e1) {

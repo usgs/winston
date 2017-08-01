@@ -3,6 +3,14 @@
 ## Protocol Description
 Winston commands take the form of a single line of text terminated by <CRLF>. The line of text begins with a command name followed by a request id, separated by a space. Arguments for a command follow the request id separated by a space. 
 
+	<req> = <cmd> <sp> <id> [<sp> <args> ] <crlf>
+	<args>	= [ <channel spec> ] <sp> [ <command-specific args> ]
+	<channel spec> = <SCNL> [ <sp> <time span> ]
+	<SCNL> = <station> <sp> <channel> <sp> <network> <sp> [ <location> ]
+	<time span> = <start time> <sp> <end time>
+	<start time> = <J2kSec>
+	<end time> = <J2kSec>
+
 The Winston protocol is descended from the protocol used by Earthworm's wave_serverV.
 
 ## Winston Commands

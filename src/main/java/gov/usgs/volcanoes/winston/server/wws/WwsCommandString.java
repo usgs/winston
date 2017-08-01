@@ -9,23 +9,29 @@ package gov.usgs.volcanoes.winston.server.wws;
 import java.util.Arrays;
 
 import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
+import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 
 /**
  * A convenience class for dealing with WWS commands.
- * fields are separated by a single space
- * position 0: command optionally followed by a colon
- * position 1: id
- * positions 2 through 4: SCN
- * positions 2 through 5: SCNL
- * position 5 or 6: start time
- * position 6 or 7: end time
- *
+ * 
+ * <req> = <cmd> " " <id> " " [ <args> ] <crlf>
+ * <args>  = [ <channel spec> ] <sp> [ <command-specific args> ]
+ * <channel spec> = <SCNL> [ <sp> <time span> ]
+ * <SCNL> = <station> <sp> <channel> <sp> <network> <sp> [ <location> ]
+ * <time span> = <start time> <sp> <end time>
+ * <start time> = <J2kSec>
+ * <end time> = <J2kSec>
+ * 
  * @author Dan Cervelli
+ * @author Tom Parker
  */
 public class WwsCommandString {
   public final String commandString;
   public final String command;
-  public final Scnl scnl;
+  private Scnl scnl;
+  private TimeSpan timeSpan;
   public final String id;
   public final String[] args;
 
@@ -44,31 +50,21 @@ public class WwsCommandString {
     }
 
     id = commandSplits[1];
-    
-    if (commandSplits.length > 5) {
-      scnl = new Scnl(commandSplits[2], commandSplits[3], commandSplits[4], commandSplits[5]);
-      args = Arrays.copyOfRange(commandSplits, 6, commandSplits.length + 1);
-    } else if (commandSplits.length > 4) {
-      scnl = new Scnl(commandSplits[2], commandSplits[3], commandSplits[4]);
-      args = Arrays.copyOfRange(commandSplits, 5, commandSplits.length + 1);
+
+    if (commandSplits.length > 2) {
+      args = Arrays.copyOfRange(commandSplits, 2, commandSplits.length - 1);
     } else {
-      scnl = null;
-      if (commandSplits.length > 1) {
-        args = Arrays.copyOfRange(commandSplits, 0, commandSplits.length + 1);
-      } else {
-        args = null;
-      }
+      args = null;
     }
   }
 
   /**
    * Command token accessor.
-   * @param i token index
+   * @param index token index
    * @return command token
    */
   public String getString(int index) {
     index = getIndex(index);
-
     if (index >= args.length)
       return null;
     else
@@ -79,28 +75,32 @@ public class WwsCommandString {
    * Command token accessor
    * @param index token index
    * @return command token
+   * @throws MalformedCommandException When int cannot be parsed
    */
-  public int getInt(int index) {
+  public int getInt(int index) throws MalformedCommandException {
     index = getIndex(index);
-    int result = Integer.MIN_VALUE;
+    int result;
     try {
       result = Integer.parseInt(args[index]);
-    } catch (final Exception e) {
+    } catch (final  NumberFormatException ex) {
+      throw new MalformedCommandException(ex.getLocalizedMessage());
     }
     return result;
   }
 
   /**
    * Command token accessor
-   * @param i token index
+   * @param index token index
    * @return command token
+   * @throws MalformedCommandException  when double cannot be parsed
    */
-  public double getDouble(int index) {
+  public double getDouble(int index) throws MalformedCommandException {
     index = getIndex(index);
-    double result = Double.NaN;
+    double result;
     try {
       result = Double.parseDouble(args[index]);
-    } catch (final Exception e) {
+    } catch (final NumberFormatException ex) {
+      throw new MalformedCommandException(ex.getLocalizedMessage());
     }
     return result;
   }
@@ -114,51 +114,46 @@ public class WwsCommandString {
   }
 
   /**
-   * startTime accessor.
-   * @param isScnl if true assume location code is present
-   * @return the start time
+   * Return command SCN or SCNL. This will always be the first arg.
+   * 
+   * @return the scnl channel requested
+   * @throws MalformedCommandException when arg list is too short
    */
-  public double getT1() {
-    return Double.parseDouble(args[0]);
+  public synchronized Scnl getScnl() throws MalformedCommandException {
+    if (scnl == null) {
+      if (args.length > 3) {
+        scnl = new Scnl(args[0], args[1], args[2], args[3]);
+      } else if (args.length > 2) {
+        scnl = new Scnl(args[0], args[1], args[2]);
+      } else {
+        throw new MalformedCommandException("Not enough args for SCN");
+      }
+    }
+    return scnl;
   }
 
   /**
-   * endTime accessor.
-   * @param isScnl if true assume location code is present
-   * @return the end time
+   * Return command time stamp. Timestamp always immediately follows a SCN or SCNL.
+   * 
+   * @return Request time span
+   * @throws MalformedCommandException when arg list is too short
    */
-  public double getT2() {
-    return Double.parseDouble(args[1]);
-  }
+  public synchronized TimeSpan getTimeSpan() throws MalformedCommandException {
+    if (timeSpan == null) {
+      int index = Integer.MAX_VALUE;
+      if (args.length > 5) {
+        index = 4;
+      } else if (args.length > 4) {
+        index = 3;
+      } else {
+        throw new MalformedCommandException("Can't find time in arg list.");
+      }
 
+      double st = Double.parseDouble(args[index]);
+      double et = Double.parseDouble(args[index + 1]);
+      timeSpan = new TimeSpan(J2kSec.asEpoch(st), J2kSec.asEpoch(et));
+    }
 
-  /**
-   * Validate token count and times.
-   * @param cnt number of tokens
-   * @return true if token count correct and times are found
-   */
-  public boolean isLegalSCNTT(final int cnt) {
-    if (args.length != cnt)
-      return false;
-
-    if (Double.isNaN(getT1()) || Double.isNaN(getT2()))
-      return false;
-
-    return true;
-  }
-
-  /**
-   * Validate token count and times.
-   * @param cnt number of tokens
-   * @return true if token count correct and times are found
-   */
-  public boolean isLegalSCNLTT(final int cnt) {
-    if (args.length != cnt)
-      return false;
-
-    if (Double.isNaN(getT1()) || Double.isNaN(getT2()))
-      return false;
-
-    return true;
+    return timeSpan;
   }
 }

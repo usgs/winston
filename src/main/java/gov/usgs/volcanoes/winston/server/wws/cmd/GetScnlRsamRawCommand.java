@@ -13,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.math.DownsamplingType;
 import gov.usgs.plot.data.RSAMData;
 import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -40,22 +42,22 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-
-    if (!cmd.isLegalSCNLTT(10) || Double.isNaN(cmd.getDouble(8))
-        || cmd.getInt(9) == Integer.MIN_VALUE) {
-      throw new MalformedCommandException();
+    if (cmd.args.length < 8) {
+      throw new MalformedCommandException("Not enough args");
     }
-    final double t1 = cmd.getT1();
-    final double t2 = cmd.getT2();
+
+    TimeSpan ts = cmd.getTimeSpan();
+    final double st = J2kSec.fromEpoch(ts.startTime);
+    final double et = J2kSec.fromEpoch(ts.endTime);
     final int ds = (int) cmd.getDouble(8);
-    final String scnl = cmd.scnl.toString("$");
+    final String scnl = cmd.getScnl().toString("$");
     final DownsamplingType dst = (ds < 2) ? DownsamplingType.NONE : DownsamplingType.MEAN;
 
     RSAMData rsam;
     try {
       rsam = databasePool.doCommand(new WinstonConsumer<RSAMData>() {
         public RSAMData execute(WinstonDatabase winston) throws UtilException {
-          return new Data(winston).getRSAMData(scnl, t1, t2, 0, dst, ds);
+          return new Data(winston).getRSAMData(scnl, st, et, 0, dst, ds);
         }
 
       });

@@ -11,6 +11,7 @@ import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -43,11 +44,12 @@ public class GetScnlCommand extends EwDataRequest {
       throw new MalformedCommandException();
 
     final String id = cmd.id;
-    final String chan = cmd.scnl.toString(" ");
-    final String code = cmd.scnl.toString("$");
+    final String chan = cmd.getScnl().toString(" ");
+    final String code = cmd.getScnl().toString("$");
 
-    final double startTime = Time.ewToj2k(cmd.getT1());
-    final double endTime = Time.ewToj2k(cmd.getT2());
+    TimeSpan ts = cmd.getTimeSpan();
+    final double startTime = Time.ewToj2k(ts.startTime);
+    final double endTime = Time.ewToj2k(ts.endTime);
 
     final Integer chanId = getChanId(code);
     if (chanId == -1) {
