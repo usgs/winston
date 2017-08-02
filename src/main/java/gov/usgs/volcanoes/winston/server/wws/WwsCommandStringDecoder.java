@@ -8,6 +8,10 @@ package gov.usgs.volcanoes.winston.server.wws;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 
@@ -19,8 +23,14 @@ import io.netty.handler.codec.MessageToMessageDecoder;
  */
 public class WwsCommandStringDecoder extends MessageToMessageDecoder<String> {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(WwsCommandStringDecoder.class);
+  
   @Override
   protected void decode(ChannelHandlerContext ctx, String command, List<Object> out) {
-    out.add(new WwsCommandString(command));
+    try {
+      out.add(new WwsCommandString(command));
+    } catch (MalformedCommandException ex) {
+      LOGGER.info("Bad request: {}", ex);
+    }
   }
 }

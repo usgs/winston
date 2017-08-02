@@ -158,36 +158,7 @@ public class WinstonDatabase {
     return sv;
   }
 
-//  private boolean execute(final String sql) {
-//    Boolean b = null;
-//    try {
-//      b = new Retriable<Boolean>() {
-//        @Override
-//        public void attemptFix() {
-//          close();
-//          connect();
-//        }
-//
-//        @Override
-//        public boolean attempt() throws UtilException {
-//          try {
-//            winstonStatement.execute(sql);
-//            result = new Boolean(true);
-//            return true;
-//          } catch (final SQLException e) {
-//            LOGGER.error("execute() failed, SQL: {}. ({})", sql, e);
-//          }
-//          result = new Boolean(false);
-//          return false;
-//        }
-//      }.go();
-//    } catch (final UtilException e) {
-//      // Do nothing
-//    }
-//    return b != null && b.booleanValue();
-//  }
-
-  public ResultSet executeQuery(final String sql) {
+  public ResultSet executeQuery(final String sql) throws DbException {
     ResultSet rs = null;
     try {
       rs = new Retriable<ResultSet>() {
@@ -208,9 +179,14 @@ public class WinstonDatabase {
           return false;
         }
       }.go();
-    } catch (final UtilException e) {
-      // Do nothing
+    } catch (UtilException e) {
+      throw new DbException(e.getLocalizedMessage());
     }
+
+    if (rs == null) {
+      throw new DbException("Cannot execute query");
+    }
+
     return rs;
   }
 

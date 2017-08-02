@@ -26,6 +26,8 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * Return Channel details.
  * 
+ * <cmd> = "GETWAVERAW" <sp> <id> <sp> <scnl> <sp> <time span>
+ * 
  * @author Dan Cervelli
  * @author Tom Parker
  */
@@ -43,10 +45,7 @@ public class GetWaveRawCommand extends WwsBaseCommand {
   public void doCommand(final ChannelHandlerContext ctx, final WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    if (cmd.args.length < 6 || cmd.args.length > 7) {
-      throw new MalformedCommandException(
-          String.format("Wring number of arguments. (%s)", cmd.commandString));
-    }
+    final String code = cmd.getScnl().toString("$");
 
     TimeSpan ts = cmd.getTimeSpan();
     final double st = J2kSec.fromEpoch(ts.startTime);
@@ -55,12 +54,10 @@ public class GetWaveRawCommand extends WwsBaseCommand {
       throw new MalformedCommandException(
           String.format("End time must be after start time. (%s)", cmd.commandString));
     }
-
-    final String code = cmd.getScnl().toString("$");
+    
     Wave wave;
     try {
       wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
-
         public Wave execute(WinstonDatabase winston) throws UtilException {
           Data data = new Data(winston);
           return data.getWave(code, st, et, 0);

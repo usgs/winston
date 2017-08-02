@@ -40,9 +40,12 @@ public class WwsCommandString {
    * Constructor.
    * @param commandString my command string
    */
-  public WwsCommandString(final String commandString) {
+  public WwsCommandString(final String commandString) throws MalformedCommandException {
     this.commandString = commandString;
     String[] commandSplits = commandString.split(" ");
+    if (commandSplits.length < 2) {
+      throw new MalformedCommandException("command string too short");
+    }
     String cmd = commandSplits[0];
     if (cmd.endsWith(":")) {
       command = cmd.substring(0, cmd.length() - 1);

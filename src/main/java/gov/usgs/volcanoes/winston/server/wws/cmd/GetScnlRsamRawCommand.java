@@ -26,6 +26,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Return Channel details.
+ * <cmd> = "GETSCNLRSAMRAW" <sp> <id> <sp> <scnl> <sp> <time span> <downsampling factor> 
  * 
  * @author Dan Cervelli
  * @author Tom Parker
@@ -42,15 +43,14 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    if (cmd.args.length < 8) {
-      throw new MalformedCommandException("Not enough args");
-    }
+
+    final String scnl = cmd.getScnl().toString("$");
 
     TimeSpan ts = cmd.getTimeSpan();
     final double st = J2kSec.fromEpoch(ts.startTime);
     final double et = J2kSec.fromEpoch(ts.endTime);
-    final int ds = (int) cmd.getDouble(8);
-    final String scnl = cmd.getScnl().toString("$");
+    
+    final int ds = cmd.getInt(-1);
     final DownsamplingType dst = (ds < 2) ? DownsamplingType.NONE : DownsamplingType.MEAN;
 
     RSAMData rsam;

@@ -50,7 +50,7 @@ public class MenuCommand extends WwsBaseCommand {
     boolean isScnl = false;
 
     if (cmd.args != null) {
-      if ("SCNL".equals(cmd.args[SCNL_ARG])) {
+      if (cmd.args.length == 1 && "SCNL".equals(cmd.args[SCNL_ARG])) {
         isScnl = true;
       }
     } else if (cmd.args != null && cmd.args.length > 1) {

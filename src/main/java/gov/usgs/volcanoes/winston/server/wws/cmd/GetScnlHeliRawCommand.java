@@ -25,6 +25,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Return Channel details.
+ * <cmd> = "GETSCNLHELIRAW" <sp> <id> <scnl> <time span>
  * 
  * @author Dan Cervelli
  * @author Tom Parker
@@ -41,19 +42,16 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
 
   public void doCommand(final ChannelHandlerContext ctx, final WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    if (cmd.args.length < 9) {
-      throw new MalformedCommandException();
-    }
+
+    final String code = cmd.getScnl().toString("$");
 
     TimeSpan ts = cmd.getTimeSpan();
     final double st = J2kSec.fromEpoch(ts.startTime);
     final double et = J2kSec.fromEpoch(ts.endTime);
-
     if (et <= st) {
       throw new MalformedCommandException();
     }
 
-    final String code = cmd.getScnl().toString("$");
     HelicorderData heli;
     try {
       heli = databasePool.doCommand(new WinstonConsumer<HelicorderData>() {

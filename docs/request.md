@@ -21,39 +21,47 @@ Winston commands consist of a sequence of characters optionally terminated by a 
 The request id is returned with the request response and can be used to pair issued requests with a response.
 
 ## MENU
-<cmd> = MENU <id> ["SCNL"]
+    <cmd> = "MENU" <sp> <id> [<sp> "SCNL"]
 
 The MENU command optionally takes the string "SCNL" as its only argument. If the "SCNL" argument is provided, location codes will be included in the returned menu.
 
 ## STATUS
-<cmd> = MENU <id> [<timeout>]
+    <cmd> = "STATUS" <sp> <id> [<sp> <timeout>]
 
 The STATUS command optionally takes a single floating point number as its only argument. If a number is given, channels with no data within that number of seconds will not be used in determining the medial data age of operational channels.
 
 ## VERSION
-<cmd> = VERSION <id>
+    <cmd> = "VERSION" <sp> <id>
 
 The VERSION command takes no arguments.
 
 ## GETWAVERAW
-<cmd> = GETWAVERAW <id> <start time> <end time> <station> <channel> <network> [<location>] <compress>
+    <cmd> = "GETWAVERAW" <sp> <id> <sp> <channel spec> <sp> <compress>
+    <compress> = 0 | 1
 
 ## GETCHANNELS  
+    <cmd> = "GETCHANNELS" <sp> <id> [ <sp> "METADATA" ]
 
 ## GETMETADATA
+    <cmd> = "GETMETADATA" <sp> <id> <sp> ( "INSTRUMENT" | "CHANNEL" )
 
 ## GETSCNLHELIRAW
+    <cmd> = "GETSCNLHELIRAW" <sp> <id> <sp> <scnl> <sp> <time span>
 
 ## GETWAVERAW
+    <cmd> = "GETWAVERAW" <sp> <id> <sp> <scnl> <sp> <time span>
 
 ## GETSCNLRSAMRAW
+    <cmd> = "GETSCNLRSAMRAW" <sp> <id> <sp> <scnl> <sp> <time span> <downsampling factor>
 
 ## GETSCNRAW  
-<cmd> = GETSCNRAW <id> <start time> <end time> <station> <channel> <network>
+    <cmd> = "GETSCNRAW" <sp> <id> <sp> <scnl> <sp> <time span>
 
 ## GETSCNLRAW
-<cmd> = GETSCNLRAW <id> <start time> <end time> <station> <channel> <network> <location>
+    <cmd> = "GETSCNLRAW" <sp> <id> <sp> <scnl> <sp> <time span>
 
 ## GETSCN
+    <cmd> = "GETSCN" <sp> <id>  <sp> <scnl> <sp> <time span>
 
 ## GETSCNL
+    <cmd> = "GETSCNL" <sp> <id> <sp> <scnl> <sp> <time span>

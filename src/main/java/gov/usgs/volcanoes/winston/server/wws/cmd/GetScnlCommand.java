@@ -23,6 +23,8 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * 
  * @author Tom Parker
+ * 
+ * <cmd> = "GETSCNL" <sp> <id> <sp> <channel spec>
  *
  */
 public class GetScnlCommand extends EwDataRequest {
@@ -40,22 +42,19 @@ public class GetScnlCommand extends EwDataRequest {
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
     
-    if (cmd.args.length != 3)
-      throw new MalformedCommandException();
-
     final String id = cmd.id;
     final String chan = cmd.getScnl().toString(" ");
     final String code = cmd.getScnl().toString("$");
-
-    TimeSpan ts = cmd.getTimeSpan();
-    final double startTime = Time.ewToj2k(ts.startTime);
-    final double endTime = Time.ewToj2k(ts.endTime);
 
     final Integer chanId = getChanId(code);
     if (chanId == -1) {
       ctx.writeAndFlush(id + " " + id + " 0 " + chan + " FN\n");
       return;
     }
+
+    TimeSpan ts = cmd.getTimeSpan();
+    final double startTime = Time.ewToj2k(ts.startTime);
+    final double endTime = Time.ewToj2k(ts.endTime);
 
     final double[] timeSpan = getTimeSpan(chanId);
 

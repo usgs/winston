@@ -22,8 +22,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Return Channel details.
- * 
- * request = /^GETCHANNELS:? GC( METADATA)?$/
+ * cmd = "GETCHANNELS" <sp> <id> [ <sp> "METADATA" ]
  *
  * @author Dan Cervelli
  * @author Tom Parker
@@ -38,19 +37,11 @@ public class GetChannelsCommand extends WwsBaseCommand {
     super();
   }
 
+  
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    final boolean metadata;
-    if (cmd.args != null) {
-      if (cmd.args.length > 1) {
-        throw new MalformedCommandException();
-      } else {
-        metadata = true;
-      }
-    } else {
-      metadata = false;
-    }
+    final boolean metadata = wantsMetadata(cmd);
 
     List<Channel> chs = null;
     try {
@@ -75,5 +66,20 @@ public class GetChannelsCommand extends WwsBaseCommand {
     }
     LOGGER.info("maxDays = {}", maxDays);
     ctx.writeAndFlush(sb.toString());
+  }
+  
+  
+  private boolean wantsMetadata(WwsCommandString cmd) throws MalformedCommandException {
+    boolean metadata;
+    if (cmd.args != null) {
+      if (cmd.args.length == 1 && "METADATA".equals(cmd.getString(0))) {
+        metadata = true;
+      } else {
+        throw new MalformedCommandException();
+      }
+    } else {
+      metadata = false;
+    }
+    return metadata;
   }
 }

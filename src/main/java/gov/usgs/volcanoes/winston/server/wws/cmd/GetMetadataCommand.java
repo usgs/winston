@@ -22,8 +22,8 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * Return Channel details.
  * 
- * request = /^GETMETADATA:? (INSTRUMENT|CHANNEL)$/
- *
+ * cmd = "GETMETADATA" <sp> <id> <sp> ( "INSTRUMENT" | "CHANNEL" )
+ * 
  * @author Dan Cervelli
  * @author Tom Parker
  */
@@ -53,9 +53,13 @@ public class GetMetadataCommand extends WwsBaseCommand {
         List<Channel> channels = databasePool.doCommand(getChannelsConsumer());
         sb.append(String.format("%s %d\n", cmd.id, channels.size()));
         sb.append(getChannelMetadata(channels));
+      } else {
+        throw new MalformedCommandException("Missing argument");
       }
-    } catch (Exception e) {
-      throw new UtilException(e.toString());
+    } catch (MalformedCommandException ex) {
+      throw ex;
+    } catch (Exception ex) {
+      throw new UtilException(ex.toString());
     }
 
     ctx.writeAndFlush(sb.toString());
