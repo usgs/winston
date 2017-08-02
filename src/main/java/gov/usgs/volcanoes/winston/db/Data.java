@@ -397,6 +397,7 @@ public class Data {
 
   public HelicorderData getHelicorderData(final String code, final double t1, final double t2,
       final int maxrows) throws UtilException {
+    System.out.println("TOMP REQUEST: " + code);
     if (!winston.checkConnect() || !winston.useDatabase(code))
       return null;
     try {

@@ -43,9 +43,6 @@ public class WwsCommandString {
   public WwsCommandString(final String commandString) throws MalformedCommandException {
     this.commandString = commandString;
     String[] commandSplits = commandString.split(" ");
-    if (commandSplits.length < 2) {
-      throw new MalformedCommandException("command string too short");
-    }
     String cmd = commandSplits[0];
     if (cmd.endsWith(":")) {
       command = cmd.substring(0, cmd.length() - 1);
@@ -53,10 +50,14 @@ public class WwsCommandString {
       command = cmd;
     }
 
-    id = commandSplits[1];
+    if (commandSplits.length > 1) {
+      id = commandSplits[1];
+    } else {
+      id = null;
+    }
 
     if (commandSplits.length > 2) {
-      args = Arrays.copyOfRange(commandSplits, 2, commandSplits.length - 1);
+      args = Arrays.copyOfRange(commandSplits, 2, commandSplits.length);
     } else {
       args = null;
     }
@@ -86,7 +87,7 @@ public class WwsCommandString {
     int result;
     try {
       result = Integer.parseInt(args[index]);
-    } catch (final  NumberFormatException ex) {
+    } catch (final NumberFormatException ex) {
       throw new MalformedCommandException(ex.getLocalizedMessage());
     }
     return result;

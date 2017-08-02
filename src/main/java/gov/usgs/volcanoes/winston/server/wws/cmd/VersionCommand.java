@@ -14,7 +14,7 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * Return the server menu
  * 
- * request = /^MENU:? \d( SCNL)?$/
+ * <cdm> = "VERSION"
  *
  * @author Dan Cervelli
  * @author Tom Parker

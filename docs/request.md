@@ -31,7 +31,7 @@ The MENU command optionally takes the string "SCNL" as its only argument. If the
 The STATUS command optionally takes a single floating point number as its only argument. If a number is given, channels with no data within that number of seconds will not be used in determining the medial data age of operational channels.
 
 ## VERSION
-    <cmd> = "VERSION" <sp> <id>
+    <cmd> = "VERSION"
 
 The VERSION command takes no arguments.
 

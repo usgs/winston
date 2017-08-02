@@ -75,7 +75,7 @@ public class GetChannelsCommand extends WwsBaseCommand {
       if (cmd.args.length == 1 && "METADATA".equals(cmd.getString(0))) {
         metadata = true;
       } else {
-        throw new MalformedCommandException();
+        throw new MalformedCommandException("Cannot understand command: " + cmd.args[0]);
       }
     } else {
       metadata = false;
