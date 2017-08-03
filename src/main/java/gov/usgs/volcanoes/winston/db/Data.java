@@ -20,6 +20,7 @@ import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
 
@@ -58,21 +59,10 @@ public class Data {
    *          channel code
    * @return Array of start and end times
    */
-  public double[] getTimeSpan(final String code) {
-    if (!winston.checkConnect())
-      return null;
-    try {
-      final ResultSet rs = winston.getStatement().executeQuery("SELECT st, et FROM `"
-          + winston.databasePrefix + "_ROOT`.channels WHERE code='" + code + "'");
-      rs.next();
-      final double[] d = new double[] {rs.getDouble(1), rs.getDouble(2)};
-      rs.close();
-      return d;
-    } catch (final Exception e) {
-      LOGGER.error("Could not get time span for channel: {}. ({})", code, e.getLocalizedMessage());
-    }
-    return null;
+  public double[] getTimeSpan(final Scnl scnl) {
+    return getTimeSpan(DbUtils.scnlAsWinstonCode(scnl));
   }
+  
 
   /**
    * Get timespan for specific channel
@@ -84,6 +74,30 @@ public class Data {
   public double[] getTimeSpan(final int sid) {
     final String code = channels.getChannelCode(sid);
     return getTimeSpan(code);
+  }
+
+  
+  /**
+   * Get timespan for specific channel
+   *
+   * @param code
+   *          channel code
+   * @return Array of start and end times
+   */
+  public double[] getTimeSpan(final String code) {
+    if (!winston.checkConnect())
+      return null;
+    try {
+      ResultSet rs = winston.getStatement().executeQuery("SELECT st, et FROM `"
+          + winston.databasePrefix + "_ROOT`.channels WHERE code='" + code + "'");
+      rs.next();
+      final double[] d = new double[] {rs.getDouble(1), rs.getDouble(2)};
+      rs.close();
+      return d;
+    } catch (final Exception e) {
+      LOGGER.error("Could not get time span for channel: {}. ({})", code, e.getLocalizedMessage());
+    }
+    return null;
   }
 
   /**
@@ -395,9 +409,10 @@ public class Data {
     }
   }
 
-  public HelicorderData getHelicorderData(final String code, final double t1, final double t2,
+  public HelicorderData getHelicorderData(final Scnl scnl, final double t1, final double t2,
       final int maxrows) throws UtilException {
-    System.out.println("TOMP REQUEST: " + code);
+    String code = DbUtils.scnlAsWinstonCode(scnl);
+
     if (!winston.checkConnect() || !winston.useDatabase(code))
       return null;
     try {

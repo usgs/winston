@@ -6,6 +6,7 @@ Winston commands take the form of a single line of text terminated by <CRLF>. Th
 	<req> = <cmd> <sp> <id> [<sp> <args> ] <crlf>
 	<args> = <command-specific arg 1> [ <sp> <command-specific arg 2> ]
 	       | <channel spec> <sp> [ <command-specific args> ]
+	<id> = 
 	<channel spec> = <SCNL> [ <sp> <time span> ]
 	<SCNL> = <station> <sp> <channel> <sp> <network> <sp> [ <location> ]
 	<time span> = <start time> <sp> <end time>
@@ -20,20 +21,41 @@ Winston commands consist of a sequence of characters optionally terminated by a 
 ## Request Id
 The request id is returned with the request response and can be used to pair issued requests with a response.
 
-## MENU
-    <cmd> = "MENU" <sp> <id> [<sp> "SCNL"]
+## VERSION
+### Description
+Request WWS protocol version. This is the only WWS command which does not accept an ID argument.
 
-The MENU command optionally takes the string "SCNL" as its only argument. If the "SCNL" argument is provided, location codes will be included in the returned menu.
+### Request
+    <req> = "VERSION" <cr>
+    
+### Response Header
+None.
+### Response Body
+     <response> = "PROTOCOL_VERSION:" <sp> <protocol version><cr>
+
+Example:
+
+    PROTOCOL_VERSION: 3
+
+## MENU
+### Description
+Request lising of know stations and metadata.
+
+### Request
+    <cmd> = "MENU" <sp> <id> [<sp> "SCNL"]
+If the "SCNL" argument is provided, location codes will be included in the returned menu.
+
+### Response
+The server responds with one header line followed by one line per channel.
+
+#### Response Header
+
+#### Repsonse Body
 
 ## STATUS
     <cmd> = "STATUS" <sp> <id> [<sp> <timeout>]
 
 The STATUS command optionally takes a single floating point number as its only argument. If a number is given, channels with no data within that number of seconds will not be used in determining the medial data age of operational channels.
-
-## VERSION
-    <cmd> = "VERSION"
-
-The VERSION command takes no arguments.
 
 ## GETWAVERAW
     <cmd> = "GETWAVERAW" <sp> <id> <sp> <channel spec> <sp> <compress>

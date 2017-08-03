@@ -43,8 +43,6 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
   public void doCommand(final ChannelHandlerContext ctx, final WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    final String code = cmd.getScnl().toString("$");
-
     TimeSpan ts = cmd.getTimeSpan();
     final double st = J2kSec.fromEpoch(ts.startTime);
     final double et = J2kSec.fromEpoch(ts.endTime);
@@ -58,7 +56,12 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
 
         public HelicorderData execute(WinstonDatabase winston) throws UtilException {
           Data data = new Data(winston);
-          return data.getHelicorderData(code, st, et, 0);
+          try {
+            return data.getHelicorderData(cmd.getScnl(), st, et, 0);
+          } catch (MalformedCommandException e) {
+            throw new UtilException(
+                String.format("Cannot find SCNL in command. (%s)", cmd.commandString));
+          }
         }
       });
     } catch (Exception e1) {
@@ -69,7 +72,7 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
     if (heli != null && heli.rows() > 0) {
       bb = (ByteBuffer) heli.toBinary().flip();
 
-      if (cmd.getInt(8) == 1)
+      if (cmd.getInt(-1) == 1)
         bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
       LOGGER.debug("returning {} heli bytes", bb.limit());

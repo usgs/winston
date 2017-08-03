@@ -6,13 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
+import gov.usgs.volcanoes.core.util.UtilException;
+import gov.usgs.volcanoes.winston.db.DbUtils;
 
 
 /**
  * A class representing one row of the channels table.
  *
  * @author Dan Cervelli
+ * @author Tom Parker
  */
 public class Channel implements Comparable<Channel> {
   public static final int ONE_DAY = 24 * 60 * 60;
@@ -20,14 +25,8 @@ public class Channel implements Comparable<Channel> {
   private final int sid;
   private Instrument instrument;
 
-  private final String code;
-  private final double minTime;
-  private final double maxTime;
-
-  public final String station;
-  public final String channel;
-  public final String network;
-  public final String location;
+  public final Scnl scnl;
+  private final TimeSpan timeSpan;
 
   private double linearA;
   private double linearB;
@@ -43,15 +42,10 @@ public class Channel implements Comparable<Channel> {
    */
   public Channel() {
     sid = -1;
-    code = null;
+    scnl = null;
     instrument = Instrument.NULL;
-    minTime = Double.NaN;
-    maxTime = Double.NaN;
-    station = "";
-    channel = "";
-    network = "";
-    location = "--";
-  }
+    timeSpan  = new TimeSpan(Long.MAX_VALUE, Long.MIN_VALUE);
+   }
 
   /**
    * Constructor from minimal info
@@ -65,34 +59,10 @@ public class Channel implements Comparable<Channel> {
    * @param max
    *          maxTime
    */
-  public Channel(final int s, final String c, final double min, final double max) {
+  public Channel(final int s, final Scnl c, final double min, final double max) {
     sid = s;
-    code = c;
-    minTime = min;
-    maxTime = max;
-
-    final String[] cmp = code.split("$");
-
-    if (cmp.length > 0)
-      station = cmp[0];
-    else
-      station = "";
-
-    if (cmp.length > 1)
-      channel = cmp[1];
-    else
-      channel = "";
-
-    if (cmp.length > 2)
-      network = cmp[2];
-    else
-      network = "";
-
-    if (cmp.length > 3)
-      location = cmp[0];
-    else
-      location = "--";
-
+    scnl = c;
+    timeSpan = new TimeSpan(J2kSec.asEpoch(min), J2kSec.asEpoch(max));
   }
 
   /**
@@ -108,13 +78,18 @@ public class Channel implements Comparable<Channel> {
   
   public Channel(final ResultSet rs, int aparentRetention) throws SQLException {
     sid = rs.getInt("sid");
-    code = rs.getString("code");
+    try {
+      scnl = Scnl.parse(rs.getString("code"));
+    } catch (UtilException e) {
+      throw new SQLException("Cannot parse station code: " + rs.getString("code"));
+    }
     
     
     double mt = rs.getDouble("st");
-    minTime = Math.max(mt, J2kSec.now() - aparentRetention);
-    maxTime = rs.getDouble("et");
-
+    double minTime = Math.max(mt, J2kSec.now() - aparentRetention);
+    double maxTime = rs.getDouble("et");
+    timeSpan = new TimeSpan(J2kSec.asEpoch(minTime), J2kSec.asEpoch(maxTime));
+    
     instrument = new Instrument(rs);
     linearA = rs.getDouble("linearA");
     if (linearA == 1e300)
@@ -128,28 +103,6 @@ public class Channel implements Comparable<Channel> {
     alias = rs.getString("alias");
     if (alias == null)
       alias = "";
-
-    final String[] cmp = code.split("\\$");
-
-    if (cmp.length > 0)
-      station = cmp[0];
-    else
-      station = "";
-
-    if (cmp.length > 1)
-      channel = cmp[1];
-    else
-      channel = "";
-
-    if (cmp.length > 2)
-      network = cmp[2];
-    else
-      network = "";
-
-    if (cmp.length > 3)
-      location = cmp[0];
-    else
-      location = "--";
   }
 
   /**
@@ -157,13 +110,15 @@ public class Channel implements Comparable<Channel> {
    *
    * @param s
    *          colon-separated string of values defining a Channel
+   * @throws UtilException When code cannot be parsed
    */
-  public Channel(final String s) {
+  public Channel(final String s) throws UtilException {
     final String[] ss = s.split(":");
     sid = Integer.parseInt(ss[0]);
-    code = ss[1];
-    minTime = Double.parseDouble(ss[2]);
-    maxTime = Double.parseDouble(ss[3]);
+    scnl = Scnl.parse(ss[1]);
+    double minTime = Double.parseDouble(ss[2]);
+    double maxTime = Double.parseDouble(ss[3]);
+    timeSpan = new TimeSpan(J2kSec.asEpoch(minTime), J2kSec.asEpoch(maxTime));
     instrument = new Instrument();
     instrument.setLongitude(Double.parseDouble(ss[4]));
     instrument.setLatitude(Double.parseDouble(ss[5]));
@@ -183,29 +138,6 @@ public class Channel implements Comparable<Channel> {
           addGroup(g);
       }
     }
-
-    final String[] cmp = code.split("\\$");
-
-    if (cmp.length > 0)
-      station = cmp[0];
-    else
-      station = "";
-
-    if (cmp.length > 1)
-      channel = cmp[1];
-    else
-      channel = "";
-
-    if (cmp.length > 2)
-      network = cmp[2];
-    else
-      network = "";
-
-    if (cmp.length > 3)
-      location = cmp[0];
-    else
-      location = "--";
-
   }
 
   /**
@@ -254,7 +186,7 @@ public class Channel implements Comparable<Channel> {
    * @return code
    */
   public String getCode() {
-    return code;
+    return DbUtils.scnlAsWinstonCode(scnl);
   }
 
   /**
@@ -272,7 +204,7 @@ public class Channel implements Comparable<Channel> {
    * @return min time
    */
   public double getMinTime() {
-    return minTime;
+    return J2kSec.fromEpoch(timeSpan.startTime);
   }
 
   /**
@@ -281,17 +213,7 @@ public class Channel implements Comparable<Channel> {
    * @return max time
    */
   public double getMaxTime() {
-    return maxTime;
-  }
-
-  /**
-   * Getter for code
-   *
-   * @return code
-   */
-  @Override
-  public String toString() {
-    return code;
+    return J2kSec.fromEpoch(timeSpan.endTime);
   }
 
   /**
@@ -340,15 +262,15 @@ public class Channel implements Comparable<Channel> {
    * @return PV2 as a string
    */
   public String toPV2String(final int maxDays) {
-    double min = minTime;
-    double max = maxTime;
+    double min = J2kSec.fromEpoch(timeSpan.startTime);
+    double max = J2kSec.fromEpoch(timeSpan.endTime);
 
     if (maxDays > 0) {
       min = Math.max(min, J2kSec.now() - (maxDays * ONE_DAY));
       max = Math.max(max, J2kSec.now() - (maxDays * ONE_DAY));
     }
 
-    return String.format("%d:%s:%f:%f:%f:%f", sid, code, minTime, maxTime,
+    return String.format("%d:%s:%f:%f:%f:%f", sid, DbUtils.scnlAsWinstonCode(scnl), min, max,
         instrument.getLongitude(), instrument.getLatitude());
   }
 
@@ -363,11 +285,11 @@ public class Channel implements Comparable<Channel> {
    */
   public String toVDXString() {
     // this contains the new output for what VDX is expecting
-    final String stripped = code.replace('$', ' ');
+    final String stripped = scnl.toString(" ");
     // return String.format("%s:%f:%f:%s:%s", code,
     // instrument.getLongitude(), instrument.getLatitude(), stripped,
     // stripped);
-    return String.format("%d:%s:%s:%f:%f:%f:%s", sid, code, stripped, instrument.getLongitude(),
+    return String.format("%d:%s:%s:%f:%f:%f:%s", sid, DbUtils.scnlAsWinstonCode(scnl), stripped, instrument.getLongitude(),
         instrument.getLatitude(), instrument.getHeight(), "0");
   }
 
@@ -454,15 +376,6 @@ public class Channel implements Comparable<Channel> {
    * the top
    */
   public int compareTo(final Channel o) {
-    if (!network.equals(o.network))
-      return network.compareTo(o.network);
-
-    if (!station.equals(o.station))
-      return station.compareTo(o.station);
-
-    if (!channel.equals(o.channel))
-      return channel.compareTo(o.channel);
-
-    return location.compareTo(o.location);
+    return scnl.compareTo(o.scnl);
   }
 }

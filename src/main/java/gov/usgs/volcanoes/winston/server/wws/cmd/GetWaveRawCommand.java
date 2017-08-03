@@ -16,6 +16,7 @@ import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
+import gov.usgs.volcanoes.winston.db.DbUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
@@ -45,7 +46,7 @@ public class GetWaveRawCommand extends WwsBaseCommand {
   public void doCommand(final ChannelHandlerContext ctx, final WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    final String code = cmd.getScnl().toString("$");
+    final String code = DbUtils.scnlAsWinstonCode(cmd.getScnl());
 
     TimeSpan ts = cmd.getTimeSpan();
     final double st = J2kSec.fromEpoch(ts.startTime);

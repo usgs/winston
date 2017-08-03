@@ -17,6 +17,7 @@ import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
+import gov.usgs.volcanoes.winston.db.DbUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
@@ -44,7 +45,7 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    final String scnl = cmd.getScnl().toString("$");
+    final String code = DbUtils.scnlAsWinstonCode(cmd.getScnl());
 
     TimeSpan ts = cmd.getTimeSpan();
     final double st = J2kSec.fromEpoch(ts.startTime);
@@ -57,7 +58,7 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
     try {
       rsam = databasePool.doCommand(new WinstonConsumer<RSAMData>() {
         public RSAMData execute(WinstonDatabase winston) throws UtilException {
-          return new Data(winston).getRSAMData(scnl, st, et, 0, dst, ds);
+          return new Data(winston).getRSAMData(code, st, et, 0, dst, ds);
         }
 
       });
@@ -69,7 +70,7 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
     if (rsam != null && rsam.rows() > 0)
       bb = (ByteBuffer) rsam.toBinary().flip();
 
-    if (cmd.getInt(9) == 1)
+    if (cmd.getInt(-1) == 1)
       bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
     if (bb != null) {
