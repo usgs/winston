@@ -148,8 +148,8 @@ public class StationService extends FdsnwsService {
           continue;
         }
 
-        if (!c.network.equals(net)) {
-          net = c.network;
+        if (!c.scnl.network.equals(net)) {
+          net = c.scnl.network;
           networkElement = doc.createElement("Network");
           networkElement.setAttribute("code", net);
           rootElement.appendChild(networkElement);
@@ -158,7 +158,7 @@ public class StationService extends FdsnwsService {
         if ("network".equals(level))
           continue;
 
-        if (!c.station.equals(sta)) {
+        if (!c.scnl.station.equals(sta)) {
           if (stationElement != null) {
             final String s = FdsnwsDate.toString(J2kSec.asDate(stationStart));
             stationElement.setAttribute("startDate", s);
@@ -173,7 +173,7 @@ public class StationService extends FdsnwsService {
                 .appendChild(doc.createTextNode(FdsnwsDate.toString(J2kSec.asDate(stationStart))));
           }
 
-          sta = c.station;
+          sta = c.scnl.station;
           stationElement = createStationElement(c, doc);
           networkElement.appendChild(stationElement);
         }
@@ -205,7 +205,7 @@ public class StationService extends FdsnwsService {
 
    private static Element createStationElement(final Channel c, final Document doc) {
     final Element station = doc.createElement("Station");
-    station.setAttribute("code", c.station);
+    station.setAttribute("code", c.scnl.station);
 
     Element e;
     e = doc.createElement("Latitude");
@@ -231,9 +231,9 @@ public class StationService extends FdsnwsService {
 
   private static Element createChannelElement(final Channel c, final Document doc) {
     final Element channelElement = doc.createElement("Channel");
-    final String loc = c.location.equals("--") ? "  " : c.location;
+    final String loc = c.scnl.location.equals("--") ? "  " : c.scnl.location;
     channelElement.setAttribute("locationCode", loc);
-    channelElement.setAttribute("code", c.channel);
+    channelElement.setAttribute("code", c.scnl.channel);
 
     Element e;
     e = doc.createElement("Latitude");

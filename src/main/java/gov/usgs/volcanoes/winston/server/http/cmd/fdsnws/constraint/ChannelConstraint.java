@@ -123,19 +123,19 @@ public class ChannelConstraint extends FdsnConstraint {
     if (chan == null)
       return false;
 
-    final String net = chan.network;
+    final String net = chan.scnl.network;
     if (net != null && !net.matches(network))
       return false;
 
-    final String cha = chan.channel;
+    final String cha = chan.scnl.channel;
     if (cha != null && !cha.matches(channel))
       return false;
 
-    final String sta = chan.station;
+    final String sta = chan.scnl.station;
     if (sta != null && !sta.matches(station))
       return false;
 
-    final String loc = chan.location;
+    final String loc = chan.scnl.location;
     if (loc != null && !loc.matches(location))
       return false;
     

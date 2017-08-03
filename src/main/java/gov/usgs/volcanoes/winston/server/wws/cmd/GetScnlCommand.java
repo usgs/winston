@@ -11,6 +11,7 @@ import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -22,6 +23,8 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * 
  * @author Tom Parker
+ * 
+ * <cmd> = "GETSCNL" <sp> <id> <sp> <channel spec>
  *
  */
 public class GetScnlCommand extends EwDataRequest {
@@ -33,26 +36,25 @@ public class GetScnlCommand extends EwDataRequest {
    */
   public GetScnlCommand() {
     super();
-    isScnl = true;
+//    isScnl = true;
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    if (cmd.length() < (isScnl ? 8 : 7))
-      throw new MalformedCommandException();
-
-    final String id = cmd.getID();
-    final String chan = getChan(cmd, " ");
-    final String code = getChan(cmd, "$");
-
-    final double startTime = Time.ewToj2k(cmd.getT1(isScnl));
-    final double endTime = Time.ewToj2k(cmd.getT2(isScnl));
+    
+    final String id = cmd.id;
+    final String chan = cmd.getScnl().toString(" ");
+    final String code = cmd.getScnl().toString("$");
 
     final Integer chanId = getChanId(code);
     if (chanId == -1) {
       ctx.writeAndFlush(id + " " + id + " 0 " + chan + " FN\n");
       return;
     }
+
+    TimeSpan ts = cmd.getTimeSpan();
+    final double startTime = Time.ewToj2k(ts.startTime);
+    final double endTime = Time.ewToj2k(ts.endTime);
 
     final double[] timeSpan = getTimeSpan(chanId);
 
@@ -121,7 +123,7 @@ public class GetScnlCommand extends EwDataRequest {
         // samples++;
         sample = wave.buffer[i];
         if (sample == Wave.NO_DATA)
-          bb.put(cmd.getString(isScnl ? 8 : 7).getBytes());
+          bb.put(cmd.args[1].getBytes());
         else
           bb.put(Integer.toString(wave.buffer[i]).getBytes());
         bb.put((byte) ' ');

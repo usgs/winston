@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -23,6 +25,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Return Channel details.
+ * <cmd> = "GETSCNLHELIRAW" <sp> <id> <scnl> <time span>
  * 
  * @author Dan Cervelli
  * @author Tom Parker
@@ -37,16 +40,12 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
     super();
   }
 
-  public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
+  public void doCommand(final ChannelHandlerContext ctx, final WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    if (!cmd.isLegalSCNLTT(9)) {
-      throw new MalformedCommandException();
-    }
 
-    final double et = cmd.getT2(true);
-    final double st = cmd.getT1(true);
-    final String scnl = cmd.getWinstonSCNL();
-
+    TimeSpan ts = cmd.getTimeSpan();
+    final double st = J2kSec.fromEpoch(ts.startTime);
+    final double et = J2kSec.fromEpoch(ts.endTime);
     if (et <= st) {
       throw new MalformedCommandException();
     }
@@ -57,7 +56,12 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
 
         public HelicorderData execute(WinstonDatabase winston) throws UtilException {
           Data data = new Data(winston);
-          return data.getHelicorderData(scnl, st, et, 0);
+          try {
+            return data.getHelicorderData(cmd.getScnl(), st, et, 0);
+          } catch (MalformedCommandException e) {
+            throw new UtilException(
+                String.format("Cannot find SCNL in command. (%s)", cmd.commandString));
+          }
         }
       });
     } catch (Exception e1) {
@@ -68,14 +72,14 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
     if (heli != null && heli.rows() > 0) {
       bb = (ByteBuffer) heli.toBinary().flip();
 
-      if (cmd.getInt(8) == 1)
+      if (cmd.getInt(-1) == 1)
         bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
       LOGGER.debug("returning {} heli bytes", bb.limit());
-      ctx.write(cmd.getID() + " " + bb.limit() + "\n");
+      ctx.write(cmd.id + " " + bb.limit() + "\n");
       ctx.writeAndFlush(bb.array());
     } else {
-      ctx.write(cmd.getID() + " 0\n");
+      ctx.write(cmd.id + " 0\n");
     }
   }
 }

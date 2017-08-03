@@ -22,8 +22,8 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * Return Channel details.
  * 
- * request = /^GETMETADATA:? \d( (INSTRUMENT|CHANNEL))?$/
- *
+ * cmd = "GETMETADATA" <sp> <id> <sp> ( "INSTRUMENT" | "CHANNEL" )
+ * 
  * @author Dan Cervelli
  * @author Tom Parker
  */
@@ -37,25 +37,29 @@ public class GetMetadataCommand extends WwsBaseCommand {
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    final String[] ss = cmd.getCommandSplits();
-    if (ss.length <= 2) {
-      throw new MalformedCommandException();
+    
+    if (cmd.args == null || cmd.args.length != 1) {
+      throw new MalformedCommandException();      
     }
 
     StringBuilder sb = new StringBuilder();
     try {
-      if ("INSTRUMENT".equals(ss[2])) {
+      if ("INSTRUMENT".equals(cmd.args[0])) {
         List<Instrument> instruments = databasePool.doCommand(getInstrumentsConsumer());
-        sb.append(String.format("%s %d\n", cmd.getID(), instruments.size()));
+        sb.append(String.format("%s %d\n", cmd.id, instruments.size()));
         sb.append(getInstrumentMetadata(instruments));
 
-      } else if ("CHANNEL".equals(ss[2])) {
+      } else if ("CHANNEL".equals(cmd.args[0])) {
         List<Channel> channels = databasePool.doCommand(getChannelsConsumer());
-        sb.append(String.format("%s %d\n", cmd.getID(), channels.size()));
+        sb.append(String.format("%s %d\n", cmd.id, channels.size()));
         sb.append(getChannelMetadata(channels));
+      } else {
+        throw new MalformedCommandException("Missing argument");
       }
-    } catch (Exception e) {
-      throw new UtilException(e.toString());
+    } catch (MalformedCommandException ex) {
+      throw ex;
+    } catch (Exception ex) {
+      throw new UtilException(ex.toString());
     }
 
     ctx.writeAndFlush(sb.toString());

@@ -104,21 +104,21 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
     }
   }
 
-  private void switchToHttp(ChannelPipeline p) {
-    p.addLast(new HttpRequestDecoder());
-    p.addLast(new HttpObjectAggregator(1048576));
-    p.addLast(new HttpResponseEncoder());
-    p.addLast(new HttpCommandHandler(configFile, winstonDatabasePool));
-    p.remove(this);
+  private void switchToHttp(ChannelPipeline pipeline) {
+    pipeline.addLast(new HttpRequestDecoder());
+    pipeline.addLast(new HttpObjectAggregator(1048576));
+    pipeline.addLast(new HttpResponseEncoder());
+    pipeline.addLast(new HttpCommandHandler(configFile, winstonDatabasePool));
+    pipeline.remove(this);
   }
 
-  private void switchToWws(ChannelPipeline p) {
-    p.addLast(new LineBasedFrameDecoder(1024, true, true));
-    p.addLast(new StringDecoder(CharsetUtil.US_ASCII));
-    p.addLast(new StringEncoder(CharsetUtil.US_ASCII));
-    p.addLast(new ByteArrayEncoder());
-    p.addLast(new WwsCommandStringDecoder());
-    p.addLast(new WwsCommandHandler(configFile, winstonDatabasePool));
-    p.remove(this);
+  private void switchToWws(ChannelPipeline pipeline) {
+    pipeline.addLast(new LineBasedFrameDecoder(1024, true, true));
+    pipeline.addLast(new StringDecoder(CharsetUtil.US_ASCII));
+    pipeline.addLast(new StringEncoder(CharsetUtil.US_ASCII));
+    pipeline.addLast(new ByteArrayEncoder());
+    pipeline.addLast(new WwsCommandStringDecoder());
+    pipeline.addLast(new WwsCommandHandler(configFile, winstonDatabasePool));
+    pipeline.remove(this);
   }
 }

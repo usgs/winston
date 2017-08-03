@@ -58,3 +58,5 @@ cleanup.use_type_arguments=false
 cleanup_profile=_volcano
 cleanup_settings_version=2
 eclipse.preferences.version=1
+formatter_profile=_GoogleStyle
+formatter_settings_version=13

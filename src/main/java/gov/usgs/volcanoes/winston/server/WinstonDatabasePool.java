@@ -14,7 +14,7 @@ import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 
 /**
- * Pool conections to a winston database.
+ * Pool connections to a winston database.
  * 
  * @author Tom Parker
  *
