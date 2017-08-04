@@ -53,7 +53,14 @@ The server responds with one header line followed by one line per channel.
 #### Repsonse Body
 
 ## STATUS
+Retrieve server status.
+
+### Request
     <cmd> = "STATUS" <sp> <id> [<sp> <timeout>]
+
+If the timeout value is given, stations which do not have data within <timeout> seconds will not be considered when calculating median data age.
+
+### Response
 
 The STATUS command optionally takes a single floating point number as its only argument. If a number is given, channels with no data within that number of seconds will not be used in determining the medial data age of operational channels.
 
@@ -63,13 +70,19 @@ The STATUS command optionally takes a single floating point number as its only a
 
 ## GETCHANNELS  
 ### Description
+Retrieve a list of channels in the Winston.
 	
 ### Request
     <cmd> = "GETCHANNELS" <sp> <id> [ <sp> "METADATA" ]
-### Response
-****Header line*****
 
-One line per channel. Each line is a colon-separated string with the following values:
+### Response
+One header line, followed by one line for each channel in the Winston. 
+
+The Header line consists of two space-separated fields:
+1. request id
+1. number of channel lines
+
+Each channel line is a colon-separated string with the following values:
 1. station id
 1. $-spearated SCNL
 1. earliest sample as J2kSec
@@ -82,7 +95,7 @@ One line per channel. Each line is a colon-separated string with the following v
 1. linear b
 1. groups 
 
-Items seven through 11 are only provided if the METADATA argument was provided with the request.
+The last five fields are only provided if the METADATA argument was provided with the request.
 
 ## GETMETADATA
     <cmd> = "GETMETADATA" <sp> <id> <sp> ( "INSTRUMENT" | "CHANNEL" )
