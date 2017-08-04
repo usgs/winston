@@ -62,7 +62,27 @@ The STATUS command optionally takes a single floating point number as its only a
     <compress> = 0 | 1
 
 ## GETCHANNELS  
+### Description
+	
+### Request
     <cmd> = "GETCHANNELS" <sp> <id> [ <sp> "METADATA" ]
+### Response
+****Header line*****
+
+One line per channel. Each line is a colon-separated string with the following values:
+1. station id
+1. $-spearated SCNL
+1. earliest sample as J2kSec
+1. most recent sample as J2kSec
+1. instrument longitude
+1. instrument latitude
+1. alias
+1. unit
+1. linear a
+1. linear b
+1. groups 
+
+Items seven through 11 are only provided if the METADATA argument was provided with the request.
 
 ## GETMETADATA
     <cmd> = "GETMETADATA" <sp> <id> <sp> ( "INSTRUMENT" | "CHANNEL" )
