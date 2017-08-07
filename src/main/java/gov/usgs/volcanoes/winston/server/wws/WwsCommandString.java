@@ -143,7 +143,32 @@ public class WwsCommandString {
    * @return Request time span
    * @throws MalformedCommandException when arg list is too short
    */
-  public synchronized TimeSpan getTimeSpan() throws MalformedCommandException {
+  public synchronized TimeSpan getEwTimeSpan() throws MalformedCommandException {
+    if (timeSpan == null) {
+      int index = Integer.MAX_VALUE;
+      if (args.length > 5) {
+        index = 4;
+      } else if (args.length > 4) {
+        index = 3;
+      } else {
+        throw new MalformedCommandException("Can't find time in arg list.");
+      }
+
+      long st = (long) (1000 * Double.parseDouble(args[index]));
+      long et = (long) (1000 * Double.parseDouble(args[index + 1]));
+      timeSpan = new TimeSpan(st, et);
+    }
+
+    return timeSpan;
+  }
+
+  /**
+   * Return command time stamp. Timestamp always immediately follows a SCN or SCNL.
+   * 
+   * @return Request time span
+   * @throws MalformedCommandException when arg list is too short
+   */
+  public synchronized TimeSpan getJ2kSecTimeSpan() throws MalformedCommandException {
     if (timeSpan == null) {
       int index = Integer.MAX_VALUE;
       if (args.length > 5) {

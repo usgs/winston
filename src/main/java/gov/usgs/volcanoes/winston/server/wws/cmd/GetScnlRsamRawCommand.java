@@ -47,7 +47,7 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
 
     final String code = DbUtils.scnlAsWinstonCode(cmd.getScnl());
 
-    TimeSpan ts = cmd.getTimeSpan();
+    TimeSpan ts = cmd.getJ2kSecTimeSpan();
     final double st = J2kSec.fromEpoch(ts.startTime);
     final double et = J2kSec.fromEpoch(ts.endTime);
     

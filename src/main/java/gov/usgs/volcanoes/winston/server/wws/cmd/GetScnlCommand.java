@@ -52,7 +52,7 @@ public class GetScnlCommand extends EwDataRequest {
       return;
     }
 
-    TimeSpan ts = cmd.getTimeSpan();
+    TimeSpan ts = cmd.getJ2kSecTimeSpan();
     final double startTime = Time.ewToj2k(ts.startTime);
     final double endTime = Time.ewToj2k(ts.endTime);
 

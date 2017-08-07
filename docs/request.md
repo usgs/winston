@@ -1,4 +1,4 @@
-# Winston Commands
+# Winston 3 Commands
 
 ## Protocol Description
 Winston commands take the form of a single line of text terminated by <CRLF>. The line of text begins with a command name followed by a request id, separated by a space. Arguments for a command follow the request id separated by a space. 
@@ -15,6 +15,53 @@ Winston commands take the form of a single line of text terminated by <CRLF>. Th
 
 The Winston protocol is descended from the protocol used by Earthworm's wave_serverV.
 
+## Support Earthworm WaveserverV commands
+http://love.isti.com/trac/ew/wiki/Wave_Server_Protocol_Doc
+
+## MENU
+### Description
+Request lising of know stations and metadata.
+
+### Request
+    <cmd> = "MENU" <sp> <id> [<sp> "SCNL"]
+
+If the SCNL argument is provided, location codes will always be included. This argument is not supported by Eaerthworm, which will always include location codes.
+
+### Response
+The server responds with one header line followed by one line per channel.
+
+#### Response Header
+
+#### Repsonse Body
+
+## GETSCNRAW  
+    <cmd> = "GETSCNRAW" <sp> <id> <sp> <scnl> <sp> <time span>
+
+## GETSCNLRAW
+### Request
+    <cmd> = "GETSCNLRAW" <sp> <id> <sp> <scnl> <sp> <time span>
+    <time span> = <epoch time> <sp> <epoch time>
+
+### Response
+#### Response Header
+    <hdr> = <id> <sp> <pin #> <sp> <scnl> <sp> F <sp> <data type> <sp> <time span> <length> <cr>
+          | <id> <sp> <pin #> <sp> <scnl> <sp> FG <sp> <data type> <cr>
+          | <id> <sp> <pin #> <sp> <scnl> <sp> FR <sp> <data type> <youngest time> <cr>
+          | <id> <sp> <pin #> <sp> <scnl> <sp> FL <sp> <data type> <oldest time> <cr>
+
+          
+#### Response Body
+
+    <response> = 1*<tracebuf bytes>
+
+If data is found, it will be returned following the header as a stream of tracebufs. 
+    
+## GETSCN
+    <cmd> = "GETSCN" <sp> <id>  <sp> <scnl> <sp> <time span>
+
+## GETSCNL
+    <cmd> = "GETSCNL" <sp> <id> <sp> <scnl> <sp> <time span>
+
 ## Winston Commands
 Winston commands consist of a sequence of characters optionally terminated by a colon. Times in winston requests are specified as J2kSec. 
   
@@ -30,27 +77,10 @@ Request WWS protocol version. This is the only WWS command which does not accept
     
 ### Response Header
 None.
+
 ### Response Body
      <response> = "PROTOCOL_VERSION:" <sp> <protocol version><cr>
 
-Example:
-
-    PROTOCOL_VERSION: 3
-
-## MENU
-### Description
-Request lising of know stations and metadata.
-
-### Request
-    <cmd> = "MENU" <sp> <id> [<sp> "SCNL"]
-If the "SCNL" argument is provided, location codes will be included in the returned menu.
-
-### Response
-The server responds with one header line followed by one line per channel.
-
-#### Response Header
-
-#### Repsonse Body
 
 ## STATUS
 Retrieve server status.
@@ -108,15 +138,3 @@ The last five fields are only provided if the METADATA argument was provided wit
 
 ## GETSCNLRSAMRAW
     <cmd> = "GETSCNLRSAMRAW" <sp> <id> <sp> <scnl> <sp> <time span> <downsampling factor>
-
-## GETSCNRAW  
-    <cmd> = "GETSCNRAW" <sp> <id> <sp> <scnl> <sp> <time span>
-
-## GETSCNLRAW
-    <cmd> = "GETSCNLRAW" <sp> <id> <sp> <scnl> <sp> <time span>
-
-## GETSCN
-    <cmd> = "GETSCN" <sp> <id>  <sp> <scnl> <sp> <time span>
-
-## GETSCNL
-    <cmd> = "GETSCNL" <sp> <id> <sp> <scnl> <sp> <time span>
