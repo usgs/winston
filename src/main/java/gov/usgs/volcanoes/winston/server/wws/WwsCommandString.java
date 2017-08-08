@@ -35,6 +35,9 @@ public class WwsCommandString {
   private TimeSpan timeSpan;
   public final String id;
   public final String[] args;
+  
+  public static final boolean NO_LOCATION = false;
+  public static final boolean HAS_LOCATION = true;
 
   /**
    * Constructor.
@@ -119,6 +122,19 @@ public class WwsCommandString {
   }
 
   /**
+   * Return command SCN and update where the time span may be located. This will always be the first arg.
+   * 
+   * @return the scn channel requested.
+   * @throws MalformedCommandException when arg list is too short
+   */
+  public synchronized Scnl getScn() throws MalformedCommandException {
+    if (scnl == null) {
+      scnl = new Scnl(args[0], args[1], args[2]);
+    }
+    return scnl;
+  }
+
+  /**
    * Return command SCN or SCNL. This will always be the first arg.
    * 
    * @return the scnl channel requested
@@ -126,13 +142,7 @@ public class WwsCommandString {
    */
   public synchronized Scnl getScnl() throws MalformedCommandException {
     if (scnl == null) {
-      if (args.length > 3) {
-        scnl = new Scnl(args[0], args[1], args[2], args[3]);
-      } else if (args.length > 2) {
-        scnl = new Scnl(args[0], args[1], args[2]);
-      } else {
-        throw new MalformedCommandException("Not enough args for SCN");
-      }
+      scnl = new Scnl(args[0], args[1], args[2], args[3]);
     }
     return scnl;
   }
@@ -140,19 +150,32 @@ public class WwsCommandString {
   /**
    * Return command time stamp. Timestamp always immediately follows a SCN or SCNL.
    * 
+   * @param isScnl If true, I will search for a time span starting at position 4 otherwise I will search starting at position 3
    * @return Request time span
    * @throws MalformedCommandException when arg list is too short
    */
-  public synchronized TimeSpan getTimeSpan() throws MalformedCommandException {
+  public synchronized TimeSpan getEwTimeSpan(boolean isScnl) throws MalformedCommandException {
     if (timeSpan == null) {
-      int index = Integer.MAX_VALUE;
-      if (args.length > 5) {
-        index = 4;
-      } else if (args.length > 4) {
-        index = 3;
-      } else {
-        throw new MalformedCommandException("Can't find time in arg list.");
-      }
+      int index = isScnl ? 4 : 3;
+
+      long st = (long) (1000 * Double.parseDouble(args[index]));
+      long et = (long) (1000 * Double.parseDouble(args[index + 1]));
+      timeSpan = new TimeSpan(st, et);
+    }
+
+    return timeSpan;
+  }
+
+  /**
+   * Return command time stamp. Timestamp always immediately follows a SCN or SCNL.
+   * 
+   * @param isScnl If true, I will search for a time span starting at position 4 otherwise I will search starting at position 3
+   * @return Request time span
+   * @throws MalformedCommandException when arg list is too short
+   */
+  public synchronized TimeSpan getJ2kSecTimeSpan(boolean isScnl) throws MalformedCommandException {
+    if (timeSpan == null) {
+      int index = isScnl ? 4 : 3;
 
       double st = Double.parseDouble(args[index]);
       double et = Double.parseDouble(args[index + 1]);

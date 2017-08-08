@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.math.DownsamplingType;
 import gov.usgs.plot.data.RSAMData;
 import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
@@ -34,7 +35,9 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class GetScnlRsamRawCommand extends WwsBaseCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRsamRawCommand.class);
-
+  protected Scnl scnl;
+  protected TimeSpan timeSpan;
+  
   /**
    * Constructor.
    */
@@ -47,7 +50,7 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
 
     final String code = DbUtils.scnlAsWinstonCode(cmd.getScnl());
 
-    TimeSpan ts = cmd.getTimeSpan();
+    TimeSpan ts = cmd.getJ2kSecTimeSpan(true);
     final double st = J2kSec.fromEpoch(ts.startTime);
     final double et = J2kSec.fromEpoch(ts.endTime);
     

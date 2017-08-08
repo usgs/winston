@@ -14,10 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
+import gov.usgs.volcanoes.winston.db.DbUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
@@ -34,6 +36,9 @@ public class GetScnlRawCommand extends EwDataRequest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRawCommand.class);
 
+  protected Scnl scnl;
+  protected TimeSpan timeSpan;
+  
   /**
    * Constructor.
    */
@@ -41,21 +46,26 @@ public class GetScnlRawCommand extends EwDataRequest {
     super();
   }
 
+  protected void parseCommand(WwsCommandString cmd) throws MalformedCommandException {
+    scnl = cmd.getScnl();
+    timeSpan = cmd.getEwTimeSpan(WwsCommandString.HAS_LOCATION);
+  }
+
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    if (cmd.args.length < 2)
-      throw new MalformedCommandException();
-
+    
+    parseCommand(cmd);
+    
     final String id = cmd.id;
-    final String chan = cmd.getScnl().toString(" ");
-    final String code = cmd.getScnl().toString("$");
+    final String chan = scnl.toString(" ");
+    final String code =  DbUtils.scnlAsWinstonCode(scnl);
 
-    TimeSpan ts = cmd.getTimeSpan();
-    final double startTime = Time.ewToj2k(ts.startTime);
-    final double endTime = Time.ewToj2k(ts.endTime);
+    final double startTime = J2kSec.fromEpoch(timeSpan.startTime);
+    final double endTime = J2kSec.fromEpoch(timeSpan.endTime);
 
     final Integer chanId = getChanId(code);
     if (chanId == -1) {
+      LOGGER.error("Cannot find  {}", code);
       ctx.writeAndFlush(id + " " + id + " 0 " + chan + " FN\n");
       return;
     }
@@ -70,6 +80,7 @@ public class GetScnlRawCommand extends EwDataRequest {
       errorString = hdrPreamble + "FL s4";
     } else if (startTime > timeSpan[1]) {
       errorString = hdrPreamble + "FR s4";
+      LOGGER.error("{} TIME {}", J2kSec.toDateString(startTime));
     }
 
     if (errorString != null) {
@@ -110,10 +121,9 @@ public class GetScnlRawCommand extends EwDataRequest {
       total += buf.length;
     }
 
-    String hdr = hdrPreamble + " F " + firstBuf.dataType() + " " + firstBuf.getStartTime() + " "
-        + lastBuf.getEndTime() + " " + total + '\n';
+    String hdr = String.format("%s F %s %f %f %d%n", hdrPreamble, firstBuf.dataType(), firstBuf.getStartTime(), lastBuf .getEndTime(), total);
     ctx.write(hdr);
-
+    
     final ByteBuffer bb = ByteBuffer.allocate(total);
     for (final Iterator<byte[]> it = bufs.iterator(); it.hasNext();) {
       bb.put((byte[]) it.next());
