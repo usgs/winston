@@ -15,12 +15,13 @@ Winston commands take the form of a single line of text terminated by <CRLF>. Th
 
 The Winston protocol is descended from the protocol used by Earthworm's wave_serverV.
 
-## Support Earthworm WaveserverV commands
-http://love.isti.com/trac/ew/wiki/Wave_Server_Protocol_Doc
+## Supported Earthworm WaveserverV commands
+
+The Winston Wave Server supports a subset of the Earthworm WaveserverV command set. Full details on the Earthworm protocol are available at http://love.isti.com/trac/ew/wiki/Wave_Server_Protocol_Doc
 
 ## MENU
 ### Description
-Request lising of know stations and metadata.
+Request listing of known stations and metadata.
 
 ### Request
     <cmd> = "MENU" <sp> <id> [<sp> "SCNL"]
@@ -34,8 +35,9 @@ The server responds with one header line followed by one line per channel.
 
 #### Repsonse Body
 
-## GETSCNRAW  
-    <cmd> = "GETSCNRAW" <sp> <id> <sp> <scnl> <sp> <time span>
+## GETSCNRAW
+This is an alias for GETSCNLRAW. Either command will accept a SCN or SCNL and return dat in the form it was received in.
+
 
 ## GETSCNLRAW
 ### Request
@@ -49,18 +51,26 @@ The server responds with one header line followed by one line per channel.
           | <id> <sp> <pin #> <sp> <scnl> <sp> FR <sp> <data type> <youngest time> <cr>
           | <id> <sp> <pin #> <sp> <scnl> <sp> FL <sp> <data type> <oldest time> <cr>
 
-          
+If the request header contains the FR flags, then the requested time period is prior to all available data. No rquest body will be returned.
+If the request header contains the FL flags, then the requested time period is after available data. No rquest body will be returned.
+If the request header contains the FG flags, then the requested time period lies fully within a gap in data. No request body will be returned.
+If the request head contains only the F flag, then data was found and a request body will be returned.
+
 #### Response Body
 
     <response> = 1*<tracebuf bytes>
 
-If data is found, it will be returned following the header as a stream of tracebufs. 
-    
+If data is found, it will be returned following the header as a stream of tracebuf or tracebuf2 structures. 
+
 ## GETSCN
-    <cmd> = "GETSCN" <sp> <id>  <sp> <scnl> <sp> <time span>
+This is an alias for SCNL. Either command will accept a SCN or SCNL.
 
 ## GETSCNL
+
+### Request
     <cmd> = "GETSCNL" <sp> <id> <sp> <scnl> <sp> <time span>
+
+### Response
 
 ## Winston Commands
 Winston commands consist of a sequence of characters optionally terminated by a colon. Times in winston requests are specified as J2kSec. 

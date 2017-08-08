@@ -14,6 +14,7 @@ import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
+import gov.usgs.volcanoes.winston.db.DbUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
@@ -38,19 +39,19 @@ public class GetScnlCommand extends EwDataRequest {
     super();
 //    isScnl = true;
   }
-
+  
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
     
-    final String id = cmd.id;
-    final String chan = cmd.getScnl().toString(" ");
-    final String code = cmd.getScnl().toString("$");
-
-    final Integer chanId = getChanId(code);
+    
+    final Integer chanId = getChanId(DbUtils.scnlAsWinstonCode(cmd.getScnl()));
     if (chanId == -1) {
-      ctx.writeAndFlush(id + " " + id + " 0 " + chan + " FN\n");
+      ctx.writeAndFlush(String.format("%s FN%n", cmd.id));
       return;
     }
+
+    final String chan = cmd.getScnl().toString(" ");
+
 
     TimeSpan ts = cmd.getJ2kSecTimeSpan();
     final double startTime = Time.ewToj2k(ts.startTime);
@@ -58,7 +59,7 @@ public class GetScnlCommand extends EwDataRequest {
 
     final double[] timeSpan = getTimeSpan(chanId);
 
-    String hdrPreamble = id + " " + chanId + " " + chan + " ";
+    String hdrPreamble = cmd.id + " " + chanId + " " + chan + " ";
     String errorString = null;
     if (endTime < startTime) {
       errorString = hdrPreamble + "FB";
@@ -106,7 +107,7 @@ public class GetScnlCommand extends EwDataRequest {
     }
     sts = numberFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ct)));
     final ByteBuffer bb = ByteBuffer.allocate(wave.numSamples() * 13 + 256);
-    bb.put(id.getBytes());
+    bb.put(cmd.id.getBytes());
     bb.put((byte) ' ');
     bb.put(Integer.toString(chanId).getBytes());
     bb.put(chan.getBytes());
