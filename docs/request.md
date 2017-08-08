@@ -143,8 +143,5 @@ The last five fields are only provided if the METADATA argument was provided wit
 ## GETSCNLHELIRAW
     <cmd> = "GETSCNLHELIRAW" <sp> <id> <sp> <scnl> <sp> <time span>
 
-## GETWAVERAW
-    <cmd> = "GETWAVERAW" <sp> <id> <sp> <scnl> <sp> <time span>
-
 ## GETSCNLRSAMRAW
     <cmd> = "GETSCNLRSAMRAW" <sp> <id> <sp> <scnl> <sp> <time span> <downsampling factor>

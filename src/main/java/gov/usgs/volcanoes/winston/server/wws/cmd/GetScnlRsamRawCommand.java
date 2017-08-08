@@ -45,16 +45,12 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
     super();
   }
 
-  private void parseCommand(WwsCommandString cmd) {
-    
-  }
-  
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
     final String code = DbUtils.scnlAsWinstonCode(cmd.getScnl());
 
-    TimeSpan ts = cmd.getJ2kSecTimeSpan();
+    TimeSpan ts = cmd.getJ2kSecTimeSpan(true);
     final double st = J2kSec.fromEpoch(ts.startTime);
     final double et = J2kSec.fromEpoch(ts.endTime);
     

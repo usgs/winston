@@ -227,7 +227,7 @@ public class WWS {
     while (!f.isDone()) {
       try {
         f.sync();
-      } catch (final InterruptedException ex) {http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=1099
+      } catch (final InterruptedException ex) {
         Thread.currentThread().interrupt();
         throw new RuntimeException(ex);
       }

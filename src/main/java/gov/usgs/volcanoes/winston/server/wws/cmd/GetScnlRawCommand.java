@@ -14,8 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.message.TraceBuf;
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
-import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
@@ -36,6 +36,9 @@ public class GetScnlRawCommand extends EwDataRequest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRawCommand.class);
 
+  protected Scnl scnl;
+  protected TimeSpan timeSpan;
+  
   /**
    * Constructor.
    */
@@ -43,18 +46,22 @@ public class GetScnlRawCommand extends EwDataRequest {
     super();
   }
 
+  protected void parseCommand(WwsCommandString cmd) throws MalformedCommandException {
+    scnl = cmd.getScnl();
+    timeSpan = cmd.getEwTimeSpan(WwsCommandString.HAS_LOCATION);
+  }
+
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    if (cmd.args.length < 2)
-      throw new MalformedCommandException();
-
+    
+    parseCommand(cmd);
+    
     final String id = cmd.id;
-    final String chan = cmd.getScnl().toString(" ");
-    final String code =  DbUtils.scnlAsWinstonCode(cmd.getScnl());
+    final String chan = scnl.toString(" ");
+    final String code =  DbUtils.scnlAsWinstonCode(scnl);
 
-    TimeSpan ts = cmd.getEwTimeSpan();
-    final double startTime = J2kSec.fromEpoch(ts.startTime);
-    final double endTime = J2kSec.fromEpoch(ts.endTime);
+    final double startTime = J2kSec.fromEpoch(timeSpan.startTime);
+    final double endTime = J2kSec.fromEpoch(timeSpan.endTime);
 
     final Integer chanId = getChanId(code);
     if (chanId == -1) {

@@ -43,7 +43,7 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
   public void doCommand(final ChannelHandlerContext ctx, final WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    TimeSpan ts = cmd.getJ2kSecTimeSpan();
+    TimeSpan ts = cmd.getJ2kSecTimeSpan(true);
     final double st = J2kSec.fromEpoch(ts.startTime);
     final double et = J2kSec.fromEpoch(ts.endTime);
     if (et <= st) {

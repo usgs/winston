@@ -1,14 +1,12 @@
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
 import java.nio.ByteBuffer;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.plot.data.Wave;
-import gov.usgs.volcanoes.core.time.Ew;
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
@@ -31,42 +29,54 @@ import io.netty.channel.ChannelHandlerContext;
 public class GetScnlCommand extends EwDataRequest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRawCommand.class);
+  protected Scnl scnl;
+  protected TimeSpan timeSpan;
 
   /**
    * Constructor.
    */
   public GetScnlCommand() {
     super();
-//    isScnl = true;
+    // isScnl = true;
   }
-  
+
+  protected void parseCommand(WwsCommandString cmd) throws MalformedCommandException {
+    scnl = cmd.getScnl();
+    timeSpan = cmd.getEwTimeSpan(WwsCommandString.HAS_LOCATION);
+  }
+
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    
-    
-    final Integer chanId = getChanId(DbUtils.scnlAsWinstonCode(cmd.getScnl()));
+
+    parseCommand(cmd);
+
+    final Integer chanId = getChanId(DbUtils.scnlAsWinstonCode(scnl));
     if (chanId == -1) {
       ctx.writeAndFlush(String.format("%s FN%n", cmd.id));
       return;
     }
 
-    final String chan = cmd.getScnl().toString(" ");
+    final String chan = scnl.toString(" ");
 
+    final double startTime = J2kSec.fromEpoch(timeSpan.startTime);
+    final double endTime = J2kSec.fromEpoch(timeSpan.endTime);
 
-    TimeSpan ts = cmd.getJ2kSecTimeSpan();
-    final double startTime = Time.ewToj2k(ts.startTime);
-    final double endTime = Time.ewToj2k(ts.endTime);
-
-    final double[] timeSpan = getTimeSpan(chanId);
+    final double[] chanTimeSpan = getTimeSpan(chanId);
 
     String hdrPreamble = cmd.id + " " + chanId + " " + chan + " ";
     String errorString = null;
     if (endTime < startTime) {
       errorString = hdrPreamble + "FB";
-    } else if (endTime < timeSpan[0]) {
+    } else if (endTime < chanTimeSpan[0]) {
       errorString = hdrPreamble + "FL s4";
-    } else if (startTime > timeSpan[1]) {
+      LOGGER.debug("Request span too early. Req: {} - {}; Have: {} - {}",
+          J2kSec.toDateString(startTime), J2kSec.toDateString(endTime),
+          J2kSec.toDateString(chanTimeSpan[0]), J2kSec.toDateString(chanTimeSpan[1]));
+   } else if (startTime > chanTimeSpan[1]) {
       errorString = hdrPreamble + "FR s4";
+      LOGGER.debug("Request span too late. Req: {} - {}; Have: {} - {}",
+          J2kSec.toDateString(startTime), J2kSec.toDateString(endTime),
+          J2kSec.toDateString(chanTimeSpan[0]), J2kSec.toDateString(chanTimeSpan[1]));
     }
 
     if (errorString != null) {
@@ -78,8 +88,8 @@ public class GetScnlCommand extends EwDataRequest {
     try {
       wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
         public Wave execute(WinstonDatabase winston) throws UtilException {
-          double st = Math.max(startTime, timeSpan[0]);
-          double et = Math.min(endTime, timeSpan[1]);
+          double st = Math.max(startTime, chanTimeSpan[0]);
+          double et = Math.min(endTime, chanTimeSpan[1]);
           return new Data(winston).getWave(chanId, st, et, 0);
         }
       });
@@ -94,9 +104,6 @@ public class GetScnlCommand extends EwDataRequest {
       return;
     }
 
-    final NumberFormat numberFormat = new DecimalFormat("#.######");
-    String sts = null;
-
     // find first sample time
     double ct = wave.getStartTime() - wave.getRegistrationOffset();
     final double dt = 1 / wave.getSamplingRate();
@@ -105,17 +112,10 @@ public class GetScnlCommand extends EwDataRequest {
         break;
       ct += dt;
     }
-    sts = numberFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ct)));
+    
+    String header = String.format("%s %d %s F s4 %.4f %d %n", cmd.command, chanId, chan, Time.j2kToEw(ct), (int)wave.getSamplingRate());
+    ctx.write(header);
     final ByteBuffer bb = ByteBuffer.allocate(wave.numSamples() * 13 + 256);
-    bb.put(cmd.id.getBytes());
-    bb.put((byte) ' ');
-    bb.put(Integer.toString(chanId).getBytes());
-    bb.put(chan.getBytes());
-    bb.put(" F s4 ".getBytes());
-    bb.put(sts.getBytes());
-    bb.put((byte) ' ');
-    bb.put(Double.toString(wave.getSamplingRate()).getBytes());
-    bb.put(" ".getBytes());
     int sample;
     ct = wave.getStartTime();
     // int samples = 0;
