@@ -74,7 +74,6 @@ public class MenuCommand extends WwsBaseCommand {
 
     ctx.write(generateMenu(channels, isScnl).toString());
     ctx.writeAndFlush('\n');
-    LOGGER.debug("TOMP: done");
   }
 
   /**
