@@ -36,8 +36,6 @@ import io.netty.channel.ChannelHandlerContext;
  */
 public class GetScnlRsamRawCommand extends WwsBaseCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRsamRawCommand.class);
-  protected Scnl scnl;
-  protected TimeSpan timeSpan;
   
   /**
    * Constructor.
@@ -87,7 +85,8 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
   @Override
   protected String prettyRequest(WwsCommandString cmd) {
     try {
-      return String.format("%s %s %s %s +%s %d", cmd.command, cmd.id, scnl, Time.toDateString(timeSpan.startTime), timeSpan.span(), cmd.getInt(-1));
+      TimeSpan timeSpan = cmd.getJ2kSecTimeSpan(true);
+      return String.format("%s %s %s %s +%s %d", cmd.command, cmd.id, cmd.getScnl(), Time.toDateString(timeSpan.startTime), timeSpan.span(), cmd.getInt(-1));
     } catch (MalformedCommandException e) {
       return cmd.commandString;
     }
