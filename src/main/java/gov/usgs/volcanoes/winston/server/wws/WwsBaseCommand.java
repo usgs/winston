@@ -5,6 +5,7 @@
 
 package gov.usgs.volcanoes.winston.server.wws;
 
+import java.net.InetSocketAddress;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -53,7 +54,8 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
    */
   public void respond(ChannelHandlerContext ctx, WwsCommandString req)
       throws MalformedCommandException, UtilException {
-    LOGGER.debug("{} {}", ctx.channel().remoteAddress(), req.commandString);
+    InetSocketAddress remoteAddr = (InetSocketAddress) ctx.channel().remoteAddress();
+    LOGGER.debug("{} asks {}", remoteAddr.getAddress(), req.commandString);
     doCommand(ctx, req);
   }
 
