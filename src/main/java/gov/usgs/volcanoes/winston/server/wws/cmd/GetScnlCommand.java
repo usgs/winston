@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.plot.data.Wave;
+import gov.usgs.volcanoes.core.contrib.HashCodeUtil;
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
@@ -31,6 +32,7 @@ public class GetScnlCommand extends EwDataRequest {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRawCommand.class);
   protected Scnl scnl;
   protected TimeSpan timeSpan;
+  private int cmdHash = Integer.MIN_VALUE;
 
   /**
    * Constructor.
@@ -41,8 +43,11 @@ public class GetScnlCommand extends EwDataRequest {
   }
 
   protected void parseCommand(WwsCommandString cmd) throws MalformedCommandException {
-    scnl = cmd.getScnl();
-    timeSpan = cmd.getEwTimeSpan(WwsCommandString.HAS_LOCATION);
+    int hash = HashCodeUtil.hash(HashCodeUtil.SEED, cmd);
+    if (cmdHash == Integer.MIN_VALUE || cmdHash != hash) {
+      scnl = cmd.getScnl();
+      timeSpan = cmd.getEwTimeSpan(WwsCommandString.HAS_LOCATION);      
+    }
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
@@ -136,5 +141,15 @@ public class GetScnlCommand extends EwDataRequest {
     bb.put((byte) '\n');
     bb.flip();
     ctx.writeAndFlush(bb.array());
+  }
+
+  @Override
+  protected String prettyRequest(WwsCommandString cmd) {
+    try {
+      parseCommand(cmd);
+      return String.format("%s %s %s %s +%s", cmd.command, cmd.id, scnl, Time.toDateString(timeSpan.startTime), timeSpan.span());
+    } catch (MalformedCommandException e) {
+      return cmd.commandString;
+    }
   }
 }

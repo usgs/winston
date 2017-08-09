@@ -37,9 +37,9 @@ public class GetMetadataCommand extends WwsBaseCommand {
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    
+
     if (cmd.args == null || cmd.args.length != 1) {
-      throw new MalformedCommandException();      
+      throw new MalformedCommandException();
     }
 
     StringBuilder sb = new StringBuilder();
@@ -175,5 +175,4 @@ public class GetMetadataCommand extends WwsBaseCommand {
       sb.append("\\c");
     }
   }
-
 }

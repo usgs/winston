@@ -55,7 +55,7 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
   public void respond(ChannelHandlerContext ctx, WwsCommandString req)
       throws MalformedCommandException, UtilException {
     InetSocketAddress remoteAddr = (InetSocketAddress) ctx.channel().remoteAddress();
-    LOGGER.debug("{} asks {}", remoteAddr.getAddress(), req.commandString);
+    LOGGER.debug("{} asks {}", remoteAddr.getAddress(), prettyRequest(req));
     doCommand(ctx, req);
   }
 
@@ -68,5 +68,9 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
     } catch (ClassCastException ex) {
       throw new UtilException("Unable to cast NumberFormat to DecimalFormat.");
     }
+  }
+
+  protected String prettyRequest(WwsCommandString req) {
+    return req.commandString;
   }
 }

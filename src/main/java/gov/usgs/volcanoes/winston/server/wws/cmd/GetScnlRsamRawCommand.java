@@ -15,6 +15,7 @@ import gov.usgs.plot.data.RSAMData;
 import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
@@ -80,6 +81,15 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
       LOGGER.debug("returning {} rsam bytes", bb.limit());
       ctx.write(cmd.id + " " + bb.limit() + '\n');
       ctx.writeAndFlush(bb.array());
+    }
+  }
+
+  @Override
+  protected String prettyRequest(WwsCommandString cmd) {
+    try {
+      return String.format("%s %s %s %s +%s %d", cmd.command, cmd.id, scnl, Time.toDateString(timeSpan.startTime), timeSpan.span(), cmd.getInt(-1));
+    } catch (MalformedCommandException e) {
+      return cmd.commandString;
     }
   }
 }

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
@@ -55,7 +56,7 @@ public class GetWaveRawCommand extends WwsBaseCommand {
       throw new MalformedCommandException(
           String.format("End time must be after start time. (%s)", cmd.commandString));
     }
-    
+
     Wave wave;
     try {
       wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
@@ -86,4 +87,16 @@ public class GetWaveRawCommand extends WwsBaseCommand {
       throw new UtilException("Unable to compress results.");
     }
   }
+
+  @Override
+  protected String prettyRequest(WwsCommandString cmd) {
+    try {
+      TimeSpan ts = cmd.getJ2kSecTimeSpan(WwsCommandString.HAS_LOCATION);
+      return String.format("%s %s %s %s +%s", cmd.command, cmd.id, cmd.getScnl(),
+          Time.toDateString(ts.startTime), ts.span());
+    } catch (MalformedCommandException e) {
+      return cmd.commandString;
+    }
+  }
+
 }

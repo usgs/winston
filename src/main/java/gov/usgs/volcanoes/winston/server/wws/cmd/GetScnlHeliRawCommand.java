@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
@@ -80,6 +81,17 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
       ctx.writeAndFlush(bb.array());
     } else {
       ctx.write(cmd.id + " 0\n");
+    }
+  }
+
+  @Override
+  protected String prettyRequest(WwsCommandString req) {
+    try {
+      TimeSpan ts = req.getJ2kSecTimeSpan(WwsCommandString.HAS_LOCATION);
+      return String.format("%s %s %s %s +%s", req.command, req.id, req.getScnl(),
+          Time.toDateString(ts.startTime), ts.span());
+    } catch (MalformedCommandException e) {
+      return req.commandString;
     }
   }
 }

@@ -37,7 +37,7 @@ public class GetChannelsCommand extends WwsBaseCommand {
     super();
   }
 
-  
+
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
@@ -67,9 +67,9 @@ public class GetChannelsCommand extends WwsBaseCommand {
     LOGGER.info("maxDays = {}", maxDays);
     ctx.writeAndFlush(sb.toString());
   }
-  
-  
-  private boolean wantsMetadata(WwsCommandString cmd) throws MalformedCommandException {
+
+
+  private static boolean wantsMetadata(WwsCommandString cmd) throws MalformedCommandException {
     boolean metadata;
     if (cmd.args != null) {
       if (cmd.args.length == 1 && "METADATA".equals(cmd.getString(0))) {
@@ -82,4 +82,5 @@ public class GetChannelsCommand extends WwsBaseCommand {
     }
     return metadata;
   }
+
 }
