@@ -62,7 +62,7 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
    */
   public void respond(ChannelHandlerContext ctx, FullHttpRequest request)
       throws MalformedCommandException, UtilException {
-    LOGGER.debug("Recieved command: {}", request.getUri());
+    LOGGER.debug("{} {}", ctx.channel().remoteAddress(), request.getUri());
     doCommand(ctx, request);
   }
 

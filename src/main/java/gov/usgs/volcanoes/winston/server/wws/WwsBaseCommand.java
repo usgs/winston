@@ -53,7 +53,7 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
    */
   public void respond(ChannelHandlerContext ctx, WwsCommandString req)
       throws MalformedCommandException, UtilException {
-    LOGGER.debug("Recieved command: {}", req.commandString);
+    LOGGER.debug("{} {}", ctx.channel().remoteAddress(), req.commandString);
     doCommand(ctx, req);
   }
 
