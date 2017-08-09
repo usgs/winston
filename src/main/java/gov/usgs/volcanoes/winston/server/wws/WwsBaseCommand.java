@@ -55,7 +55,7 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
   public void respond(ChannelHandlerContext ctx, WwsCommandString req)
       throws MalformedCommandException, UtilException {
     InetSocketAddress remoteAddr = (InetSocketAddress) ctx.channel().remoteAddress();
-    LOGGER.debug("{} asks {}", remoteAddr.getAddress(), prettyRequest(req));
+    LOGGER.info("{} asks {}", remoteAddr.getAddress(), prettyRequest(req));
     doCommand(ctx, req);
   }
 
