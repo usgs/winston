@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.message.TraceBuf;
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
@@ -51,17 +52,17 @@ public class WaveServerEmulator {
     decimalFormat.setGroupingUsed(false);
   }
 
+  
   public int getChannelID(final String s, final String c, final String n) {
-    return getChannelID(s, c, n, null);
+    return getChannelID(new Scnl(s, c, n));
   }
 
   public int getChannelID(final String s, final String c, final String n, final String l) {
-    String loc = "";
-    if (l != null && !l.equals("--")) {
-      loc = "$" + l;
-    }
-    final String trueCode = s + "$" + c + "$" + n + loc;
-    final int id = channels.getChannelID(trueCode);
+    return getChannelID(new Scnl(s, c, n, l));
+  }
+
+  public int getChannelID(final Scnl scnl) {
+    final int id = channels.getChannelID(scnl);
     return id;
   }
 
@@ -163,12 +164,7 @@ public class WaveServerEmulator {
 
   public String getWaveServerMenuItem(final String s, final String c, final String n,
       final String l, final double embargo, final double span) {
-    String loc = "";
-    if (l != null && !l.equals("--")) {
-      loc = "$" + l;
-    }
-    final String trueCode = s + "$" + c + "$" + n + loc;
-    final int id = channels.getChannelID(trueCode);
+    final int id = channels.getChannelID(new Scnl(s, c, n, l));
     if (id == -1) {
       return null;
     } else {
@@ -184,6 +180,7 @@ public class WaveServerEmulator {
   // TODO: fix. Returning Object[] is not the right design
   public Object[] getWaveServerRaw(final String s, final String c, final String n, final String l,
       final double t1, final double t2) {
+    
     String lc = "";
     if (l != null && !l.equals("--")) {
       lc = "$" + l;
@@ -202,7 +199,8 @@ public class WaveServerEmulator {
     }
 
     try {
-      final int sid = channels.getChannelID(code);
+      Scnl scnl = new Scnl(s, c, n, l);
+      final int sid = channels.getChannelID(scnl);
       final TraceBuf tb0 = new TraceBuf(bufs.get(0));
       final TraceBuf tbN = new TraceBuf(bufs.get(bufs.size() - 1));
       int total = 0;

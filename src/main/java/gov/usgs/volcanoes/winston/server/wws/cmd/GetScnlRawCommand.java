@@ -69,9 +69,9 @@ public class GetScnlRawCommand extends EwDataRequest {
     final double startTime = J2kSec.fromEpoch(timeSpan.startTime);
     final double endTime = J2kSec.fromEpoch(timeSpan.endTime);
 
-    final Integer chanId = getChanId(code);
+    final Integer chanId = getChanId(scnl);
     if (chanId == -1) {
-      LOGGER.error("Cannot find  {}", code);
+      LOGGER.info("Cannot find  {}", scnl);
       ctx.writeAndFlush(id + " " + id + " 0 " + chan + " FN\n");
       return;
     }
@@ -90,6 +90,7 @@ public class GetScnlRawCommand extends EwDataRequest {
     }
 
     if (errorString != null) {
+      LOGGER.debug("Returning error: {}", errorString);
       ctx.writeAndFlush(errorString + "\n");
       return;
     }
@@ -127,16 +128,17 @@ public class GetScnlRawCommand extends EwDataRequest {
       total += buf.length;
     }
 
-    String hdr = String.format("%s F %s %f %f %d%n", hdrPreamble, firstBuf.dataType(),
+    String hdr = String.format("%s F %s %f %f %d", hdrPreamble, firstBuf.dataType(),
         firstBuf.getStartTime(), lastBuf.getEndTime(), total);
-    ctx.write(hdr);
-
+    ctx.writeAndFlush(hdr + "\r\n" + "\r\n");
+    LOGGER.debug("Returning header: {}", hdr);
     final ByteBuffer bb = ByteBuffer.allocate(total);
     for (final Iterator<byte[]> it = bufs.iterator(); it.hasNext();) {
       bb.put((byte[]) it.next());
     }
     bb.flip();
-    ctx.writeAndFlush(bb.array());
+    LOGGER.debug("GETSCNLRAW returning {} bytes", bb.capacity());
+//    ctx.writeAndFlush(bb.array());
   }
 
   @Override

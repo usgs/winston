@@ -55,7 +55,7 @@ public class GetScnlCommand extends EwDataRequest {
 
     parseCommand(cmd);
 
-    final Integer chanId = getChanId(DbUtils.scnlAsWinstonCode(scnl));
+    final Integer chanId = getChanId(scnl);
     if (chanId == -1) {
       ctx.writeAndFlush(String.format("%s FN%n", cmd.id));
       return;
