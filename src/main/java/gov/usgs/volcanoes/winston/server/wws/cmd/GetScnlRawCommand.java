@@ -78,20 +78,20 @@ public class GetScnlRawCommand extends EwDataRequest {
 
     final double[] timeSpan = getTimeSpan(chanId);
 
-    String hdrPreamble = id + " " + chanId + " " + chan + " ";
+    String hdrPreamble = id + " " + chanId + " " + chan;
     String errorString = null;
     if (endTime < startTime) {
-      errorString = hdrPreamble + "FB";
+      errorString = hdrPreamble + " FB";
     } else if (endTime < timeSpan[0]) {
-      errorString = hdrPreamble + "FL s4";
+      errorString = hdrPreamble + " FL s4";
     } else if (startTime > timeSpan[1]) {
-      errorString = hdrPreamble + "FR s4";
+      errorString = hdrPreamble + " FR s4";
       LOGGER.error("{} TIME {}", J2kSec.toDateString(startTime));
     }
 
     if (errorString != null) {
       LOGGER.debug("Returning error: {}", errorString);
-      ctx.writeAndFlush(errorString + "\n");
+      ctx.writeAndFlush(errorString + "\r\n");
       return;
     }
 
@@ -109,7 +109,7 @@ public class GetScnlRawCommand extends EwDataRequest {
     }
 
     if (bufs == null || bufs.size() == 0) {
-      ctx.writeAndFlush(hdrPreamble + "FG s4\n");
+      ctx.writeAndFlush(hdrPreamble + " FG s4\n");
       LOGGER.debug("Returning empty trace list");
       return;
     }
@@ -128,9 +128,9 @@ public class GetScnlRawCommand extends EwDataRequest {
       total += buf.length;
     }
 
-    String hdr = String.format("%s F %s %f %f %d", hdrPreamble, firstBuf.dataType(),
+    String hdr = String.format("%s F %s %f %f %d%n", hdrPreamble, firstBuf.dataType(),
         firstBuf.getStartTime(), lastBuf.getEndTime(), total);
-    ctx.writeAndFlush(hdr + "\r\n" + "\r\n");
+    ctx.writeAndFlush(hdr);
     LOGGER.debug("Returning header: {}", hdr);
     final ByteBuffer bb = ByteBuffer.allocate(total);
     for (final Iterator<byte[]> it = bufs.iterator(); it.hasNext();) {
@@ -138,7 +138,8 @@ public class GetScnlRawCommand extends EwDataRequest {
     }
     bb.flip();
     LOGGER.debug("GETSCNLRAW returning {} bytes", bb.capacity());
-//    ctx.writeAndFlush(bb.array());
+    ctx.write(bb.array());
+    ctx.writeAndFlush("\n");
   }
 
   @Override
