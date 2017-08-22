@@ -76,7 +76,7 @@ public class MenuCommand extends WwsBaseCommand {
     for (String line : generateMenu(channels, isScnl)) {
       ctx.write(line);
     }
-    ctx.writeAndFlush("\r\n");
+    ctx.writeAndFlush("\n");
   }
 
   /**
@@ -95,31 +95,21 @@ public class MenuCommand extends WwsBaseCommand {
     }
 
     DecimalFormat decimalFormat = WwsBaseCommand.getDecimalFormat();
-    StringBuffer sb = new StringBuffer();
     LOGGER.debug("channels count {}", channels.size());
     final List<String> list = new ArrayList<String>(channels.size());
     for (final Channel chan : channels) {
-      String line = String.format(" %d %s %s %s s4 ", chan.getSID(), chan.scnl.toString(" "),
-          decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))),
-          decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))));
+      String line;
+      if (isScnl) {
+        line = String.format(" %d %s %s %s s4 ", chan.getSID(), chan.scnl.toString(" "),
+            decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))),
+            decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))));
+      } else {
+        Scnl scnl = chan.scnl;
+        line = String.format(" %d %s %s %s %s %s s4 ", chan.getSID(), scnl.station, scnl.channel,
+            scnl.network, decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))),
+            decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))));
+      }
       list.add(line);
-      //
-      // Scnl scnl = chan.scnl;
-      // final String[] ss = chan.getCode().split("\\$");
-      // final double[] ts = {chan.getMinTime(), chan.getMaxTime()};
-      //
-      //
-      // if (isScnl) {
-      // final String loc = (ss.length == 4 ? ss[3] : "--");
-      // final String line = " " + chan.getSID() + " " + ss[0] + " " + ss[1] + " " + ss[2] + " "
-      // + loc + " " + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
-      // + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ";
-      // list.add(line);
-      // } else {
-      // list.add(" " + chan.getSID() + " " + ss[0] + " " + ss[1] + " " + ss[2] + " "
-      // + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
-      // + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ");
-      // }
     }
     LOGGER.debug("returning {} items.", list.size());
 
