@@ -57,7 +57,7 @@ public class GetWaveRawCommand extends WwsBaseCommand {
           String.format("End time must be after start time. (%s)", cmd.commandString));
     }
 
-    Wave wave;
+    Wave wave = null;
     try {
       wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
         public Wave execute(WinstonDatabase winston) throws UtilException {
@@ -66,10 +66,9 @@ public class GetWaveRawCommand extends WwsBaseCommand {
         }
       });
     } catch (Exception e1) {
-      throw new UtilException(e1.getMessage());
+      LOGGER.info(e1.getMessage());
     }
-
-    ByteBuffer bb = null;
+    ByteBuffer bb;
     if (wave != null && wave.numSamples() > 0)
       bb = (ByteBuffer) wave.toBinary().flip();
     else
@@ -77,14 +76,14 @@ public class GetWaveRawCommand extends WwsBaseCommand {
 
     String id = cmd.id;
 
-    if (cmd.getInt(-1) == 1)
-      bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
-    if (bb != null) {
-      ctx.write(id + " " + bb.limit() + "\n");
+    ctx.writeAndFlush(id + " " + bb.limit() + "\n");
+    System.err.println("TOMP returning " + bb.limit());
+    if (bb != null && bb.capacity() > 0) {
+      if (cmd.getInt(-1) == 1) {
+        bb = ByteBuffer.wrap(Zip.compress(bb.array()));
+      }
       ctx.writeAndFlush(bb.array());
-    } else {
-      throw new UtilException("Unable to compress results.");
     }
   }
 
