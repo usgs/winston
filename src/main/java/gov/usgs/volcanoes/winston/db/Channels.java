@@ -12,6 +12,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.GroupNode;
 import gov.usgs.volcanoes.winston.Instrument;
@@ -28,10 +29,10 @@ public class Channels {
   private static final Logger LOGGER = LoggerFactory.getLogger(InputEW.class);
 
   private final WinstonDatabase winston;
-  
+
   // exposed retention time in seconds
   private int aparentRetention = Integer.MAX_VALUE;
-  
+
   /**
    * Constructor
    * 
@@ -72,7 +73,7 @@ public class Channels {
   public void setAparentRetention(int i) {
     aparentRetention = i;
   }
-  
+
   /**
    * Get List of channels
    * 
@@ -122,7 +123,7 @@ public class Channels {
       final List<Channel> channels = new ArrayList<Channel>();
       while (rs.next()) {
         final Channel ch = new Channel(rs, aparentRetention);
-        
+
         if (ch.getMaxTime() > ch.getMinTime()) {
           channelsMap.put(ch.getSID(), ch);
           channels.add(ch);
@@ -167,21 +168,46 @@ public class Channels {
     return null;
   }
 
+//  /**
+//   * Get channel ID from code
+//   * 
+//   * @param code
+//   * @return channel ID
+//   */
+//  public int getChannelID(final String code) {
+//    if (!winston.checkConnect())
+//      return -1;
+//
+//    try {
+//      int result = -1;
+//      winston.useRootDatabase();
+//      final ResultSet rs =
+//          winston.getStatement().executeQuery("SELECT sid FROM channels WHERE code='" + code + "'");
+//      if (rs.next())
+//        result = rs.getInt(1);
+//      rs.close();
+//      return result;
+//    } catch (final Exception e) {
+//      LOGGER.error("Could not get channel ID. ({})", e.getLocalizedMessage());
+//    }
+//    return -1;
+//  }
+
   /**
    * Get channel ID from code
    * 
    * @param code
    * @return channel ID
    */
-  public int getChannelID(final String code) {
+  public int getChannelID(final Scnl scnl) {
     if (!winston.checkConnect())
       return -1;
 
     try {
       int result = -1;
       winston.useRootDatabase();
-      final ResultSet rs =
-          winston.getStatement().executeQuery("SELECT sid FROM channels WHERE code='" + code + "'");
+      String sql = String.format("SELECT sid FROM channels WHERE code='%s'", DbUtils.scnlAsWinstonCode(scnl));
+      final ResultSet rs = winston.getStatement().executeQuery(sql);
       if (rs.next())
         result = rs.getInt(1);
       rs.close();
@@ -314,7 +340,7 @@ public class Channels {
     try {
       winston.useRootDatabase();
       winston.getStatement()
-      .execute("CREATE DATABASE `" + winston.databasePrefix + "_" + code + "`");
+          .execute("CREATE DATABASE `" + winston.databasePrefix + "_" + code + "`");
       winston.getStatement()
           .execute("INSERT INTO channels (code, st, et) VALUES ('" + code + "', 1E300, -1E300)");
       winston.getStatement().execute("USE `" + winston.databasePrefix + "_" + code + "`");

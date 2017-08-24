@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
@@ -55,8 +56,8 @@ public class GetWaveRawCommand extends WwsBaseCommand {
       throw new MalformedCommandException(
           String.format("End time must be after start time. (%s)", cmd.commandString));
     }
-    
-    Wave wave;
+
+    Wave wave = null;
     try {
       wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
         public Wave execute(WinstonDatabase winston) throws UtilException {
@@ -65,25 +66,33 @@ public class GetWaveRawCommand extends WwsBaseCommand {
         }
       });
     } catch (Exception e1) {
-      throw new UtilException(e1.getMessage());
+      LOGGER.info(e1.getMessage());
     }
 
-    ByteBuffer bb = null;
-    if (wave != null && wave.numSamples() > 0)
+    ByteBuffer bb;
+    if (wave != null && wave.numSamples() > 0) {
       bb = (ByteBuffer) wave.toBinary().flip();
-    else
-      bb = ByteBuffer.allocate(0);
-
-    String id = cmd.id;
-
-    if (cmd.getInt(-1) == 1)
-      bb = ByteBuffer.wrap(Zip.compress(bb.array()));
-
-    if (bb != null) {
-      ctx.write(id + " " + bb.limit() + "\n");
-      ctx.writeAndFlush(bb.array());
+      if (cmd.getInt(-1) == 1) {
+        bb = ByteBuffer.wrap(Zip.compress(bb.array()));
+      }
     } else {
-      throw new UtilException("Unable to compress results.");
+      bb = ByteBuffer.allocate(0);
+    }
+
+    ctx.writeAndFlush(String.format("%s %d%n", cmd.id, bb.limit()));
+    System.err.println("TOMP returning " + bb.limit());
+    ctx.writeAndFlush(bb.array());
+  }
+
+  @Override
+  protected String prettyRequest(WwsCommandString cmd) {
+    try {
+      TimeSpan ts = cmd.getJ2kSecTimeSpan(WwsCommandString.HAS_LOCATION);
+      return String.format("%s %s %s %s +%s", cmd.command, cmd.id, cmd.getScnl(),
+          Time.toDateString(ts.startTime), ts.span());
+    } catch (MalformedCommandException e) {
+      return cmd.commandString;
     }
   }
+
 }

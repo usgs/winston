@@ -6,6 +6,7 @@
 
 package gov.usgs.volcanoes.winston.server.http;
 
+import java.net.InetSocketAddress;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -62,7 +63,8 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
    */
   public void respond(ChannelHandlerContext ctx, FullHttpRequest request)
       throws MalformedCommandException, UtilException {
-    LOGGER.debug("Recieved command: {}", request.getUri());
+    InetSocketAddress remoteAddr = (InetSocketAddress) ctx.channel().remoteAddress();
+    LOGGER.debug("{} asks {}", remoteAddr.getAddress(), request.getUri());
     doCommand(ctx, request);
   }
 

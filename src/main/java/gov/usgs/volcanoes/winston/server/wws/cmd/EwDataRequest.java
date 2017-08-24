@@ -6,6 +6,7 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
@@ -20,16 +21,16 @@ import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
  *
  */
 public abstract class EwDataRequest extends WwsBaseCommand {
-  protected Integer getChanId(final String code) throws UtilException {
+  protected Integer getChanId(final Scnl scnl) throws UtilException {
     final Integer chanId;
     try {
       chanId = databasePool.doCommand(new WinstonConsumer<Integer>() {
         public Integer execute(WinstonDatabase winston) throws UtilException {
-          return new Channels(winston).getChannelID(code);
+          return new Channels(winston).getChannelID(scnl);
         }
       });
     } catch (Exception e) {
-      throw new UtilException("Unable to get chanId");
+      throw new UtilException(String.format("Unable to get chanId for %s. (%s)", scnl,e.getMessage()));
     }
     return chanId;
   }

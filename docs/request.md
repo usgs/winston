@@ -29,7 +29,7 @@ Request listing of known stations and metadata.
 If the SCNL argument is provided, location codes will always be included. This argument is not supported by Eaerthworm, which will always include location codes.
 
 ### Response
-The server responds with one header line followed by one line per channel.
+The server responds with one header line followed by one line per channel. 
 
 #### Response Header
 

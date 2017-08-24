@@ -206,7 +206,7 @@ public class WWS {
           public void initChannel(SocketChannel ch) throws Exception {
             connectionStatistics.incrOpenCount();
             final ChannelTrafficShapingHandler trafficCounter =
-                new ChannelTrafficShapingHandler(3000);
+                new ChannelTrafficShapingHandler(0);
             final InetSocketAddress remoteAddress = ch.remoteAddress();
             connectionStatistics.mapChannel(remoteAddress, trafficCounter);
 

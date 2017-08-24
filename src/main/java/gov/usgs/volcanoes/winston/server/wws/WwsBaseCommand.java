@@ -5,6 +5,7 @@
 
 package gov.usgs.volcanoes.winston.server.wws;
 
+import java.net.InetSocketAddress;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 
@@ -53,7 +54,8 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
    */
   public void respond(ChannelHandlerContext ctx, WwsCommandString req)
       throws MalformedCommandException, UtilException {
-    LOGGER.debug("Recieved command: {}", req.commandString);
+    InetSocketAddress remoteAddr = (InetSocketAddress) ctx.channel().remoteAddress();
+    LOGGER.info("{} asks {}", remoteAddr.getAddress(), prettyRequest(req));
     doCommand(ctx, req);
   }
 
@@ -66,5 +68,9 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
     } catch (ClassCastException ex) {
       throw new UtilException("Unable to cast NumberFormat to DecimalFormat.");
     }
+  }
+
+  protected String prettyRequest(WwsCommandString req) {
+    return req.commandString;
   }
 }

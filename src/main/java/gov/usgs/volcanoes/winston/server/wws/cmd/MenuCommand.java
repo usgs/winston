@@ -12,6 +12,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.UtilException;
@@ -36,7 +37,7 @@ public class MenuCommand extends WwsBaseCommand {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MenuCommand.class);
   private static final int SCNL_ARG = 0;
-  
+
   /** 
    * Constructor.
    */
@@ -72,9 +73,10 @@ public class MenuCommand extends WwsBaseCommand {
       throw new UtilException(e.getMessage());
     }
 
-    ctx.write(generateMenu(channels, isScnl).toString());
-    ctx.writeAndFlush('\n');
-    LOGGER.debug("TOMP: done");
+    for (String line : generateMenu(channels, isScnl)) {
+      ctx.write(line);
+    }
+    ctx.writeAndFlush("\n");
   }
 
   /**
@@ -93,30 +95,24 @@ public class MenuCommand extends WwsBaseCommand {
     }
 
     DecimalFormat decimalFormat = WwsBaseCommand.getDecimalFormat();
-
     LOGGER.debug("channels count {}", channels.size());
     final List<String> list = new ArrayList<String>(channels.size());
     for (final Channel chan : channels) {
-      final String[] ss = chan.getCode().split("\\$");
-      final double[] ts = {chan.getMinTime(), chan.getMaxTime()};
-
-
-      if (ts != null && ts[0] < ts[1]) {
-
-        if (isScnl) {
-          final String loc = (ss.length == 4 ? ss[3] : "--");
-          final String line = " " + chan.getSID() + " " + ss[0] + " " + ss[1] + " " + ss[2] + " "
-              + loc + " " + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
-              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ";
-          list.add(line);
-        } else {
-          list.add(" " + chan.getSID() + " " + ss[0] + " " + ss[1] + " " + ss[2] + " "
-              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
-              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ");
-        }
+      String line;
+      if (isScnl) {
+        line = String.format(" %d %s %s %s s4 ", chan.getSID(), chan.scnl.toString(" "),
+            decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))),
+            decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))));
+      } else {
+        Scnl scnl = chan.scnl;
+        line = String.format(" %d %s %s %s %s %s s4 ", chan.getSID(), scnl.station, scnl.channel,
+            scnl.network, decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))),
+            decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))));
       }
+      list.add(line);
     }
     LOGGER.debug("returning {} items.", list.size());
+
     return list;
   }
 }
