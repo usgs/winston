@@ -128,9 +128,9 @@ public class GetScnlRawCommand extends EwDataRequest {
       total += buf.length;
     }
 
-    String hdr = String.format("%s F %s %f %f %d%n", hdrPreamble, firstBuf.dataType(),
+    String hdr = String.format("%s F %s %f %f %d", hdrPreamble, firstBuf.dataType(),
         firstBuf.getStartTime(), lastBuf.getEndTime(), total);
-    ctx.writeAndFlush(hdr);
+    ctx.writeAndFlush(hdr + "\n");
     LOGGER.debug("Returning header: {}", hdr);
     final ByteBuffer bb = ByteBuffer.allocate(total);
     for (final Iterator<byte[]> it = bufs.iterator(); it.hasNext();) {
