@@ -68,23 +68,20 @@ public class GetWaveRawCommand extends WwsBaseCommand {
     } catch (Exception e1) {
       LOGGER.info(e1.getMessage());
     }
+
     ByteBuffer bb;
-    if (wave != null && wave.numSamples() > 0)
+    if (wave != null && wave.numSamples() > 0) {
       bb = (ByteBuffer) wave.toBinary().flip();
-    else
-      bb = ByteBuffer.allocate(0);
-
-    String id = cmd.id;
-
-
-    ctx.writeAndFlush(id + " " + bb.limit() + "\n");
-    System.err.println("TOMP returning " + bb.limit());
-    if (bb != null && bb.capacity() > 0) {
       if (cmd.getInt(-1) == 1) {
         bb = ByteBuffer.wrap(Zip.compress(bb.array()));
       }
-      ctx.writeAndFlush(bb.array());
+    } else {
+      bb = ByteBuffer.allocate(0);
     }
+
+    ctx.writeAndFlush(String.format("%s %d%n", cmd.id, bb.limit()));
+    System.err.println("TOMP returning " + bb.limit());
+    ctx.writeAndFlush(bb.array());
   }
 
   @Override
