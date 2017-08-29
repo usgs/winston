@@ -80,7 +80,6 @@ public class GetWaveRawCommand extends WwsBaseCommand {
     }
 
     ctx.writeAndFlush(String.format("%s %d%n", cmd.id, bb.limit()));
-    System.err.println("TOMP returning " + bb.limit());
     ctx.writeAndFlush(bb.array());
   }
 
