@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,10 +167,15 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
       throw new UtilException(e.getMessage());
     }
 
+    List<String> channelNames = new ArrayList<String>();
+    for (Channel chan : channels) {
+      channelNames.add(chan.scnl.toString("_"));
+    }
+    
     Map<String, Object> root = new HashMap<String, Object>();
 
     root.put("timeZones", TimeZone.getAvailableIDs());
-    root.put("channels", channels);
+    root.put("channels", channelNames);
     root.put("httpCommands", HttpCommandFactory.values());
     root.put("httpCommandNames", HttpCommandFactory.getNames());
     root.put("versionString", Version.VERSION_STRING);

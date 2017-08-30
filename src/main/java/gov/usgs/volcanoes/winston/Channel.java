@@ -294,6 +294,13 @@ public class Channel implements Comparable<Channel> {
   }
 
   /**
+   * Return channel code. 
+   */
+  public String toString() {
+    return DbUtils.scnlAsWinstonCode(scnl);
+  }
+  
+  /**
    * Getter for linearA
    *
    * @return linearA
