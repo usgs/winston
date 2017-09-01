@@ -24,16 +24,16 @@ The Winston Wave Server supports a subset of the Earthworm WaveserverV command s
 Request listing of known stations and metadata.
 
 ### Request
-    <cmd> = "MENU" <sp> <id> [<sp> "SCNL"]
-
-If the SCNL argument is provided, location codes will always be included. This argument is not supported by Eaerthworm, which will always include location codes.
+    <request> = "MENU" <sp> <request id> [ <sp> "SCNL" ] <nl>
+              | "MENU:" <sp> <request id> [ <sp> "SCNL" ] <nl>
+              
+If the SCNL argument is provided, location codes will always be included.
 
 ### Response
-The server responds with one header line followed by one line per channel. 
-
-#### Response Header
-
-#### Repsonse Body
+	<response> = <request id> <sp> <sp> <channel record list> <nl>
+	<channel record list> = <channel record>
+	                      | <channel record> <sp> <sp> <channel record list>
+	<channel record> = <channel pin> <sp> <channel spec> <sp> <data type>
 
 ## GETSCNRAW
 This is an alias for GETSCNLRAW. Either command will accept a SCN or SCNL and return dat in the form it was received in.
