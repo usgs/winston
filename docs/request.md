@@ -35,6 +35,7 @@ If the SCNL argument is provided, location codes will always be included.
 	                      | <channel record> <sp> <sp> <channel record list>
 	<channel record> = <channel pin> <sp> <channel spec> <sp> <data type>
 
+
 ## GETSCNRAW
 This is an alias for GETSCNLRAW. Either command will accept a SCN or SCNL and return dat in the form it was received in.
 
