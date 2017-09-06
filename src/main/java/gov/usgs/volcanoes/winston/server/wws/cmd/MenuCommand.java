@@ -59,7 +59,7 @@ public class MenuCommand extends WwsBaseCommand {
       throw new MalformedCommandException();
     }
 
-    ctx.write(cmd.id + '\n');
+    ctx.write(cmd.id + ' ');
 
     List<Channel> channels;
     try {
