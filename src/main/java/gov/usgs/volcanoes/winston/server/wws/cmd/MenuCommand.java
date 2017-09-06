@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
@@ -101,13 +102,13 @@ public class MenuCommand extends WwsBaseCommand {
       String line;
       if (isScnl) {
         line = String.format(" %d %s %s %s s4 ", chan.getSID(), chan.scnl.toString(" "),
-            decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))),
-            decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))));
+            decimalFormat.format(Time.ewToj2k(chan.getMinTime())),
+            decimalFormat.format(Time.ewToj2k(chan.getMaxTime())));
       } else {
         Scnl scnl = chan.scnl;
         line = String.format(" %d %s %s %s %s %s s4 ", chan.getSID(), scnl.station, scnl.channel,
-            scnl.network, decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))),
-            decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(chan.getMaxTime()))));
+            scnl.network, decimalFormat.format(Time.ewToj2k(chan.getMinTime())),
+            decimalFormat.format(Time.ewToj2k(chan.getMaxTime())));
       }
       list.add(line);
     }
