@@ -192,6 +192,7 @@ public class WWS {
     final GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
     poolConfig.setMaxTotal(dbConnections);
     final ConfigFile winstonConfig = configFile.getSubConfig("winston");
+    winstonConfig.put("maxDays", "" + configFile.getInt("wws.maxDays", Integer.MAX_VALUE));
     final WinstonDatabasePool databasePool = new WinstonDatabasePool(winstonConfig, poolConfig);
 
     final AttributeKey<ConnectionStatistics> connectionStatsKey =

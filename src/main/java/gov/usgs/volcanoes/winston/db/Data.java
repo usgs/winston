@@ -479,9 +479,9 @@ public class Data {
     return null;
   }
 
-  public RSAMData getRSAMData(final String code, final double t1, final double t2,
+  public RSAMData getRSAMData(final Scnl scnl, final double t1, final double t2,
       final int maxrows, final DownsamplingType ds, final int dsInt) throws UtilException {
-    if (!winston.checkConnect() || !winston.useDatabase(code))
+    if (!winston.checkConnect() || !winston.useDatabase(DbUtils.scnlAsWinstonCode(scnl)))
       return null;
 
     try {
@@ -498,7 +498,7 @@ public class Data {
         if (date.equals(endDate))
           done = true;
         ct += ONE_DAY;
-        final String table = code + "$$H" + date;
+        final String table = DbUtils.scnlAsWinstonCode(scnl) + "$$H" + date;
         ResultSet rs = null;
         String sql = "SELECT j2ksec, rsam" + " FROM `" + table + "` WHERE j2ksec>=" + t1
             + " AND j2ksec<=" + t2 + " AND rcnt>0" + " ORDER BY j2ksec";
@@ -560,7 +560,7 @@ public class Data {
       }
       return new RSAMData(list);
     } catch (final SQLException e) {
-      LOGGER.error("Could not get RSAM for {}, {}->{}", code, t1, t2);
+      LOGGER.error("Could not get RSAM for {}, {}->{}", DbUtils.scnlAsWinstonCode(scnl), t1, t2);
     }
     return null;
   }

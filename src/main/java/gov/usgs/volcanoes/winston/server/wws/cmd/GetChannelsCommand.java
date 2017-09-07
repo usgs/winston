@@ -48,7 +48,6 @@ public class GetChannelsCommand extends WwsBaseCommand {
       chs = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
         public List<Channel> execute(WinstonDatabase winston) {
           Channels channels = new Channels(winston);
-          channels.setAparentRetention(maxDays * ONE_DAY_S);
           return channels.getChannels(metadata);
         }
       });

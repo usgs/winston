@@ -6,11 +6,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.DbUtils;
+import gov.usgs.volcanoes.winston.server.wws.cmd.MenuCommand;
 
 
 /**
@@ -20,6 +24,8 @@ import gov.usgs.volcanoes.winston.db.DbUtils;
  * @author Tom Parker
  */
 public class Channel implements Comparable<Channel> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(Channel.class);
+
   public static final int ONE_DAY = 24 * 60 * 60;
 
   private final int sid;
@@ -44,8 +50,8 @@ public class Channel implements Comparable<Channel> {
     sid = -1;
     scnl = null;
     instrument = Instrument.NULL;
-    timeSpan  = new TimeSpan(Long.MAX_VALUE, Long.MIN_VALUE);
-   }
+    timeSpan = new TimeSpan(Long.MAX_VALUE, Long.MIN_VALUE);
+  }
 
   /**
    * Constructor from minimal info
@@ -65,45 +71,7 @@ public class Channel implements Comparable<Channel> {
     timeSpan = new TimeSpan(J2kSec.asEpoch(min), J2kSec.asEpoch(max));
   }
 
-  /**
-   * Constructor from a ResultSet
-   *
-   * @param rs
-   *          ResultSet
-   * @throws SQLException
-   */
-  public Channel(final ResultSet rs) throws SQLException {
-    this(rs, Integer.MAX_VALUE);
-  }
-  
-  public Channel(final ResultSet rs, int aparentRetention) throws SQLException {
-    sid = rs.getInt("sid");
-    try {
-      scnl = Scnl.parse(rs.getString("code"));
-    } catch (UtilException e) {
-      throw new SQLException("Cannot parse station code: " + rs.getString("code"));
-    }
-    
-    
-    double mt = rs.getDouble("st");
-    double minTime = Math.max(mt, J2kSec.now() - aparentRetention);
-    double maxTime = rs.getDouble("et");
-    timeSpan = new TimeSpan(J2kSec.asEpoch(minTime), J2kSec.asEpoch(maxTime));
-    
-    instrument = new Instrument(rs);
-    linearA = rs.getDouble("linearA");
-    if (linearA == 1e300)
-      linearA = Double.NaN;
-    linearB = rs.getDouble("linearB");
-    if (linearB == 1e300)
-      linearB = Double.NaN;
-    unit = rs.getString("unit");
-    if (unit == null)
-      unit = "";
-    alias = rs.getString("alias");
-    if (alias == null)
-      alias = "";
-  }
+
 
   /**
    * Constructor from a String
@@ -289,8 +257,16 @@ public class Channel implements Comparable<Channel> {
     // return String.format("%s:%f:%f:%s:%s", code,
     // instrument.getLongitude(), instrument.getLatitude(), stripped,
     // stripped);
-    return String.format("%d:%s:%s:%f:%f:%f:%s", sid, DbUtils.scnlAsWinstonCode(scnl), stripped, instrument.getLongitude(),
+    return String.format("%d:%s:%s:%f:%f:%f:%s", sid, DbUtils.scnlAsWinstonCode(scnl), stripped,
+        instrument.getLongitude(),
         instrument.getLatitude(), instrument.getHeight(), "0");
+  }
+
+  /**
+   * Return channel code. 
+   */
+  public String toString() {
+    return DbUtils.scnlAsWinstonCode(scnl);
   }
 
   /**
@@ -308,7 +284,11 @@ public class Channel implements Comparable<Channel> {
    * @param linearA
    */
   public void setLinearA(final double linearA) {
-    this.linearA = linearA;
+    if (linearA == 1e300) {
+      this.linearA = Double.NaN;
+    } else {
+      this.linearA = linearA;
+    }
   }
 
   /**
@@ -326,7 +306,11 @@ public class Channel implements Comparable<Channel> {
    * @param linearB
    */
   public void setLinearB(final double linearB) {
-    this.linearB = linearB;
+    if (linearB == 1e300) {
+      this.linearB = Double.NaN;
+    } else {
+      this.linearB = linearB;
+    }
   }
 
   /**
@@ -377,5 +361,9 @@ public class Channel implements Comparable<Channel> {
    */
   public int compareTo(final Channel o) {
     return scnl.compareTo(o.scnl);
+  }
+
+  public void setInstrument(Instrument instrument) {
+    this.instrument = instrument;
   }
 }

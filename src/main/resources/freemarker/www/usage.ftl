@@ -12,7 +12,7 @@
 				initTabs();
 				initTimeZones();
 				initChannels();
-			  buildMenuUrl();
+			    buildMenuUrl();
 				buildHeliUrl();
 				buildRsamUrl();
 				buildGapsUrl();

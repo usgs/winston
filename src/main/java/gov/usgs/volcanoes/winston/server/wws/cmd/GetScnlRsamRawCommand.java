@@ -47,8 +47,6 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    final String code = DbUtils.scnlAsWinstonCode(cmd.getScnl());
-
     TimeSpan ts = cmd.getJ2kSecTimeSpan(true);
     final double st = J2kSec.fromEpoch(ts.startTime);
     final double et = J2kSec.fromEpoch(ts.endTime);
@@ -56,11 +54,12 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
     final int ds = cmd.getInt(-1);
     final DownsamplingType dst = (ds < 2) ? DownsamplingType.NONE : DownsamplingType.MEAN;
 
+    final Scnl scnl = cmd.getScnl();
     RSAMData rsam;
     try {
       rsam = databasePool.doCommand(new WinstonConsumer<RSAMData>() {
         public RSAMData execute(WinstonDatabase winston) throws UtilException {
-          return new Data(winston).getRSAMData(code, st, et, 0, dst, ds);
+          return new Data(winston).getRSAMData(scnl, st, et, 0, dst, ds);
         }
 
       });
