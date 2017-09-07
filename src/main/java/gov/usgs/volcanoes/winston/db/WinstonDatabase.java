@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.Retriable;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
@@ -28,6 +29,7 @@ public class WinstonDatabase {
 
   public static final String WINSTON_TABLE_DATE_FORMAT = "yyyy_MM_dd";
   public static final String CURRENT_SCHEMA_VERSION = "1.1.1";
+  public static final long MAX_DAYS_UNLIMITED = Long.MAX_VALUE / Time.DAY_IN_S;
   private static final String DEFAULT_DATABASE_PREFIX = "W";
   private static final String DEFAULT_CONFIG_FILENAME = "Winston.config";
   private static final int DEFAULT_CACHE_CAPACITY = 100;
@@ -61,11 +63,11 @@ public class WinstonDatabase {
 
   public WinstonDatabase(final String dbDriver, final String dbURL, final String databasePrefix,
       final String tableEngine, final int cacheCap) {
-    this(dbDriver, dbURL, databasePrefix, null, cacheCap, Integer.MAX_VALUE);
+    this(dbDriver, dbURL, databasePrefix, null, cacheCap, MAX_DAYS_UNLIMITED);
   }
   
   public WinstonDatabase(final String dbDriver, final String dbURL, final String databasePrefix,
-      final String tableEngine, final int cacheCap, final int maxDays) {
+      final String tableEngine, final int cacheCap, final long maxDays) {
 
     // Set default Locale to US. This ensures that decimals play well with the SQL standard. ie. no
     // decimal comma

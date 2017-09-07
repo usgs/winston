@@ -21,6 +21,7 @@ import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Version;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -192,7 +193,7 @@ public class WWS {
     final GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
     poolConfig.setMaxTotal(dbConnections);
     final ConfigFile winstonConfig = configFile.getSubConfig("winston");
-    winstonConfig.put("maxDays", "" + configFile.getInt("wws.maxDays", Integer.MAX_VALUE));
+    winstonConfig.put("maxDays", "" + configFile.getLong("wws.maxDays", WinstonDatabase.MAX_DAYS_UNLIMITED));
     final WinstonDatabasePool databasePool = new WinstonDatabasePool(winstonConfig, poolConfig);
 
     final AttributeKey<ConnectionStatistics> connectionStatsKey =
