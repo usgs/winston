@@ -46,6 +46,7 @@ public class WinstonDatabase {
   public final int cacheCap;
   public final String databasePrefix;
   public final String tableEngine;
+  public final long maxDays;
 
   private final PreparedStatementCache preparedStatements;
 
@@ -60,6 +61,11 @@ public class WinstonDatabase {
 
   public WinstonDatabase(final String dbDriver, final String dbURL, final String databasePrefix,
       final String tableEngine, final int cacheCap) {
+    this(dbDriver, dbURL, databasePrefix, null, cacheCap, Integer.MAX_VALUE);
+  }
+  
+  public WinstonDatabase(final String dbDriver, final String dbURL, final String databasePrefix,
+      final String tableEngine, final int cacheCap, final int maxDays) {
 
     // Set default Locale to US. This ensures that decimals play well with the SQL standard. ie. no
     // decimal comma
@@ -70,7 +76,8 @@ public class WinstonDatabase {
     this.cacheCap = cacheCap;
     this.databasePrefix = StringUtils.stringToString(databasePrefix, DEFAULT_DATABASE_PREFIX);
     this.tableEngine = (tableEngine == null) ? "" : (" ENGINE = " + tableEngine);
-
+    this.maxDays = maxDays;
+    
     preparedStatements = new PreparedStatementCache(this.cacheCap, true);
     connect();
   }

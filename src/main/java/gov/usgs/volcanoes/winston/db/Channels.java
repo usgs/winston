@@ -2,6 +2,7 @@ package gov.usgs.volcanoes.winston.db;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -13,6 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
+import gov.usgs.volcanoes.core.util.StringUtils;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.GroupNode;
 import gov.usgs.volcanoes.winston.Instrument;
@@ -29,9 +35,6 @@ public class Channels {
   private static final Logger LOGGER = LoggerFactory.getLogger(InputEW.class);
 
   private final WinstonDatabase winston;
-
-  // exposed retention time in seconds
-  private int aparentRetention = Integer.MAX_VALUE;
 
   /**
    * Constructor
@@ -68,10 +71,6 @@ public class Channels {
       LOGGER.error("Could not get groups.");
     }
     return null;
-  }
-
-  public void setAparentRetention(int i) {
-    aparentRetention = i;
   }
 
   /**
@@ -122,12 +121,34 @@ public class Channels {
       final Map<Integer, Channel> channelsMap = new HashMap<Integer, Channel>();
       final List<Channel> channels = new ArrayList<Channel>();
       while (rs.next()) {
-        final Channel ch = new Channel(rs, aparentRetention);
+        double lookBack = J2kSec.now() - winston.maxDays * Time.DAY_IN_S;
+        double et = rs.getDouble("et");
 
-        if (ch.getMaxTime() > ch.getMinTime()) {
-          channelsMap.put(ch.getSID(), ch);
-          channels.add(ch);
+        if (et <= lookBack) {
+          LOGGER.debug("Skipping channel: {} <= {} : {}", et, lookBack, winston.maxDays);
+          continue;
         }
+
+        int sid = rs.getInt("sid");
+        Scnl scnl;
+        try {
+          scnl = Scnl.parse(rs.getString("code"));
+        } catch (UtilException e) {
+          LOGGER.error("Cannot parse station code: {}", rs.getString("code"));
+          continue;
+        }
+
+        double st = Math.max(rs.getDouble("st"), lookBack);
+        final Channel ch = new Channel(sid, scnl, st, et);
+        ch.setInstrument(new Instrument(rs));
+        ch.setLinearA(rs.getDouble("linearA"));
+        ch.setLinearB(rs.getDouble("linearB"));
+        ch.setUnit(StringUtils.stringToString(rs.getString("unit"), ""));
+        ch.setAlias(StringUtils.stringToString(rs.getString("alias"), ""));
+
+        channelsMap.put(ch.getSID(), ch);
+        channels.add(ch);
+
       }
       rs.close();
       final Map<Integer, GroupNode> nodes = getGroupNodes();
@@ -168,30 +189,30 @@ public class Channels {
     return null;
   }
 
-//  /**
-//   * Get channel ID from code
-//   * 
-//   * @param code
-//   * @return channel ID
-//   */
-//  public int getChannelID(final String code) {
-//    if (!winston.checkConnect())
-//      return -1;
-//
-//    try {
-//      int result = -1;
-//      winston.useRootDatabase();
-//      final ResultSet rs =
-//          winston.getStatement().executeQuery("SELECT sid FROM channels WHERE code='" + code + "'");
-//      if (rs.next())
-//        result = rs.getInt(1);
-//      rs.close();
-//      return result;
-//    } catch (final Exception e) {
-//      LOGGER.error("Could not get channel ID. ({})", e.getLocalizedMessage());
-//    }
-//    return -1;
-//  }
+  // /**
+  // * Get channel ID from code
+  // *
+  // * @param code
+  // * @return channel ID
+  // */
+  // public int getChannelID(final String code) {
+  // if (!winston.checkConnect())
+  // return -1;
+  //
+  // try {
+  // int result = -1;
+  // winston.useRootDatabase();
+  // final ResultSet rs =
+  // winston.getStatement().executeQuery("SELECT sid FROM channels WHERE code='" + code + "'");
+  // if (rs.next())
+  // result = rs.getInt(1);
+  // rs.close();
+  // return result;
+  // } catch (final Exception e) {
+  // LOGGER.error("Could not get channel ID. ({})", e.getLocalizedMessage());
+  // }
+  // return -1;
+  // }
 
   /**
    * Get channel ID from code
@@ -206,7 +227,8 @@ public class Channels {
     try {
       int result = -1;
       winston.useRootDatabase();
-      String sql = String.format("SELECT sid FROM channels WHERE code='%s'", DbUtils.scnlAsWinstonCode(scnl));
+      String sql = String.format("SELECT sid FROM channels WHERE code='%s'",
+          DbUtils.scnlAsWinstonCode(scnl));
       final ResultSet rs = winston.getStatement().executeQuery(sql);
       if (rs.next())
         result = rs.getInt(1);

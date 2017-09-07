@@ -25,6 +25,7 @@ public class WinstonDatabaseFactory extends BasePooledObjectFactory<WinstonDatab
   final private int statementCacheCap;
   final private String tableEngine;
   final private String url;
+  final private int maxDays;
 
   public WinstonDatabaseFactory(ConfigFile config) {
     driver = config.getString("driver");
@@ -32,11 +33,12 @@ public class WinstonDatabaseFactory extends BasePooledObjectFactory<WinstonDatab
     prefix = config.getString("prefix");
     tableEngine = config.getString("tableEngine");
     statementCacheCap = config.getInt("statementCacheCap");
+    maxDays = config.getInt("maxDays");
   }
 
   @Override
   public WinstonDatabase create() throws Exception {
-    WinstonDatabase winston = new WinstonDatabase(driver, url, prefix, tableEngine, statementCacheCap);
+    WinstonDatabase winston = new WinstonDatabase(driver, url, prefix, tableEngine, statementCacheCap, maxDays);
     return winston;
   }
 
