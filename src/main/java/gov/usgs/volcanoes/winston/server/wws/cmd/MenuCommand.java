@@ -102,13 +102,13 @@ public class MenuCommand extends WwsBaseCommand {
       String line;
       if (isScnl) {
         line = String.format(" %d %s %s %s s4 ", chan.getSID(), chan.scnl.toString(" "),
-            decimalFormat.format(Time.ewToj2k(chan.getMinTime())),
-            decimalFormat.format(Time.ewToj2k(chan.getMaxTime())));
+            decimalFormat.format(Time.j2kToEw(chan.getMinTime())),
+            decimalFormat.format(Time.j2kToEw(chan.getMaxTime())));
       } else {
         Scnl scnl = chan.scnl;
         line = String.format(" %d %s %s %s %s %s s4 ", chan.getSID(), scnl.station, scnl.channel,
-            scnl.network, decimalFormat.format(Time.ewToj2k(chan.getMinTime())),
-            decimalFormat.format(Time.ewToj2k(chan.getMaxTime())));
+            scnl.network, decimalFormat.format(Time.j2kToEw(chan.getMinTime())),
+            decimalFormat.format(Time.j2kToEw(chan.getMaxTime())));
       }
       list.add(line);
     }
