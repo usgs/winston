@@ -22,6 +22,7 @@ import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.UtilException;
 
 /**
@@ -254,11 +255,19 @@ public class Data {
    * @param t1
    * @param t2
    * @param maxrows
-   * @return trace buf data
+   * @return trace buf data or null if no data
    * @throws UtilException
    */
-  public List<byte[]> getTraceBufBytes(final String code, final double t1, final double t2,
+  public List<byte[]> getTraceBufBytes(final String code, double t1, final double t2,
       final int maxrows) throws UtilException {
+    
+    double cutoff = J2kSec.now() - winston.maxDays * Time.DAY_IN_S;
+    
+    t1 = Math.max(t1,cutoff );
+    if (t1 >= t2) {
+      return null;
+    }
+    
     int numSamplesCounter = 0;
     if (!winston.checkConnect() || !winston.useDatabase(code))
       return null;
