@@ -90,24 +90,24 @@ public class GetMetadataCommand extends WwsBaseCommand {
     final StringBuilder sb = new StringBuilder(insts.size() * 60);
     for (final Instrument inst : insts) {
       sb.append("name=");
-      sb.append(escape(inst.getName()));
+      sb.append(escape(inst.name));
       sb.append(",");
       sb.append("description=");
-      sb.append(escape(inst.getDescription()));
+      sb.append(escape(inst.description));
       sb.append(",");
       sb.append("longitude=");
-      sb.append(inst.getLongitude());
+      sb.append(inst.longitude);
       sb.append(",");
       sb.append("latitude=");
-      sb.append(inst.getLatitude());
+      sb.append(inst.latitude);
       sb.append(",");
       sb.append("height=");
-      sb.append(inst.getHeight());
+      sb.append(inst.height);
       sb.append(",");
       sb.append("timezone=");
-      sb.append(inst.getTimeZone());
+      sb.append(inst.timeZone);
       sb.append(",");
-      appendMap(sb, inst.getMetadata());
+      appendMap(sb, inst.metadata);
       sb.append("\n");
     }
     return sb.toString();
@@ -121,7 +121,7 @@ public class GetMetadataCommand extends WwsBaseCommand {
       sb.append(ch.scnl.toString(" "));
       sb.append(",");
       sb.append("instrument=");
-      sb.append(escape(ch.instrument.getName()));
+      sb.append(escape(ch.instrument.name));
       sb.append(",");
       sb.append("startTime=");
       sb.append(J2kSec.fromEpoch(timeSpan.startTime));

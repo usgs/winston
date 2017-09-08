@@ -116,21 +116,21 @@ public class Channels {
 
       final Map<Integer, GroupNode> nodes = getGroupNodes();
       Map<Integer, List<String>> chanNodes = new HashMap<Integer, List<String>>();
-      
+
       ResultSet rs = winston.executeQuery("SELECT sid, nid FROM grouplinks");
       while (rs.next()) {
-         int sid = rs.getInt(1);
-         int nid = rs.getInt(2);
-         GroupNode gn = nodes.get(nid);
+        int sid = rs.getInt(1);
+        int nid = rs.getInt(2);
+        GroupNode gn = nodes.get(nid);
         if (gn != null) {
           List<String> links = chanNodes.get(sid);
           if (links == null) {
             links = new ArrayList<String>();
             chanNodes.put(sid, links);
           }
-   
+
           links.add(gn.toString());
-        }        
+        }
       }
       rs.close();
 
@@ -163,14 +163,14 @@ public class Channels {
         double st = Math.max(rs.getDouble("st"), lookBack);
         TimeSpan timeSpan = new TimeSpan(J2kSec.asEpoch(st), J2kSec.asEpoch(et));
         Channel.Builder builder = new Channel.Builder().sid(sid).scnl(scnl).timeSpan(timeSpan);
-        builder.instrument(new Instrument(rs)).linearA(rs.getDouble("linearA"));
-        builder.linearB(rs.getDouble("linearB")).unit(rs.getString("unit"));
-        builder.alias(rs.getString("alias"));
+        builder.instrument(new Instrument.Builder().parse(rs).build());
+        builder.linearA(rs.getDouble("linearA")).linearB(rs.getDouble("linearB"));
+        builder.unit(rs.getString("unit")).alias(rs.getString("alias"));
         List<String> links = chanNodes.get(sid);
         for (String group : links) {
           builder.group(group);
         }
-        
+
         if (fullMetadata) {
           HashMap<String, String> md = null;
           ps.setInt(1, sid);
@@ -191,7 +191,7 @@ public class Channels {
       }
       rs.close();
 
-  
+
       return channels;
     } catch (final Exception e) {
       LOGGER.error("Could not get channels.", e);
@@ -395,7 +395,7 @@ public class Channels {
       return;
     try {
       winston.useRootDatabase();
-      int iid = getInstrumentId(inst.getName());
+      int iid = getInstrumentId(inst.name);
       PreparedStatement ps = null;
       final boolean instrumentExists = iid > 0;
       if (instrumentExists) {
@@ -406,19 +406,19 @@ public class Channels {
         ps = winston.getPreparedStatement(
             "INSERT INTO instruments (name, description, lon, lat, height) VALUES (?,?,?,?,?);");
       }
-      ps.setString(1, inst.getName());
-      ps.setString(2, inst.getDescription());
-      ps.setDouble(3, inst.getLongitude());
-      ps.setDouble(4, inst.getLatitude());
-      ps.setDouble(5, inst.getHeight());
+      ps.setString(1, inst.name);
+      ps.setString(2, inst.description);
+      ps.setDouble(3, inst.longitude);
+      ps.setDouble(4, inst.latitude);
+      ps.setDouble(5, inst.height);
       LOGGER.debug(ps.toString());
       ps.execute();
 
       if (!instrumentExists) {
-        iid = getInstrumentId(inst.getName());
+        iid = getInstrumentId(inst.name);
         ps = winston.getPreparedStatement("UPDATE channels set iid=? WHERE code LIKE ?;");
         ps.setInt(1, iid);
-        ps.setString(2, inst.getName() + "$%");
+        ps.setString(2, inst.name + "$%");
         LOGGER.debug(ps.toString());
 
         ps.execute();
@@ -440,27 +440,27 @@ public class Channels {
 
     try {
       winston.useRootDatabase();
+      final PreparedStatement ps = winston
+          .getPreparedStatement("SELECT * FROM instrumentmetadata WHERE iid=? ORDER BY name ASC");
       ResultSet rs = winston.executeQuery("SELECT * FROM instruments ORDER BY name ASC");
       final List<Instrument> insts = new ArrayList<Instrument>();
       while (rs.next()) {
-        final Instrument inst = new Instrument(rs);
-        insts.add(inst);
-      }
-      rs.close();
+        Instrument.Builder builder = new Instrument.Builder().parse(rs);
 
-      final PreparedStatement ps = winston
-          .getPreparedStatement("SELECT * FROM instrumentmetadata WHERE iid=? ORDER BY name ASC");
-      for (final Instrument inst : insts) {
         HashMap<String, String> md = null;
-        ps.setInt(1, inst.getID());
-        rs = ps.executeQuery();
-        while (rs.next()) {
+        ps.setInt(1, rs.getInt("instruments.iid"));
+        ResultSet rs1 = ps.executeQuery();
+        while (rs1.next()) {
           if (md == null)
             md = new HashMap<String, String>();
-          md.put(rs.getString("name"), rs.getString("value"));
+          md.put(rs.getString("name"), rs1.getString("value"));
         }
-        inst.setMetadata(md);
+        rs1.close();
+        builder.metadata(md);
+
+        insts.add(builder.build());
       }
+      rs.close();
       return insts;
     } catch (final Exception e) {
       LOGGER.error("Could not get instruments.");

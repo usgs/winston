@@ -198,20 +198,20 @@ public class StationService extends FdsnwsService {
 
     Element e;
     e = doc.createElement("Latitude");
-    e.appendChild(doc.createTextNode("" + instrument.getLatitude()));
+    e.appendChild(doc.createTextNode("" + instrument.latitude));
     station.appendChild(e);
 
     e = doc.createElement("Longitude");
-    e.appendChild(doc.createTextNode("" + instrument.getLongitude()));
+    e.appendChild(doc.createTextNode("" + instrument.longitude));
     station.appendChild(e);
 
     e = doc.createElement("Elevation");
-    e.appendChild(doc.createTextNode("" + instrument.getHeight()));
+    e.appendChild(doc.createTextNode("" + instrument.height));
     station.appendChild(e);
 
     e = doc.createElement("Site");
     final Element n = doc.createElement("Name");
-    n.appendChild(doc.createTextNode(instrument.getDescription()));
+    n.appendChild(doc.createTextNode(instrument.description));
     e.appendChild(n);
     station.appendChild(e);
 
@@ -227,15 +227,15 @@ public class StationService extends FdsnwsService {
 
     Element e;
     e = doc.createElement("Latitude");
-    e.appendChild(doc.createTextNode("" + instrument.getLatitude()));
+    e.appendChild(doc.createTextNode("" + instrument.latitude));
     channelElement.appendChild(e);
 
     e = doc.createElement("Longitude");
-    e.appendChild(doc.createTextNode("" + instrument.getLongitude()));
+    e.appendChild(doc.createTextNode("" + instrument.longitude));
     channelElement.appendChild(e);
 
     e = doc.createElement("Elevation");
-    e.appendChild(doc.createTextNode("" + instrument.getHeight()));
+    e.appendChild(doc.createTextNode("" + instrument.height));
     channelElement.appendChild(e);
 
     e = doc.createElement("Depth");

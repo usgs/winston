@@ -49,13 +49,14 @@ public class ImportDataless extends AbstractMetadataImporter {
         if (b.getType() != 50)
           continue;
 
-        final Instrument inst = new Instrument();
-        inst.setLatitude((Double) b.getFieldVal(4));
-        inst.setLongitude((Double) b.getFieldVal(5));
-        inst.setHeight((Double) b.getFieldVal(6));
-        inst.setName((String) b.getFieldVal(3));
-        inst.setDescription((String) b.getFieldVal(9));
+        Instrument.Builder builder = new Instrument.Builder();
+        builder.latitude((Double) b.getFieldVal(4));
+        builder.longitude((Double) b.getFieldVal(5));
+        builder.height((Double) b.getFieldVal(6));
+        builder.name((String) b.getFieldVal(3));
+        builder.description((String) b.getFieldVal(9));
 
+        Instrument inst = builder.build();
         LOGGER.info("found {}", inst.toString());
         list.add(inst);
       }

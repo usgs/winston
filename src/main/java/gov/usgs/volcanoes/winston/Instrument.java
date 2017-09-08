@@ -2,7 +2,10 @@ package gov.usgs.volcanoes.winston;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Map;
+
+import gov.usgs.volcanoes.winston.Channel.Builder;
 
 /**
  * $Log: not supported by cvs2svn $
@@ -18,109 +21,105 @@ import java.util.Map;
  * @author Dan Cervelli
  */
 public class Instrument {
-  public static Instrument NULL = new Instrument();
+  public static Instrument NULL = new Builder().build();
 
-  private int iid;
-  private String name;
-  private String description;
-  private double longitude = -999;
-  private double latitude = -999;
-  private double height = -999;
+  public final int iid;
+  public final String name;
+  public final String description;
+  public final double longitude;
+  public final double latitude;
+  public final double height;
+  public final String timeZone;
+  public final Map<String, String> metadata;
 
-  private String timeZone;
 
-  private Map<String, String> metadata;
+  public static class Builder {
+    private int iid;
+    private String name;
+    private String description;
+    private double longitude = -999;
+    private double latitude = -999;
+    private double height = -999;
+    private String timeZone;
+    private Map<String, String> metadata;
 
-  public Instrument() {}
-
-  public Instrument(final ResultSet rs) throws SQLException {
-    iid = rs.getInt("instruments.iid");
-    name = rs.getString("name");
-    description = rs.getString("description");
-    longitude = rs.getDouble("lon");
-    boolean nll = rs.wasNull();
-    latitude = rs.getDouble("lat");
-    nll = nll || rs.wasNull();
-    if (nll) {
-      longitude = -999;
-      latitude = -999;
+    public Builder iid(int iid) {
+      this.iid = iid;
+      return this;
     }
-    height = rs.getDouble("height");
-    timeZone = rs.getString("timezone");
+
+    public Builder name(String name) {
+      this.name = name;
+      return this;
+    }
+
+    public Builder description(String description) {
+      this.description = description;
+      return this;
+    }
+
+    public Builder longitude(double longitude) {
+      this.longitude = longitude;
+      return this;
+    }
+
+    public Builder latitude(double latitude) {
+      this.longitude = latitude;
+      return this;
+    }
+
+    public Builder height(double height) {
+      this.longitude = height;
+      return this;
+    }
+
+    public Builder timeZone(String timeZone) {
+      this.timeZone = timeZone;
+      return this;
+    }
+
+    public Builder metadata(Map<String, String> metadata) {
+      this.metadata = metadata;
+      return this;
+    }
+    
+    public Builder parse(ResultSet rs) throws SQLException {
+      iid = rs.getInt("instruments.iid");
+      name = rs.getString("name");
+      description = rs.getString("description");
+      longitude = rs.getDouble("lon");
+      boolean nll = rs.wasNull();
+      latitude = rs.getDouble("lat");
+      nll = nll || rs.wasNull();
+      if (nll) {
+        longitude = -999;
+        latitude = -999;
+      }
+      height = rs.getDouble("height");
+      timeZone = rs.getString("timezone");
+      
+      return this;
+    }
+    
+    public Instrument build() {
+      return new Instrument(this);
+    }
+  
   }
 
-  public int getID() {
-    return iid;
-  }
-
-  public void setMetadata(final Map<String, String> map) {
-    metadata = map;
-  }
-
-  public Map<String, String> getMetadata() {
-    return metadata;
-  }
-
-  public void setLongitude(final double d) {
-    longitude = d;
-  }
-
-  public void setLatitude(final double d) {
-    latitude = d;
-  }
-
-  public double getLongitude() {
-    if (longitude == -999)
-      return Double.NaN;
-    return longitude;
-  }
-
-  public double getLatitude() {
-    if (latitude == -999)
-      return Double.NaN;
-    return latitude;
-  }
-
-  public double getHeight() {
-    if (height == -999)
-      return Double.NaN;
-    return height;
-  }
-
-  public void setTimeZone(final String s) {
-    timeZone = s;
-  }
-
-  public String getTimeZone() {
-    return timeZone == null ? "" : timeZone;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public String getDescription() {
-    return description;
+  private Instrument(Builder builder) {
+    iid = builder.iid;
+    name = builder.name;
+    description = builder.description;
+    longitude = builder.longitude;
+    latitude = builder.latitude;
+    height = builder.height;
+    timeZone = builder.timeZone;
+    metadata = Collections.unmodifiableMap(builder.metadata);
   }
 
   @Override
   public String toString() {
     return String.format("%d:%s:%s:%f:%f:%f", iid, name, description, longitude, latitude, height);
-  }
-
-  public void setHeight(final double height) {
-    this.height = height;
-  }
-
-  public void setName(final String name) {
-    this.name = name;
-  }
-
-  public void setDescription(final String description) {
-    this.description = description;
-  }
-
-  public void setId(final int iid) {
-    this.iid = iid;
   }
 }

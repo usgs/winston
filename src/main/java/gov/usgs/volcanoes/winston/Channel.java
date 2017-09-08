@@ -114,13 +114,16 @@ public class Channel implements Comparable<Channel> {
       double minTime = Double.parseDouble(ss[2]);
       double maxTime = Double.parseDouble(ss[3]);
       timeSpan = new TimeSpan(J2kSec.asEpoch(minTime), J2kSec.asEpoch(maxTime));
-      instrument = new Instrument();
-      instrument.setLongitude(Double.parseDouble(ss[4]));
-      instrument.setLatitude(Double.parseDouble(ss[5]));
+      
+      Instrument.Builder builder = new Instrument.Builder();
+      builder.longitude(Double.parseDouble(ss[4]));
+      builder.latitude(Double.parseDouble(ss[5]));
+      instrument = builder.build();
+      
       if (ss.length == 12) // metadata present
       {
         if (ss[6].length() >= 1)
-          instrument.setTimeZone(ss[6]);
+          builder.timeZone(ss[6]);
         if (ss[7].length() >= 1)
           alias = ss[7];
         if (ss[8].length() >= 1)
@@ -184,7 +187,7 @@ public class Channel implements Comparable<Channel> {
    * @return metadata as a string
    */
   public String toMetadataString() {
-    return String.format("%s:%s:%s:%s:%f:%f:%s:", toPV2String(), instrument.getTimeZone(),
+    return String.format("%s:%s:%s:%s:%f:%f:%s:", toPV2String(), instrument.timeZone,
         alias, unit, linearA, linearB, getGroupString());
   }
 
@@ -198,7 +201,7 @@ public class Channel implements Comparable<Channel> {
     double max = J2kSec.fromEpoch(timeSpan.endTime);
 
     return String.format("%d:%s:%f:%f:%f:%f", sid, DbUtils.scnlAsWinstonCode(scnl), min, max,
-        instrument.getLongitude(), instrument.getLatitude());
+        instrument.longitude, instrument.latitude);
   }
 
   /**
@@ -213,8 +216,8 @@ public class Channel implements Comparable<Channel> {
     // instrument.getLongitude(), instrument.getLatitude(), stripped,
     // stripped);
     return String.format("%d:%s:%s:%f:%f:%f:%s", sid, DbUtils.scnlAsWinstonCode(scnl), stripped,
-        instrument.getLongitude(),
-        instrument.getLatitude(), instrument.getHeight(), "0");
+        instrument.longitude,
+        instrument.latitude, instrument.height, "0");
   }
 
   /**
