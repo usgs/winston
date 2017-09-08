@@ -4,6 +4,7 @@ import java.util.Map;
 
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 
+@SuppressWarnings("deprecation")
 public abstract class GeographicConstraint extends FdsnConstraint {
 
   public static GeographicConstraint build (Map<String, String> arguments) throws FdsnException {

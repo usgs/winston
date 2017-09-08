@@ -39,6 +39,7 @@ import io.netty.handler.codec.http.HttpResponseStatus;
  * @author Tom Parker
  *
  */
+@SuppressWarnings("deprecation")
 public final class FdsnwsCommand extends HttpBaseCommand {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(FdsnwsCommand.class);

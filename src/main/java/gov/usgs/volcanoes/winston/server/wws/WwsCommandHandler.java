@@ -29,7 +29,6 @@ public class WwsCommandHandler extends SimpleChannelInboundHandler<WwsCommandStr
   private static final Logger LOGGER = LoggerFactory.getLogger(WwsCommandHandler.class);
 
   private final WinstonDatabasePool winstonDatabasePool;
-  private final ConfigFile configFile;
   private ConnectionStatistics connectionStatistics;
 
   private static final AttributeKey<ConnectionStatistics> connectionStatsKey;
@@ -46,7 +45,6 @@ public class WwsCommandHandler extends SimpleChannelInboundHandler<WwsCommandStr
    */
   public WwsCommandHandler(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     this.winstonDatabasePool = winstonDatabasePool;
-    this.configFile = configFile;
   }
 
   @Override

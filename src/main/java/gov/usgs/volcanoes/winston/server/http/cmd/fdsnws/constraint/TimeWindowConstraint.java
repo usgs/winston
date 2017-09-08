@@ -8,7 +8,6 @@ package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint;
 import java.text.ParseException;
 import java.util.Map;
 
-import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
@@ -19,6 +18,7 @@ import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
  * @author Tom Parker
  *
  */
+@SuppressWarnings("deprecation")
 public class TimeWindowConstraint extends TimeConstraint {
 
   private double startBefore;

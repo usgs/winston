@@ -14,6 +14,10 @@ package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws;
 @Deprecated
 public class FdsnException extends Exception {
 
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 1L;
   public final int code;
   public final String message;
 

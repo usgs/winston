@@ -21,6 +21,7 @@ import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
  * @author Tom Parker
  *
  */
+@SuppressWarnings("deprecation")
 public class TimeSimpleConstraint extends TimeConstraint {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TimeSimpleConstraint.class);

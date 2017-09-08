@@ -5,10 +5,8 @@
 
 package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,33 +24,18 @@ import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
-import gov.usgs.volcanoes.winston.db.Channels;
-import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.ChannelConstraint;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.FdsnConstraint;
-import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.GeographicCircleConstraint;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.GeographicConstraint;
-import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.GeographicSquareConstraint;
-import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeConstraint;
-import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeSimpleConstraint;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeWindowConstraint;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaders;
-import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.QueryStringDecoder;
-import io.netty.handler.codec.http.multipart.Attribute;
-import io.netty.handler.codec.http.multipart.DefaultHttpDataFactory;
-import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData;
-import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
-import io.netty.util.CharsetUtil;
 
 /**
  * Implement FDSN-WS station service.
@@ -81,6 +64,7 @@ public class StationService extends FdsnwsService {
    * @throws UtilException when things go wrong
    * @throws FdsnException when FDSN-WS spec violated
    */
+  @SuppressWarnings("deprecation")
   public static void dispatch(WinstonDatabasePool databasePool, ChannelHandlerContext ctx,
       FullHttpRequest request) throws UtilException, FdsnException {
     String method = request.getUri().split("/")[4];
@@ -110,6 +94,7 @@ public class StationService extends FdsnwsService {
     }
   }
 
+  @SuppressWarnings("deprecation")
   private static void sendQueryResponse(WinstonDatabasePool databasePool, ChannelHandlerContext ctx,
       FullHttpRequest request) throws UtilException, FdsnException {
     Map<String, String> arguments = parseRequest(request);
@@ -266,6 +251,7 @@ public class StationService extends FdsnwsService {
     return prune;
   }
 
+  @SuppressWarnings("deprecation")
   protected static List<FdsnConstraint> buildConstraints(Map<String, String> arguments)
       throws FdsnException {
     List<FdsnConstraint> constraints = new ArrayList<FdsnConstraint>();

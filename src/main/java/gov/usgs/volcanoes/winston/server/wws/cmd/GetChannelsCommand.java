@@ -28,6 +28,7 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Tom Parker
  */
 public class GetChannelsCommand extends WwsBaseCommand {
+  @SuppressWarnings("unused")
   private static final Logger LOGGER = LoggerFactory.getLogger(GetChannelsCommand.class);
 
   /**

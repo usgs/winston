@@ -66,7 +66,7 @@ public class WinstonDatabase {
       final String tableEngine, final int cacheCap) {
     this(dbDriver, dbURL, databasePrefix, null, cacheCap, MAX_DAYS_UNLIMITED);
   }
-  
+
   public WinstonDatabase(final String dbDriver, final String dbURL, final String databasePrefix,
       final String tableEngine, final int cacheCap, final long maxDays) {
 
@@ -80,7 +80,7 @@ public class WinstonDatabase {
     this.databasePrefix = StringUtils.stringToString(databasePrefix, DEFAULT_DATABASE_PREFIX);
     this.tableEngine = (tableEngine == null) ? "" : (" ENGINE = " + tableEngine);
     this.maxDays = maxDays;
-    
+
     preparedStatements = new PreparedStatementCache(this.cacheCap, true);
     connect();
   }
