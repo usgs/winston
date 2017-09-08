@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
@@ -90,8 +91,8 @@ public class Channels {
 
     Collections.sort(sts, new Comparator<Channel>() {
       public int compare(final Channel c1, final Channel c2) {
-        final Double t1 = c1.getMaxTime();
-        final Double t2 = c2.getMaxTime();
+        final Double t1 = J2kSec.fromEpoch(c1.timeSpan.endTime);
+        final Double t2 = J2kSec.fromEpoch(c2.timeSpan.endTime);
         return t2.compareTo(t1);
       }
     });
@@ -112,7 +113,28 @@ public class Channels {
 
     try {
       winston.useRootDatabase();
-      ResultSet rs = winston.executeQuery(
+
+      final Map<Integer, GroupNode> nodes = getGroupNodes();
+      Map<Integer, List<String>> chanNodes = new HashMap<Integer, List<String>>();
+      
+      ResultSet rs = winston.executeQuery("SELECT sid, nid FROM grouplinks");
+      while (rs.next()) {
+         int sid = rs.getInt(1);
+         int nid = rs.getInt(2);
+         GroupNode gn = nodes.get(nid);
+        if (gn != null) {
+          List<String> links = chanNodes.get(sid);
+          if (links == null) {
+            links = new ArrayList<String>();
+            chanNodes.put(sid, links);
+          }
+   
+          links.add(gn.toString());
+        }        
+      }
+      rs.close();
+
+      rs = winston.executeQuery(
           "SELECT sid, instruments.iid, code, alias, unit, linearA, linearB, st, et, instruments.lon, instruments.lat, height, name, description, timezone "
               + "FROM channels LEFT JOIN instruments ON channels.iid=instruments.iid "
               + "ORDER BY code ASC");
@@ -137,30 +159,19 @@ public class Channels {
         }
 
         double st = Math.max(rs.getDouble("st"), lookBack);
-        final Channel ch = new Channel(sid, scnl, st, et);
-        ch.setInstrument(new Instrument(rs));
-        ch.setLinearA(rs.getDouble("linearA"));
-        ch.setLinearB(rs.getDouble("linearB"));
-        ch.setUnit(StringUtils.stringToString(rs.getString("unit"), ""));
-        ch.setAlias(StringUtils.stringToString(rs.getString("alias"), ""));
-
-        channelsMap.put(ch.getSID(), ch);
+        TimeSpan timeSpan = new TimeSpan(J2kSec.asEpoch(st), J2kSec.asEpoch(et));
+        Channel.Builder builder = new Channel.Builder().sid(sid).scnl(scnl).timeSpan(timeSpan);
+        builder.instrument(new Instrument(rs)).linearA(rs.getDouble("linearA"));
+        builder.linearB(rs.getDouble("linearB")).unit(rs.getString("unit"));
+        builder.alias(rs.getString("alias"));
+        List<String> links = chanNodes.get(sid);
+        for (String group : links) {
+          builder.group(group);
+        }
+        Channel ch = builder.build();
+        channelsMap.put(ch.sid, ch);
         channels.add(ch);
 
-      }
-      rs.close();
-      final Map<Integer, GroupNode> nodes = getGroupNodes();
-
-      rs = winston.executeQuery("SELECT sid, nid FROM grouplinks");
-      while (rs.next()) {
-        final int sid = rs.getInt(1);
-        final int nid = rs.getInt(2);
-        final Channel ch = channelsMap.get(sid);
-        if (ch != null) {
-          final GroupNode gn = nodes.get(nid);
-          if (gn != null)
-            ch.addGroup(gn.toString());
-        }
       }
       rs.close();
 
@@ -169,7 +180,7 @@ public class Channels {
             .getPreparedStatement("SELECT * FROM channelmetadata WHERE sid=? ORDER BY name ASC");
         for (final Channel ch : channels) {
           HashMap<String, String> md = null;
-          ps.setInt(1, ch.getSID());
+          ps.setInt(1, ch.sid);
           rs = ps.executeQuery();
           while (rs.next()) {
             if (md == null)

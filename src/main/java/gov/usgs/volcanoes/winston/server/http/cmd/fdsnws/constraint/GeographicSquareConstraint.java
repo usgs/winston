@@ -49,7 +49,7 @@ public class GeographicSquareConstraint extends GeographicConstraint {
   }
 
   public boolean matches(final Channel chan) {
-    final Instrument i = chan.getInstrument();
+    final Instrument i = chan.instrument;
 
     if (i.getLatitude() < minlatitude)
       return false;

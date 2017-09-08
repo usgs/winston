@@ -124,7 +124,7 @@ public class DataselectService extends FdsnwsService {
 
           public Wave execute(WinstonDatabase winston) throws UtilException {
             Data data = new Data(winston);
-            return data.getWave(c.getSID(), st, et, 0);
+            return data.getWave(c.sid, st, et, 0);
           }
         });
       } catch (Exception e1) {

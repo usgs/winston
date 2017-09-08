@@ -8,6 +8,7 @@ package gov.usgs.volcanoes.winston.server.wws.cmd;
 import java.util.List;
 import java.util.Map;
 
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.Instrument;
@@ -114,29 +115,30 @@ public class GetMetadataCommand extends WwsBaseCommand {
   private String getChannelMetadata(List<Channel> chs) {
     final StringBuilder sb = new StringBuilder(chs.size() * 60);
     for (final Channel ch : chs) {
+      TimeSpan timeSpan = ch.timeSpan;
       sb.append("channel=");
-      sb.append(ch.getCode().replace('$', ' '));
+      sb.append(ch.scnl.toString(" "));
       sb.append(",");
       sb.append("instrument=");
-      sb.append(escape(ch.getInstrument().getName()));
+      sb.append(escape(ch.instrument.getName()));
       sb.append(",");
       sb.append("startTime=");
-      sb.append(ch.getMinTime());
+      sb.append(timeSpan.startTime);
       sb.append(",");
       sb.append("endTime=");
-      sb.append(ch.getMaxTime());
+      sb.append(timeSpan.endTime);
       sb.append(",");
       sb.append("alias=");
-      sb.append(escape(ch.getAlias()));
+      sb.append(escape(ch.alias));
       sb.append(",");
       sb.append("unit=");
-      sb.append(escape(ch.getUnit()));
+      sb.append(escape(ch.unit));
       sb.append(",");
       sb.append("linearA=");
-      sb.append(ch.getLinearA());
+      sb.append(ch.linearA);
       sb.append(",");
       sb.append("linearB=");
-      sb.append(ch.getLinearB());
+      sb.append(ch.linearB);
       sb.append(",");
       appendList(sb, "groups", ch.getGroups());
       sb.append(",");

@@ -21,9 +21,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
+import gov.usgs.volcanoes.winston.Instrument;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.ChannelConstraint;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.FdsnConstraint;
@@ -163,8 +165,9 @@ public class StationService extends FdsnwsService {
           networkElement.appendChild(stationElement);
         }
 
-        stationStart = Math.min(stationStart, c.getMinTime());
-        stationEnd = Math.max(stationEnd, c.getMaxTime());
+        TimeSpan timeSpan = c.timeSpan;
+        stationStart = Math.min(stationStart, timeSpan.startTime);
+        stationEnd = Math.max(stationEnd, timeSpan.endTime);
 
         if (!"station".equals(level))
           stationElement.appendChild(createChannelElement(c, doc));
@@ -191,23 +194,24 @@ public class StationService extends FdsnwsService {
    private static Element createStationElement(final Channel c, final Document doc) {
     final Element station = doc.createElement("Station");
     station.setAttribute("code", c.scnl.station);
+    Instrument instrument = c.instrument;
 
     Element e;
     e = doc.createElement("Latitude");
-    e.appendChild(doc.createTextNode("" + c.getInstrument().getLatitude()));
+    e.appendChild(doc.createTextNode("" + instrument.getLatitude()));
     station.appendChild(e);
 
     e = doc.createElement("Longitude");
-    e.appendChild(doc.createTextNode("" + c.getInstrument().getLongitude()));
+    e.appendChild(doc.createTextNode("" + instrument.getLongitude()));
     station.appendChild(e);
 
     e = doc.createElement("Elevation");
-    e.appendChild(doc.createTextNode("" + c.getInstrument().getHeight()));
+    e.appendChild(doc.createTextNode("" + instrument.getHeight()));
     station.appendChild(e);
 
     e = doc.createElement("Site");
     final Element n = doc.createElement("Name");
-    n.appendChild(doc.createTextNode(c.getInstrument().getDescription()));
+    n.appendChild(doc.createTextNode(instrument.getDescription()));
     e.appendChild(n);
     station.appendChild(e);
 
@@ -219,18 +223,19 @@ public class StationService extends FdsnwsService {
     final String loc = c.scnl.location.equals("--") ? "  " : c.scnl.location;
     channelElement.setAttribute("locationCode", loc);
     channelElement.setAttribute("code", c.scnl.channel);
+    Instrument instrument = c.instrument;
 
     Element e;
     e = doc.createElement("Latitude");
-    e.appendChild(doc.createTextNode("" + c.getInstrument().getLatitude()));
+    e.appendChild(doc.createTextNode("" + instrument.getLatitude()));
     channelElement.appendChild(e);
 
     e = doc.createElement("Longitude");
-    e.appendChild(doc.createTextNode("" + c.getInstrument().getLongitude()));
+    e.appendChild(doc.createTextNode("" + instrument.getLongitude()));
     channelElement.appendChild(e);
 
     e = doc.createElement("Elevation");
-    e.appendChild(doc.createTextNode("" + c.getInstrument().getHeight()));
+    e.appendChild(doc.createTextNode("" + instrument.getHeight()));
     channelElement.appendChild(e);
 
     e = doc.createElement("Depth");

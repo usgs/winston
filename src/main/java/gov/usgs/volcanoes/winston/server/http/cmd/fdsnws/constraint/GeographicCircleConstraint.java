@@ -49,7 +49,7 @@ public class GeographicCircleConstraint extends GeographicConstraint {
   }
 
   public boolean matches(final Channel chan) {
-    final Instrument i = chan.getInstrument();
+    final Instrument i = chan.instrument;
     final double lat = i.getLatitude();
     final double lon = i.getLongitude();
 

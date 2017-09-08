@@ -79,7 +79,8 @@ public final class StatusCommand extends HttpBaseCommand {
       throw new UtilException(e.getMessage());
     }
 
-    final double medianDataAge = now - sts.get(sts.size() / 2).getMaxTime();
+    Channel midChan = sts.get(sts.size() / 2);
+    final double medianDataAge = now - midChan.timeSpan.endTime;
 
     final Map<String, Integer> oneMinChannels = new HashMap<String, Integer>();
     final Map<String, Integer> fiveMinChannels = new HashMap<String, Integer>();
@@ -89,8 +90,8 @@ public final class StatusCommand extends HttpBaseCommand {
     final Map<String, Integer> ancientChannels = new HashMap<String, Integer>();
 
     for (final Channel chan : sts) {
-      final double age = now - chan.getMaxTime();
-      final String code = chan.getCode().replace('$', '_');
+      final double age = now - chan.timeSpan.endTime;
+      final String code = chan.scnl.toString("_");
       if (age < 60)
         oneMinChannels.put(code, (int) age);
       else if (age <= 60 * 5)
@@ -120,8 +121,8 @@ public final class StatusCommand extends HttpBaseCommand {
     root.put("connectionCount", connectionStatistics.getOpen());
 
     final Channel chan = sts.get(0);
-    root.put("mostRecentChan", chan.getCode().replace('$', '_'));
-    root.put("mostRecentTime", formatter.format(now - chan.getMaxTime()));
+    root.put("mostRecentChan", chan.scnl.toString("_"));
+    root.put("mostRecentTime", formatter.format(now - chan.timeSpan.endTime));
 
     try {
       HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();

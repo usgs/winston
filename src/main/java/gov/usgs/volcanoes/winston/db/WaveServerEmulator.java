@@ -17,6 +17,8 @@ import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 
@@ -52,7 +54,7 @@ public class WaveServerEmulator {
     decimalFormat.setGroupingUsed(false);
   }
 
-  
+
   public int getChannelID(final String s, final String c, final String n) {
     return getChannelID(new Scnl(s, c, n));
   }
@@ -67,7 +69,8 @@ public class WaveServerEmulator {
   }
 
 
-  public List<String> getWaveServerMenu(final boolean scnl, final double embargo, final double span) {
+  public List<String> getWaveServerMenu(final boolean wantScnl, final double embargo,
+      final double span) {
     if (!winston.checkConnect()) {
       return null;
     }
@@ -79,23 +82,20 @@ public class WaveServerEmulator {
 
     final List<String> list = new ArrayList<String>(sts.size());
     for (final Channel st : sts) {
-      final String[] ss = st.getCode().split("\\$");
-      final double[] ts = {st.getMinTime(), st.getMaxTime()};
+      Scnl scnl = st.scnl;
+      TimeSpan timeSpan = st.timeSpan;
 
-
-      if (ts != null && ts[0] < ts[1]) {
-
-        if (!scnl && ss.length == 3) {
-          list.add(" " + st.getSID() + " " + ss[0] + " " + ss[1] + " " + ss[2] + " "
-              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
-              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ");
-        } else if (scnl) {
-          final String loc = (ss.length == 4 ? ss[3] : "--");
-          final String line = " " + st.getSID() + " " + ss[0] + " " + ss[1] + " " + ss[2] + " "
-              + loc + " " + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
-              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ";
-          list.add(line);
-        }
+      if (wantScnl) {
+        String line = String.format(" %d %s %s %s s4 ", st.sid, scnl.toString(" "),
+            decimalFormat.format(Time.j2kToEw(timeSpan.startTime)),
+            decimalFormat.format(Time.j2kToEw(timeSpan.endTime)));
+        list.add(line);
+      } else {
+        String line = String.format(" %d %s %s %s %s %s s4 ", st.sid, scnl.station, scnl.channel,
+            scnl.network,
+            decimalFormat.format(Time.j2kToEw(timeSpan.startTime)),
+            decimalFormat.format(Time.j2kToEw(timeSpan.endTime)));
+        list.add(line);
       }
     }
     return list;
@@ -160,7 +160,7 @@ public class WaveServerEmulator {
   // TODO: fix. Returning Object[] is not the right design
   public Object[] getWaveServerRaw(final String s, final String c, final String n, final String l,
       final double t1, final double t2) {
-    
+
     String lc = "";
     if (l != null && !l.equals("--")) {
       lc = "$" + l;
