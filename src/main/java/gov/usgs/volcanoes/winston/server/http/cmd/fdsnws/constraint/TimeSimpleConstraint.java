@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 
@@ -21,6 +22,7 @@ import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
  * @author Tom Parker
  *
  */
+@SuppressWarnings("deprecation")
 public class TimeSimpleConstraint extends TimeConstraint {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TimeSimpleConstraint.class);
@@ -48,13 +50,14 @@ public class TimeSimpleConstraint extends TimeConstraint {
   }
 
   public boolean matches(final Channel chan) {
-    final double end = chan.getMaxTime();
-    if (!Double.isNaN(end) && chan.getMaxTime() > endTimeJ2k) {
+    TimeSpan timeSpan = chan.timeSpan;
+    final double end = J2kSec.fromEpoch(timeSpan.endTime);
+    if (!Double.isNaN(end) && end > endTimeJ2k) {
       return false;
     }
 
-    final double start = chan.getMinTime();
-    if (!Double.isNaN(start) && chan.getMinTime() < startTimeJ2k) {
+    final double start = J2kSec.fromEpoch(timeSpan.startTime);
+    if (!Double.isNaN(start) && start < startTimeJ2k) {
       return false;
     }
 

@@ -8,8 +8,8 @@ package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint;
 import java.text.ParseException;
 import java.util.Map;
 
-import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 
@@ -19,6 +19,7 @@ import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
  * @author Tom Parker
  *
  */
+@SuppressWarnings("deprecation")
 public class TimeWindowConstraint extends TimeConstraint {
 
   private double startBefore;
@@ -50,11 +51,12 @@ public class TimeWindowConstraint extends TimeConstraint {
   }
 
   public boolean matches(final Channel chan) {
-    final double start = chan.getMinTime();
+    TimeSpan timeSpan = chan.timeSpan;
+    final double start = J2kSec.fromEpoch(timeSpan.startTime);
     if (start > startBefore || start < startAfter)
       return false;
 
-    final double end = chan.getMaxTime();
+    final double end = J2kSec.fromEpoch(timeSpan.endTime);
     if (end > endBefore || end < endAfter)
       return false;
 

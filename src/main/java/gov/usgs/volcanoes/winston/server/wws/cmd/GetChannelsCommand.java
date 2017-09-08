@@ -28,6 +28,7 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Tom Parker
  */
 public class GetChannelsCommand extends WwsBaseCommand {
+  @SuppressWarnings("unused")
   private static final Logger LOGGER = LoggerFactory.getLogger(GetChannelsCommand.class);
 
   /**
@@ -63,7 +64,6 @@ public class GetChannelsCommand extends WwsBaseCommand {
       else
         sb.append(ch.toPV2String() + "\n");
     }
-    LOGGER.info("maxDays = {}", maxDays);
     ctx.writeAndFlush(sb.toString());
   }
 

@@ -27,21 +27,11 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
   protected final static int ONE_HOUR_S = 60 * 60;
   protected final static int ONE_DAY_S = 24 * ONE_HOUR_S;
 
-  protected int maxDays;
-
   /**
    * Constructor.
    */
   public WwsBaseCommand() {
     super();
-  }
-
-  /**
-   * maxDays mutator.
-   * @param maxDays apparent data retention
-   */
-  public void setMaxDays(int maxDays) {
-    this.maxDays = maxDays;
   }
 
   /**

@@ -1,6 +1,8 @@
 package gov.usgs.volcanoes.winston;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,169 +23,148 @@ import gov.usgs.volcanoes.winston.db.DbUtils;
  * @author Tom Parker
  */
 public class Channel implements Comparable<Channel> {
+
   @SuppressWarnings("unused")
   private static final Logger LOGGER = LoggerFactory.getLogger(Channel.class);
 
-  /** Number of seconds in a typical day */
-  public static final int ONE_DAY = 24 * 60 * 60;
-
-  private final int sid;
-  private Instrument instrument;
+  public final int sid;
+  public final Instrument instrument;
 
   /** My SCNL */
   public final Scnl scnl;
-  private final TimeSpan timeSpan;
+  public final TimeSpan timeSpan;
 
-  private double linearA;
-  private double linearB;
-  private String alias;
-  private String unit;
+  public final double linearA;
+  public final double linearB;
+  public final String alias;
+  public final String unit;
+  public final List<String> groups;
+  public final Map<String, String> metadata;
 
-  private List<String> groups;
 
-  private Map<String, String> metadata;
+  public static class Builder {
+
+    private int sid = -1;
+    private Instrument instrument = Instrument.NULL;
+    private Scnl scnl;
+    private TimeSpan timeSpan = new TimeSpan(Long.MAX_VALUE, Long.MIN_VALUE);
+
+    private double linearA = Double.NaN;
+    private double linearB = Double.NaN;
+    private String alias;
+    private String unit;
+    private List<String> groups;
+    private Map<String, String> metadata;
+
+    public Builder sid(int sid) {
+      this.sid = sid;
+      return this;
+    }
+
+    public Builder instrument(Instrument instrument) {
+      this.instrument = instrument;
+      return this;
+    }
+
+    public Builder scnl(Scnl scnl) {
+      this.scnl = scnl;
+      return this;
+    }
+
+    public Builder timeSpan(TimeSpan timeSpan) {
+      this.timeSpan = timeSpan;
+      return this;
+    }
+
+    public Builder linearA(double linearA) {
+      this.linearA = linearA;
+      return this;
+    }
+   
+    public Builder linearB(double linearB) {
+      this.linearB = linearB;
+      return this;
+    }
+    
+    public Builder alias(String alias) {
+      this.alias = alias == null ? "" : alias;
+      return this;
+    }
+    
+    public Builder unit(String unit) {
+      this.unit = unit == null ? "" : unit;
+      return this;
+    }
+
+    public Builder group(String group) {
+      if (groups == null)
+        groups = new ArrayList<String>(2);
+      groups.add(group);
+      return this;
+    }
+
+    public Channel build() {
+      return new Channel(this);
+    }
+    
+    public Builder parse(String s) throws UtilException {
+      final String[] ss = s.split(":");
+      sid = Integer.parseInt(ss[0]);
+      scnl = Scnl.parse(ss[1]);
+      double minTime = Double.parseDouble(ss[2]);
+      double maxTime = Double.parseDouble(ss[3]);
+      timeSpan = new TimeSpan(J2kSec.asEpoch(minTime), J2kSec.asEpoch(maxTime));
+      
+      Instrument.Builder builder = new Instrument.Builder();
+      builder.longitude(Double.parseDouble(ss[4]));
+      builder.latitude(Double.parseDouble(ss[5]));
+      instrument = builder.build();
+      
+      if (ss.length == 12) // metadata present
+      {
+        if (ss[6].length() >= 1)
+          builder.timeZone(ss[6]);
+        if (ss[7].length() >= 1)
+          alias = ss[7];
+        if (ss[8].length() >= 1)
+          unit = ss[8];
+        linearA = Double.parseDouble(ss[9]);
+        linearB = Double.parseDouble(ss[10]);
+        if (!ss[11].equals("~")) {
+          final String[] gs = ss[11].split("\\|");
+          for (final String g : gs)
+            group(g);
+        }
+      } 
+      
+      return this;
+    }
+
+    public Builder metadata(HashMap<String, String> metadata) {
+      this.metadata = metadata;
+      return this;
+    }
+  }
+
+
 
   /**
    * Default constructor
    */
-  public Channel() {
-    sid = -1;
-    scnl = null;
-    instrument = Instrument.NULL;
-    timeSpan = new TimeSpan(Long.MAX_VALUE, Long.MIN_VALUE);
+  private Channel(Builder builder) {
+    sid = builder.sid;
+    scnl = builder.scnl;
+    timeSpan = builder.timeSpan;
+    instrument = builder.instrument;
+    linearA = builder.linearA;
+    linearB = builder.linearB;
+    alias = builder.alias;
+    unit = builder.unit;
+    groups = Collections.unmodifiableList(builder.groups);
+    metadata = Collections.unmodifiableMap(builder.metadata);
   }
 
-  /**
-   * Constructor from minimal info
-   *
-   * @param s
-   *          sid
-   * @param c
-   *          code
-   * @param min
-   *          minTime
-   * @param max
-   *          maxTime
-   */
-  public Channel(final int s, final Scnl c, final double min, final double max) {
-    sid = s;
-    scnl = c;
-    timeSpan = new TimeSpan(J2kSec.asEpoch(min), J2kSec.asEpoch(max));
-  }
-
-
-
-  /**
-   * Constructor from a String
-   *
-   * @param s
-   *          colon-separated string of values defining a Channel
-   * @throws UtilException When code cannot be parsed
-   */
-  public Channel(final String s) throws UtilException {
-    final String[] ss = s.split(":");
-    sid = Integer.parseInt(ss[0]);
-    scnl = Scnl.parse(ss[1]);
-    double minTime = Double.parseDouble(ss[2]);
-    double maxTime = Double.parseDouble(ss[3]);
-    timeSpan = new TimeSpan(J2kSec.asEpoch(minTime), J2kSec.asEpoch(maxTime));
-    instrument = new Instrument();
-    instrument.setLongitude(Double.parseDouble(ss[4]));
-    instrument.setLatitude(Double.parseDouble(ss[5]));
-    if (ss.length == 12) // metadata present
-    {
-      if (ss[6].length() >= 1)
-        instrument.setTimeZone(ss[6]);
-      if (ss[7].length() >= 1)
-        alias = ss[7];
-      if (ss[8].length() >= 1)
-        unit = ss[8];
-      linearA = Double.parseDouble(ss[9]);
-      linearB = Double.parseDouble(ss[10]);
-      if (!ss[11].equals("~")) {
-        final String[] gs = ss[11].split("\\|");
-        for (final String g : gs)
-          addGroup(g);
-      }
-    }
-  }
-
-  /**
-   * Setter for metadata
-   *
-   * @param map
-   *          Mapping of metadata keys to values
-   */
-  public void setMetadata(final Map<String, String> map) {
-    metadata = map;
-  }
-
-  /**
-   * Getter for metadata
-   *
-   * @return mapping of metadata keys to values
-   */
-  public Map<String, String> getMetadata() {
-    return metadata;
-  }
-
-  /**
-   * Add g to list of groups
-   *
-   * @param g
-   *          group to add
-   */
-  public void addGroup(final String g) {
-    if (groups == null)
-      groups = new ArrayList<String>(2);
-    groups.add(g);
-  }
-
-  /**
-   * Getter for sid
-   *
-   * @return sid
-   */
-  public int getSID() {
-    return sid;
-  }
-
-  /**
-   * Getter for code
-   *
-   * @return code
-   */
-  public String getCode() {
-    return DbUtils.scnlAsWinstonCode(scnl);
-  }
-
-  /**
-   * Getter for instrument
-   *
-   * @return instrument
-   */
-  public Instrument getInstrument() {
-    return instrument;
-  }
-
-  /**
-   * Getter for min time
-   *
-   * @return min time
-   */
-  public double getMinTime() {
-    return J2kSec.fromEpoch(timeSpan.startTime);
-  }
-
-  /**
-   * Getter for max time
-   *
-   * @return max time
-   */
-  public double getMaxTime() {
-    return J2kSec.fromEpoch(timeSpan.endTime);
-  }
-
+ 
   /**
    * Getter for groups as a |-separated string
    *
@@ -202,20 +183,11 @@ public class Channel implements Comparable<Channel> {
   }
 
   /**
-   * Getter for List of groups
-   *
-   * @return List of groups
-   */
-  public List<String> getGroups() {
-    return groups;
-  }
-
-  /**
    * Getter for metadata as a :-separated string
    * @return metadata as a string
    */
   public String toMetadataString() {
-    return String.format("%s:%s:%s:%s:%f:%f:%s:", toPV2String(), instrument.getTimeZone(),
+    return String.format("%s:%s:%s:%s:%f:%f:%s:", toPV2String(), instrument.timeZone,
         alias, unit, linearA, linearB, getGroupString());
   }
 
@@ -229,7 +201,7 @@ public class Channel implements Comparable<Channel> {
     double max = J2kSec.fromEpoch(timeSpan.endTime);
 
     return String.format("%d:%s:%f:%f:%f:%f", sid, DbUtils.scnlAsWinstonCode(scnl), min, max,
-        instrument.getLongitude(), instrument.getLatitude());
+        instrument.longitude, instrument.latitude);
   }
 
   /**
@@ -244,8 +216,8 @@ public class Channel implements Comparable<Channel> {
     // instrument.getLongitude(), instrument.getLatitude(), stripped,
     // stripped);
     return String.format("%d:%s:%s:%f:%f:%f:%s", sid, DbUtils.scnlAsWinstonCode(scnl), stripped,
-        instrument.getLongitude(),
-        instrument.getLatitude(), instrument.getHeight(), "0");
+        instrument.longitude,
+        instrument.latitude, instrument.height, "0");
   }
 
   /**
@@ -256,105 +228,10 @@ public class Channel implements Comparable<Channel> {
   }
 
   /**
-   * Getter for linearA
-   *
-   * @return linearA
-   */
-  public double getLinearA() {
-    return linearA;
-  }
-
-  /**
-   * Setter for linearA
-   *
-   * @param linearA linearA
-   */
-  public void setLinearA(final double linearA) {
-    if (linearA == 1e300) {
-      this.linearA = Double.NaN;
-    } else {
-      this.linearA = linearA;
-    }
-  }
-
-  /**
-   * Getter for linearB
-   *
-   * @return linearB
-   */
-  public double getLinearB() {
-    return linearB;
-  }
-
-  /**
-   * Setter for linearB
-   *
-   * @param linearB libearB
-   */
-  public void setLinearB(final double linearB) {
-    if (linearB == 1e300) {
-      this.linearB = Double.NaN;
-    } else {
-      this.linearB = linearB;
-    }
-  }
-
-  /**
-   * Getter for alias
-   *
-   * @return alias
-   */
-  public String getAlias() {
-    if (alias == null || alias.length() == 0)
-      return null;
-
-    return alias;
-  }
-
-  /**
-   * Setter for alias
-   *
-   * @param alias alias
-   */
-  public void setAlias(final String alias) {
-    this.alias = alias;
-  }
-
-  /**
-   * Getter for unit
-   *
-   * @return unit
-   */
-  public String getUnit() {
-    if (unit == null || unit.length() == 0)
-      return null;
-
-    return unit;
-  }
-
-  /**
-   * Setter for unit
-   *
-   * @param unit unit
-   */
-  public void setUnit(final String unit) {
-    this.unit = unit;
-  }
-
-  /**
    * Sort channels alphabeticaly by n, s, c, l, with empty fields floating to
    * the top
    */
   public int compareTo(final Channel o) {
     return scnl.compareTo(o.scnl);
-  }
-
-  /**
-   * Provide instrument.
-   * 
-   * @param instrument instrument
-   */
-  public void setInstrument(Instrument instrument) {
-    this.instrument = instrument;
   }
 }

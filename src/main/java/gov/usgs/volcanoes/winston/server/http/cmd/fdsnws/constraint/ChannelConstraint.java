@@ -22,6 +22,7 @@ import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
  * @author Tom Parker
  *
  */
+@SuppressWarnings("deprecation")
 public class ChannelConstraint extends FdsnConstraint {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(ChannelConstraint.class);

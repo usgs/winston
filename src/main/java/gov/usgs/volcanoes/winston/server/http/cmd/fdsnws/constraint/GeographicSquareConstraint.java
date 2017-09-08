@@ -16,6 +16,7 @@ import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
  * @author Tom Parker
  *
  */
+@SuppressWarnings("deprecation")
 public class GeographicSquareConstraint extends GeographicConstraint {
 
   private static final double DEFAULT_MINLATITUDE = -90;
@@ -48,18 +49,18 @@ public class GeographicSquareConstraint extends GeographicConstraint {
   }
 
   public boolean matches(final Channel chan) {
-    final Instrument i = chan.getInstrument();
+    final Instrument i = chan.instrument;
 
-    if (i.getLatitude() < minlatitude)
+    if (i.latitude < minlatitude)
       return false;
 
-    if (i.getLatitude() > maxlatitude)
+    if (i.latitude > maxlatitude)
       return false;
 
-    if (i.getLongitude() < minlongitude)
+    if (i.longitude < minlongitude)
       return false;
 
-    if (i.getLongitude() > maxlongitude)
+    if (i.longitude > maxlongitude)
       return false;
 
     return true;

@@ -6,14 +6,12 @@
 package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint;
 
 import java.text.ParseException;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
-import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnException;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnwsDate;
 
 /**
@@ -22,6 +20,7 @@ import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.FdsnwsDate;
  * @author Tom Parker
  *
  */
+@SuppressWarnings("unused")
 abstract public class TimeConstraint extends FdsnConstraint {
   private static final Logger LOGGER = LoggerFactory.getLogger(TimeConstraint.class);
 

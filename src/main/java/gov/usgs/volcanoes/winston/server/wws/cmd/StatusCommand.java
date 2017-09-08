@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
@@ -51,7 +52,6 @@ public class StatusCommand extends WwsBaseCommand {
       throws MalformedCommandException, UtilException {
 
     final double ageThreshold = StringUtils.stringToDouble(cmd.getString(AGE_ARG), 0);
-    final double now = J2kSec.fromEpoch(System.currentTimeMillis());
 
     final StringBuilder sb = new StringBuilder();
     int lines = 0;
@@ -75,10 +75,14 @@ public class StatusCommand extends WwsBaseCommand {
     lines++;
 
     final ArrayList<Double> ages = new ArrayList<Double>();
-    for (final Channel st : sts)
-      if (st.getMaxTime() < now && (ageThreshold == 0 || now - st.getMaxTime() < ageThreshold))
-        ages.add(now - st.getMaxTime());
-
+    for (final Channel st : sts) {
+      TimeSpan timeSpan = st.timeSpan;
+      double endTime = J2kSec.fromEpoch(timeSpan.endTime);
+      double now = J2kSec.fromEpoch(System.currentTimeMillis());
+      double age = now - endTime;
+      if (endTime < now && (ageThreshold == 0 || age < ageThreshold))
+        ages.add(age);
+    }
     if (ages.size() == 0)
       ages.add(0d);
 

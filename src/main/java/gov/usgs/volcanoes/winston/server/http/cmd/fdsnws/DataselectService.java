@@ -5,33 +5,21 @@
 
 package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws;
 
-import edu.iris.dmc.seedcodec.B1000Types;
-import edu.iris.dmc.seedcodec.Steim2;
-import edu.iris.dmc.seedcodec.SteimException;
-import edu.iris.dmc.seedcodec.SteimFrameBlock;
-import edu.sc.seis.seisFile.mseed.Blockette1000;
-import edu.sc.seis.seisFile.mseed.Btime;
-import edu.sc.seis.seisFile.mseed.DataHeader;
-import edu.sc.seis.seisFile.mseed.DataRecord;
-import edu.sc.seis.seisFile.mseed.SeedFormatException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.usgs.plot.data.Wave;
-import gov.usgs.util.Util;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.ChannelConstraint;
-import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeConstraint;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeSimpleConstraint;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.channel.ChannelHandlerContext;
@@ -49,6 +37,7 @@ public class DataselectService extends FdsnwsService {
   private static final String VERSION = "1.1.2";
   private static final String SERVICE = "dataselect";
 
+  @SuppressWarnings("unused")
   private static final Logger LOGGER = LoggerFactory.getLogger(DataselectService.class);
 
   static {
@@ -65,6 +54,7 @@ public class DataselectService extends FdsnwsService {
    * @throws UtilException when things go wrong
    * @throws FdsnException when FDSN-WS spec violated
    */
+  @SuppressWarnings("deprecation")
   public static void dispatch(WinstonDatabasePool databasePool, ChannelHandlerContext ctx,
       FullHttpRequest request) throws FdsnException, UtilException {
     String method = request.getUri().split("/")[4];
@@ -90,6 +80,7 @@ public class DataselectService extends FdsnwsService {
     }
   }
 
+  @SuppressWarnings("deprecation")
   private static void sendQueryResponse(WinstonDatabasePool databasePool, ChannelHandlerContext ctx,
       FullHttpRequest request) throws FdsnException, UtilException {
     Map<String, String> arguments = parseRequest(request);
@@ -111,7 +102,6 @@ public class DataselectService extends FdsnwsService {
       return;
     }
 
-    int seq = 1;
     for (ChannelConstraint chanConstraint : chanConstraints) {
       sendChannel(chanConstraint, channels, databasePool, ctx);
     }
@@ -134,7 +124,7 @@ public class DataselectService extends FdsnwsService {
 
           public Wave execute(WinstonDatabase winston) throws UtilException {
             Data data = new Data(winston);
-            return data.getWave(c.getSID(), st, et, 0);
+            return data.getWave(c.sid, st, et, 0);
           }
         });
       } catch (Exception e1) {
