@@ -134,6 +134,8 @@ public class Channels {
       }
       rs.close();
 
+      final PreparedStatement ps = winston
+          .getPreparedStatement("SELECT * FROM channelmetadata WHERE sid=? ORDER BY name ASC");
       rs = winston.executeQuery(
           "SELECT sid, instruments.iid, code, alias, unit, linearA, linearB, st, et, instruments.lon, instruments.lat, height, name, description, timezone "
               + "FROM channels LEFT JOIN instruments ON channels.iid=instruments.iid "
@@ -168,6 +170,20 @@ public class Channels {
         for (String group : links) {
           builder.group(group);
         }
+        
+        if (fullMetadata) {
+          HashMap<String, String> md = null;
+          ps.setInt(1, sid);
+          ResultSet rs1 = ps.executeQuery();
+          while (rs1.next()) {
+            if (md == null)
+              md = new HashMap<String, String>();
+            md.put(rs.getString("name"), rs1.getString("value"));
+          }
+          rs1.close();
+          builder.metadata(md);
+        }
+
         Channel ch = builder.build();
         channelsMap.put(ch.sid, ch);
         channels.add(ch);
@@ -175,22 +191,7 @@ public class Channels {
       }
       rs.close();
 
-      if (fullMetadata) {
-        final PreparedStatement ps = winston
-            .getPreparedStatement("SELECT * FROM channelmetadata WHERE sid=? ORDER BY name ASC");
-        for (final Channel ch : channels) {
-          HashMap<String, String> md = null;
-          ps.setInt(1, ch.sid);
-          rs = ps.executeQuery();
-          while (rs.next()) {
-            if (md == null)
-              md = new HashMap<String, String>();
-            md.put(rs.getString("name"), rs.getString("value"));
-          }
-          ch.setMetadata(md);
-        }
-      }
-
+  
       return channels;
     } catch (final Exception e) {
       LOGGER.error("Could not get channels.", e);

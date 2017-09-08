@@ -141,9 +141,9 @@ public class GetMetadataCommand extends WwsBaseCommand {
       sb.append("linearB=");
       sb.append(ch.linearB);
       sb.append(",");
-      appendList(sb, "groups", ch.getGroups());
+      appendList(sb, "groups", ch.groups);
       sb.append(",");
-      appendMap(sb, ch.getMetadata());
+      appendMap(sb, ch.metadata);
       sb.append("\n");
     }
     return sb.toString();

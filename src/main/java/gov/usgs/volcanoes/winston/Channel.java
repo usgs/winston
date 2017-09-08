@@ -1,6 +1,8 @@
 package gov.usgs.volcanoes.winston;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -25,9 +27,6 @@ public class Channel implements Comparable<Channel> {
   @SuppressWarnings("unused")
   private static final Logger LOGGER = LoggerFactory.getLogger(Channel.class);
 
-  /** Number of seconds in a typical day */
-  public static final int ONE_DAY = 24 * 60 * 60;
-
   public final int sid;
   public final Instrument instrument;
 
@@ -39,9 +38,8 @@ public class Channel implements Comparable<Channel> {
   public final double linearB;
   public final String alias;
   public final String unit;
-
-  private List<String> groups;
-  private Map<String, String> metadata;
+  public final List<String> groups;
+  public final Map<String, String> metadata;
 
 
   public static class Builder {
@@ -55,7 +53,6 @@ public class Channel implements Comparable<Channel> {
     private double linearB = Double.NaN;
     private String alias;
     private String unit;
-
     private List<String> groups;
     private Map<String, String> metadata;
 
@@ -139,6 +136,11 @@ public class Channel implements Comparable<Channel> {
       
       return this;
     }
+
+    public Builder metadata(HashMap<String, String> metadata) {
+      this.metadata = metadata;
+      return this;
+    }
   }
 
 
@@ -146,7 +148,7 @@ public class Channel implements Comparable<Channel> {
   /**
    * Default constructor
    */
-  public Channel(Builder builder) {
+  private Channel(Builder builder) {
     sid = builder.sid;
     scnl = builder.scnl;
     timeSpan = builder.timeSpan;
@@ -155,28 +157,11 @@ public class Channel implements Comparable<Channel> {
     linearB = builder.linearB;
     alias = builder.alias;
     unit = builder.unit;
+    groups = Collections.unmodifiableList(builder.groups);
+    metadata = Collections.unmodifiableMap(builder.metadata);
   }
 
  
-  /**
-   * Setter for metadata
-   *
-   * @param map
-   *          Mapping of metadata keys to values
-   */
-  public void setMetadata(final Map<String, String> map) {
-    metadata = map;
-  }
-
-  /**
-   * Getter for metadata
-   *
-   * @return mapping of metadata keys to values
-   */
-  public Map<String, String> getMetadata() {
-    return metadata;
-  }
-
   /**
    * Getter for groups as a |-separated string
    *
@@ -192,15 +177,6 @@ public class Channel implements Comparable<Channel> {
     }
     gs += groups.get(groups.size() - 1);
     return gs;
-  }
-
-  /**
-   * Getter for List of groups
-   *
-   * @return List of groups
-   */
-  public List<String> getGroups() {
-    return groups;
   }
 
   /**
