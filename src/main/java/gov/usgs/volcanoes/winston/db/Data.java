@@ -22,6 +22,7 @@ import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.UtilException;
 
 /**
@@ -44,10 +45,10 @@ public class Data {
    * @param w
    *          WinstonDatabase
    */
-  public Data(final WinstonDatabase w) {
-    winston = w;
+  public Data(final WinstonDatabase winston) {
+    this.winston = winston;
     vdxName = "";
-    channels = new Channels(w);
+    channels = new Channels(winston);
     dateFormat = new SimpleDateFormat("yyyy_MM_dd");
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
   }
@@ -91,8 +92,17 @@ public class Data {
       ResultSet rs = winston.getStatement().executeQuery("SELECT st, et FROM `"
           + winston.databasePrefix + "_ROOT`.channels WHERE code='" + code + "'");
       rs.next();
-      final double[] d = new double[] {rs.getDouble(1), rs.getDouble(2)};
+      double st = rs.getDouble(1);
+      double et = rs.getDouble(2);
+      st = applyLookback(st);
+      double[] d = null;
+      
+      if (et > st) {
+        d = new double[] {st, et};
+      }
+
       rs.close();
+      
       return d;
     } catch (final Exception e) {
       LOGGER.error("Could not get time span for channel: {}. ({})", code, e.getLocalizedMessage());
@@ -127,9 +137,14 @@ public class Data {
    * @param code
    * @param t1
    * @param t2
-   * @return List of data gaps (each gap by a start and end time)
+   * @return List of data gaps (each gap by a start and end time) or null if no data
    */
-  public List<double[]> findGaps(final String code, final double t1, final double t2) {
+  public List<double[]> findGaps(final String code, double t1, final double t2) {
+    t1 = applyLookback(t1);
+    if (t2 >= t1) {
+      return null;
+    }
+    
     if (!winston.checkConnect())
       return null;
 
@@ -254,11 +269,17 @@ public class Data {
    * @param t1
    * @param t2
    * @param maxrows
-   * @return trace buf data
+   * @return trace buf data or null if no data
    * @throws UtilException
    */
-  public List<byte[]> getTraceBufBytes(final String code, final double t1, final double t2,
+  public List<byte[]> getTraceBufBytes(final String code, double t1, final double t2,
       final int maxrows) throws UtilException {
+    
+    t1 = applyLookback(t1);
+    if (t1 >= t2) {
+      return null;
+    }
+    
     int numSamplesCounter = 0;
     if (!winston.checkConnect() || !winston.useDatabase(code))
       return null;
@@ -409,8 +430,14 @@ public class Data {
     }
   }
 
-  public HelicorderData getHelicorderData(final Scnl scnl, final double t1, final double t2,
+  public HelicorderData getHelicorderData(final Scnl scnl, double t1, final double t2,
       final int maxrows) throws UtilException {
+    
+    t1 = applyLookback(t1);
+    if (t1 >= t2) {
+      return null;
+    }
+  
     String code = DbUtils.scnlAsWinstonCode(scnl);
 
     if (!winston.checkConnect() || !winston.useDatabase(code))
@@ -479,8 +506,14 @@ public class Data {
     return null;
   }
 
-  public RSAMData getRSAMData(final Scnl scnl, final double t1, final double t2,
+  public RSAMData getRSAMData(final Scnl scnl, double t1, final double t2,
       final int maxrows, final DownsamplingType ds, final int dsInt) throws UtilException {
+    
+    t1 = applyLookback(t1);
+    if (t1 >= t2) {
+      return null;
+    }
+    
     if (!winston.checkConnect() || !winston.useDatabase(DbUtils.scnlAsWinstonCode(scnl)))
       return null;
 
@@ -617,5 +650,9 @@ public class Data {
     return size;
   }
 
+  private double applyLookback(double time) {
+    double lookback = J2kSec.now() - winston.maxDays * Time.DAY_IN_S;
+    return Math.max(time, lookback);
+  }
 
 }

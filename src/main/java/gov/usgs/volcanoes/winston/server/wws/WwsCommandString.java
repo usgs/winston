@@ -29,19 +29,31 @@ import gov.usgs.volcanoes.winston.server.MalformedCommandException;
  * @author Tom Parker
  */
 public class WwsCommandString {
+  /** No location provided in request */
+  public static final boolean NO_LOCATION = false;
+  
+  /** location provided in request */
+  public static final boolean HAS_LOCATION = true;
+
+  /** String sent by client  */
   public final String commandString;
+  
+  /** command requested */
   public final String command;
+ 
+  /** id echoed back for client use */
+  public final String id;
+  
+  /** command args */
+  public final String[] args;
+
   private Scnl scnl;
   private TimeSpan timeSpan;
-  public final String id;
-  public final String[] args;
-  
-  public static final boolean NO_LOCATION = false;
-  public static final boolean HAS_LOCATION = true;
 
   /**
    * Constructor.
    * @param commandString my command string
+   * @throws MalformedCommandException when things go wrong
    */
   public WwsCommandString(final String commandString) throws MalformedCommandException {
     this.commandString = commandString;
