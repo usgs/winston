@@ -10,12 +10,27 @@ import java.util.Map;
  * @author Dan Cervelli
  */
 public class GroupNode {
+  /** Parent node */
   public GroupNode parent;
+  
+  /** Node id */
   public int nid;
+  
+  /** Parent id */
   public int parentID;
+  
+  /** group name */
   public String name;
+  
+  /** if true default open */
   public boolean opened;
 
+  /**
+   * Constructor.
+   * 
+   * @param rs result set :(
+   * @throws SQLException when things go wrong
+   */
   public GroupNode(final ResultSet rs) throws SQLException {
     nid = rs.getInt("nid");
     parentID = rs.getInt("parent");
@@ -32,6 +47,11 @@ public class GroupNode {
       return parent.toString() + "^" + s;
   }
 
+  /**
+   * Populate parent nodes.
+   * 
+   * @param nodes map
+   */
   public static void buildTree(final Map<Integer, GroupNode> nodes) {
     for (final GroupNode node : nodes.values())
       node.parent = nodes.get(node.parentID);

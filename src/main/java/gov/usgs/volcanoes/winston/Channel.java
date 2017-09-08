@@ -1,7 +1,5 @@
 package gov.usgs.volcanoes.winston;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +12,6 @@ import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.DbUtils;
-import gov.usgs.volcanoes.winston.server.wws.cmd.MenuCommand;
 
 
 /**
@@ -24,13 +21,16 @@ import gov.usgs.volcanoes.winston.server.wws.cmd.MenuCommand;
  * @author Tom Parker
  */
 public class Channel implements Comparable<Channel> {
+  @SuppressWarnings("unused")
   private static final Logger LOGGER = LoggerFactory.getLogger(Channel.class);
 
+  /** Number of seconds in a typical day */
   public static final int ONE_DAY = 24 * 60 * 60;
 
   private final int sid;
   private Instrument instrument;
 
+  /** My SCNL */
   public final Scnl scnl;
   private final TimeSpan timeSpan;
 
@@ -212,16 +212,11 @@ public class Channel implements Comparable<Channel> {
 
   /**
    * Getter for metadata as a :-separated string
-   *
    * @return metadata as a string
    */
-  public String toMetadataString(final int maxDays) {
-    return String.format("%s:%s:%s:%s:%f:%f:%s:", toPV2String(maxDays), instrument.getTimeZone(),
-        alias, unit, linearA, linearB, getGroupString());
-  }
-
   public String toMetadataString() {
-    return toMetadataString(0);
+    return String.format("%s:%s:%s:%s:%f:%f:%s:", toPV2String(), instrument.getTimeZone(),
+        alias, unit, linearA, linearB, getGroupString());
   }
 
   /**
@@ -229,21 +224,12 @@ public class Channel implements Comparable<Channel> {
    *
    * @return PV2 as a string
    */
-  public String toPV2String(final int maxDays) {
+  public String toPV2String() {
     double min = J2kSec.fromEpoch(timeSpan.startTime);
     double max = J2kSec.fromEpoch(timeSpan.endTime);
 
-    if (maxDays > 0) {
-      min = Math.max(min, J2kSec.now() - (maxDays * ONE_DAY));
-      max = Math.max(max, J2kSec.now() - (maxDays * ONE_DAY));
-    }
-
     return String.format("%d:%s:%f:%f:%f:%f", sid, DbUtils.scnlAsWinstonCode(scnl), min, max,
         instrument.getLongitude(), instrument.getLatitude());
-  }
-
-  public String toPV2String() {
-    return toPV2String(0);
   }
 
   /**
@@ -281,7 +267,7 @@ public class Channel implements Comparable<Channel> {
   /**
    * Setter for linearA
    *
-   * @param linearA
+   * @param linearA linearA
    */
   public void setLinearA(final double linearA) {
     if (linearA == 1e300) {
@@ -303,7 +289,7 @@ public class Channel implements Comparable<Channel> {
   /**
    * Setter for linearB
    *
-   * @param linearB
+   * @param linearB libearB
    */
   public void setLinearB(final double linearB) {
     if (linearB == 1e300) {
@@ -328,7 +314,7 @@ public class Channel implements Comparable<Channel> {
   /**
    * Setter for alias
    *
-   * @param alias
+   * @param alias alias
    */
   public void setAlias(final String alias) {
     this.alias = alias;
@@ -349,7 +335,7 @@ public class Channel implements Comparable<Channel> {
   /**
    * Setter for unit
    *
-   * @param unit
+   * @param unit unit
    */
   public void setUnit(final String unit) {
     this.unit = unit;
@@ -363,6 +349,11 @@ public class Channel implements Comparable<Channel> {
     return scnl.compareTo(o.scnl);
   }
 
+  /**
+   * Provide instrument.
+   * 
+   * @param instrument instrument
+   */
   public void setInstrument(Instrument instrument) {
     this.instrument = instrument;
   }
