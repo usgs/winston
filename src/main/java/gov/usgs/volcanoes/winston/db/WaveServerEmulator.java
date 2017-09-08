@@ -67,23 +67,7 @@ public class WaveServerEmulator {
   }
 
 
-  /**
-   * TODO: implement embargo
-   * TODO: implement span
-   * TODO: make more efficient
-   * TODO: return correct dataType
-   *
-   * @param embargo
-   * @param span
-   * @return menu
-   */
-  public List<String> getWaveServerMenu(final boolean scnl, final double embargo,
-      final double span) {
-    return getWaveServerMenu(scnl, embargo, span, 0);
-  }
-
-  public List<String> getWaveServerMenu(final boolean scnl, final double embargo, final double span,
-      final double maxDays) {
+  public List<String> getWaveServerMenu(final boolean scnl, final double embargo, final double span) {
     if (!winston.checkConnect()) {
       return null;
     }
@@ -98,10 +82,6 @@ public class WaveServerEmulator {
       final String[] ss = st.getCode().split("\\$");
       final double[] ts = {st.getMinTime(), st.getMaxTime()};
 
-
-      if (maxDays > 0) {
-        ts[0] = Math.max(ts[0], J2kSec.now() - (maxDays * ONE_DAY));
-      }
 
       if (ts != null && ts[0] < ts[1]) {
 

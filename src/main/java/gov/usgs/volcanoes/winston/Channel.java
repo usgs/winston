@@ -215,13 +215,9 @@ public class Channel implements Comparable<Channel> {
    *
    * @return metadata as a string
    */
-  public String toMetadataString(final int maxDays) {
-    return String.format("%s:%s:%s:%s:%f:%f:%s:", toPV2String(maxDays), instrument.getTimeZone(),
-        alias, unit, linearA, linearB, getGroupString());
-  }
-
   public String toMetadataString() {
-    return toMetadataString(0);
+    return String.format("%s:%s:%s:%s:%f:%f:%s:", toPV2String(), instrument.getTimeZone(),
+        alias, unit, linearA, linearB, getGroupString());
   }
 
   /**
@@ -229,22 +225,15 @@ public class Channel implements Comparable<Channel> {
    *
    * @return PV2 as a string
    */
-  public String toPV2String(final int maxDays) {
+  public String toPV2String() {
     double min = J2kSec.fromEpoch(timeSpan.startTime);
     double max = J2kSec.fromEpoch(timeSpan.endTime);
 
-    if (maxDays > 0) {
-      min = Math.max(min, J2kSec.now() - (maxDays * ONE_DAY));
-      max = Math.max(max, J2kSec.now() - (maxDays * ONE_DAY));
-    }
 
     return String.format("%d:%s:%f:%f:%f:%f", sid, DbUtils.scnlAsWinstonCode(scnl), min, max,
         instrument.getLongitude(), instrument.getLatitude());
   }
 
-  public String toPV2String() {
-    return toPV2String(0);
-  }
 
   /**
    * Getter for VDX as a :-separated string

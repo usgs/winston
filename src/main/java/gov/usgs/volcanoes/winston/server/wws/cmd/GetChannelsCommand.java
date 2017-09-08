@@ -63,7 +63,6 @@ public class GetChannelsCommand extends WwsBaseCommand {
       else
         sb.append(ch.toPV2String() + "\n");
     }
-    LOGGER.info("maxDays = {}", maxDays);
     ctx.writeAndFlush(sb.toString());
   }
 

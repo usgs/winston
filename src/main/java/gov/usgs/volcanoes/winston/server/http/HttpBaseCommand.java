@@ -41,8 +41,6 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
   private static final Logger LOGGER = LoggerFactory.getLogger(HttpBaseCommand.class);
 
 
-
-  private int maxDays;
   protected ConfigFile configFile;
 
   /**
@@ -135,7 +133,7 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
       }
     }
 
-    return timeOrMaxDays(startTime);
+    return startTime;
   }
 
   /*
@@ -144,7 +142,7 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
   protected Double getStartTime(final String t1, final Double endTime, final long mult,
       final TimeZone tz) {
     final double startTime = getStartTime(t1, endTime, mult);
-    return timeOrMaxDays(startTime - (tz.getOffset(J2kSec.asEpoch(endTime))));
+    return startTime - tz.getOffset(J2kSec.asEpoch(endTime));
   }
 
   /**
@@ -169,7 +167,7 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
       }
     }
 
-    return timeOrMaxDays(endTime);
+    return endTime;
   }
 
   /**
@@ -178,21 +176,9 @@ public abstract class HttpBaseCommand extends BaseCommand implements HttpCommand
    */
   protected Double getEndTime(final String t2, final TimeZone tz) {
     final Double endTime = getEndTime(t2);
-    return timeOrMaxDays(endTime - (tz.getOffset(J2kSec.asEpoch(endTime))));
+    return endTime - tz.getOffset(J2kSec.asEpoch(endTime));
   }
 
-  /**
-   * Apply maxDays to time
-   * 
-   * @param t time
-   * @return greater of t or now less maxDays
-   */
-  protected double timeOrMaxDays(final double t) {
-    if (maxDays == 0)
-      return t;
-    else
-      return Math.max(t, J2kSec.now() - (maxDays * HttpConstants.ONE_DAY_S));
-  }
 
   /**
    * Convert a boolean value to an integer as passed in arguments.
