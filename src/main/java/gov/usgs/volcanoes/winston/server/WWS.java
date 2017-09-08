@@ -111,7 +111,7 @@ public class WWS {
     }
   }
 
-  public static void printKeys() {
+  private static void printKeys() {
     final StringBuffer sb = new StringBuffer();
     sb.append(Version.VERSION_STRING + "\n");
     sb.append("Keys:\n");
@@ -141,7 +141,9 @@ public class WWS {
   private final ConnectionStatistics connectionStatistics;
 
   /**
-   * Creates a new WWS.
+   * Constructor.
+   * @param cf config file
+   * @throws UtilException when things go wrong
    */
   public WWS(final String cf) throws UtilException {
     connectionStatistics = new ConnectionStatistics();
@@ -242,7 +244,7 @@ public class WWS {
     }
   }
 
-  public void shutdownGracefully() {
+  private void shutdownGracefully() {
     LOGGER.warn("shutting down");
 
     final Future<?> ff = group.shutdownGracefully();

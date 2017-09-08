@@ -94,6 +94,9 @@ public class ConnectionStatistics {
     }
   }
 
+  /**
+   * Constructor.
+   */
   public ConnectionStatistics() {
     LOGGER.debug("Creating new connection stats");
     connectionCount = new AtomicLong(0);
@@ -104,51 +107,103 @@ public class ConnectionStatistics {
 
   }
 
+  /**
+   * return connection count.
+   * @return connection count
+   */
   public long getCount() {
     return connectionCount.get();
   }
 
+  /**
+   * Increment the HTTP count.
+   * 
+   * @param socketAddress address of new connection
+   */
   public void incrHttpCount(SocketAddress socketAddress) {
     httpCount.incrementAndGet();
     connectionMap.get(socketAddress).lastTime.set(System.currentTimeMillis());
   }
 
+  /**
+   * Return HTTP connection count.
+   * 
+   * @return HTTP connection count
+   */
   public long getHttpCount() {
     return httpCount.get();
   }
 
+  /**
+   * Increment WWS count.
+   * 
+   * @param socketAddress address of new connection
+   */
   public void incrWwsCount(SocketAddress socketAddress) {
     wwsCount.incrementAndGet();
     connectionMap.get(socketAddress).lastTime.set(System.currentTimeMillis());
   }
 
+  /**
+   * Return WWS connnection count.
+   * 
+   * @return count
+   */
   public long getWwsCount() {
     return wwsCount.get();
   }
 
+  /** 
+   * Increment open connection count.
+   */
   public void incrOpenCount() {
     openCount.incrementAndGet();
     connectionCount.incrementAndGet();
   }
 
+  /**
+   * decrement connection count.
+   */
   public void decrOpenCount() {
     openCount.decrementAndGet();
   }
 
+  /**
+   * Find open connection count.
+   * 
+   * @return connection count
+   */
   public long getOpen() {
     return openCount.get();
   }
 
+  /**
+   * Add connection.
+   * 
+   * @param remoteAddress remote address
+   * @param trafficCounter counter
+   */
   public void mapChannel(InetSocketAddress remoteAddress,
-      ChannelTrafficShapingHandler trafficCounter2) {
+      ChannelTrafficShapingHandler trafficCounter) {
     LOGGER.debug("mapping " + remoteAddress);
-    connectionMap.put(remoteAddress, new Connection(remoteAddress.toString(), trafficCounter2));
+    connectionMap.put(remoteAddress, new Connection(remoteAddress.toString(), trafficCounter));
   }
 
+  /**
+   * Remove connection.
+   * 
+   * @param remoteAddress address to remove
+   */
   public void unmapChannel(InetSocketAddress remoteAddress) {
     connectionMap.remove(remoteAddress);
   }
 
+  /**
+   * Get formatted string of connections.
+   * 
+   * @param s sort order
+   * @return connection string
+   */
   public String printConnections(String s) {
     StringBuffer sb = new StringBuffer();
     sb.append("------- Connections --------\n");
@@ -181,6 +236,13 @@ public class ConnectionStatistics {
     return sb.toString();
   }
 
+  /**
+   * Connection comparator.
+   * 
+   * @param order sort order
+   * @param desc if true sort descending
+   * @return comparator
+   */
   public static Comparator<Connection> getComparator(final SortOrder order, final boolean desc) {
     return new Comparator<Connection>() {
       public int compare(Connection cs1, Connection cs2) {

@@ -16,10 +16,18 @@ import java.io.IOException;
 public class MalformedCommandException extends IOException {
   private static final long serialVersionUID = 1L;
 
+  /**
+   * Constructor.
+   */
   public MalformedCommandException() {
     super();
   }
 
+  /**
+   * Constructor.
+   * 
+   * @param msg message
+   */
   public MalformedCommandException(String msg) {
     super(msg);
   }
