@@ -52,7 +52,6 @@ public class StatusCommand extends WwsBaseCommand {
       throws MalformedCommandException, UtilException {
 
     final double ageThreshold = StringUtils.stringToDouble(cmd.getString(AGE_ARG), 0);
-    final double now = J2kSec.fromEpoch(System.currentTimeMillis());
 
     final StringBuilder sb = new StringBuilder();
     int lines = 0;
@@ -78,8 +77,10 @@ public class StatusCommand extends WwsBaseCommand {
     final ArrayList<Double> ages = new ArrayList<Double>();
     for (final Channel st : sts) {
       TimeSpan timeSpan = st.timeSpan;
-      double age = now - timeSpan.endTime;
-      if (timeSpan.endTime < now && (ageThreshold == 0 || age < ageThreshold))
+      double endTime = J2kSec.fromEpoch(timeSpan.endTime);
+      double now = J2kSec.fromEpoch(System.currentTimeMillis());
+      double age = now - endTime;
+      if (endTime < now && (ageThreshold == 0 || age < ageThreshold))
         ages.add(age);
     }
     if (ages.size() == 0)

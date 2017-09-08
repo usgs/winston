@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
@@ -102,13 +103,13 @@ public class MenuCommand extends WwsBaseCommand {
       TimeSpan timeSpan = chan.timeSpan;
       if (isScnl) {
         line = String.format(" %d %s %s %s s4 ", chan.sid, chan.scnl.toString(" "),
-            decimalFormat.format(Time.j2kToEw(timeSpan.startTime)),
-            decimalFormat.format(Time.j2kToEw(timeSpan.endTime)));
+            decimalFormat.format(Ew.fromEpoch(timeSpan.startTime)),
+            decimalFormat.format(Ew.fromEpoch(timeSpan.endTime)));
       } else {
         Scnl scnl = chan.scnl;
         line = String.format(" %d %s %s %s %s %s s4 ", chan.sid, scnl.station, scnl.channel,
-            scnl.network, decimalFormat.format(Time.j2kToEw(timeSpan.startTime)),
-            decimalFormat.format(Time.j2kToEw(timeSpan.endTime)));
+            scnl.network, decimalFormat.format(Ew.fromEpoch(timeSpan.startTime)),
+            decimalFormat.format(Ew.fromEpoch(timeSpan.endTime)));
       }
       list.add(line);
     }

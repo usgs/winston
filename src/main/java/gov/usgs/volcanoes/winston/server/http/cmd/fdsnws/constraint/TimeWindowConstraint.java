@@ -52,11 +52,11 @@ public class TimeWindowConstraint extends TimeConstraint {
 
   public boolean matches(final Channel chan) {
     TimeSpan timeSpan = chan.timeSpan;
-    final double start = timeSpan.startTime;
+    final double start = J2kSec.fromEpoch(timeSpan.startTime);
     if (start > startBefore || start < startAfter)
       return false;
 
-    final double end = timeSpan.endTime;
+    final double end = J2kSec.fromEpoch(timeSpan.endTime);
     if (end > endBefore || end < endAfter)
       return false;
 

@@ -8,6 +8,7 @@ package gov.usgs.volcanoes.winston.server.wws.cmd;
 import java.util.List;
 import java.util.Map;
 
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
@@ -123,10 +124,10 @@ public class GetMetadataCommand extends WwsBaseCommand {
       sb.append(escape(ch.instrument.getName()));
       sb.append(",");
       sb.append("startTime=");
-      sb.append(timeSpan.startTime);
+      sb.append(J2kSec.fromEpoch(timeSpan.startTime));
       sb.append(",");
       sb.append("endTime=");
-      sb.append(timeSpan.endTime);
+      sb.append(J2kSec.fromEpoch(timeSpan.endTime));
       sb.append(",");
       sb.append("alias=");
       sb.append(escape(ch.alias));

@@ -63,7 +63,6 @@ public final class StatusCommand extends HttpBaseCommand {
 
   public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws UtilException {
     final DecimalFormat formatter = new DecimalFormat("#.##");
-    final double now = J2kSec.fromEpoch(System.currentTimeMillis());
 
     // get and sort menu
     List<Channel> sts;
@@ -79,8 +78,9 @@ public final class StatusCommand extends HttpBaseCommand {
       throw new UtilException(e.getMessage());
     }
 
+    final double now = J2kSec.fromEpoch(System.currentTimeMillis());
     Channel midChan = sts.get(sts.size() / 2);
-    final double medianDataAge = now - midChan.timeSpan.endTime;
+    final double medianDataAge = now - J2kSec.fromEpoch(midChan.timeSpan.endTime);
 
     final Map<String, Integer> oneMinChannels = new HashMap<String, Integer>();
     final Map<String, Integer> fiveMinChannels = new HashMap<String, Integer>();
@@ -90,7 +90,7 @@ public final class StatusCommand extends HttpBaseCommand {
     final Map<String, Integer> ancientChannels = new HashMap<String, Integer>();
 
     for (final Channel chan : sts) {
-      final double age = now - chan.timeSpan.endTime;
+      final double age = now - J2kSec.fromEpoch(chan.timeSpan.endTime);
       final String code = chan.scnl.toString("_");
       if (age < 60)
         oneMinChannels.put(code, (int) age);
@@ -122,7 +122,7 @@ public final class StatusCommand extends HttpBaseCommand {
 
     final Channel chan = sts.get(0);
     root.put("mostRecentChan", chan.scnl.toString("_"));
-    root.put("mostRecentTime", formatter.format(now - chan.timeSpan.endTime));
+    root.put("mostRecentTime", formatter.format(now - J2kSec.fromEpoch(chan.timeSpan.endTime)));
 
     try {
       HttpTemplateConfiguration cfg = HttpTemplateConfiguration.getInstance();

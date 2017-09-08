@@ -51,12 +51,12 @@ public class TimeSimpleConstraint extends TimeConstraint {
 
   public boolean matches(final Channel chan) {
     TimeSpan timeSpan = chan.timeSpan;
-    final double end = timeSpan.endTime;
+    final double end = J2kSec.fromEpoch(timeSpan.endTime);
     if (!Double.isNaN(end) && end > endTimeJ2k) {
       return false;
     }
 
-    final double start = timeSpan.startTime;
+    final double start = J2kSec.fromEpoch(timeSpan.startTime);
     if (!Double.isNaN(start) && start < startTimeJ2k) {
       return false;
     }

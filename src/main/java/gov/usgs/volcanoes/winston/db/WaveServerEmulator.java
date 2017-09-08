@@ -87,8 +87,8 @@ public class WaveServerEmulator {
 
       if (wantScnl) {
         String line = String.format(" %d %s %s %s s4 ", st.sid, scnl.toString(" "),
-            decimalFormat.format(Time.j2kToEw(timeSpan.startTime)),
-            decimalFormat.format(Time.j2kToEw(timeSpan.endTime)));
+            decimalFormat.format(Ew.fromEpoch(timeSpan.startTime)),
+            decimalFormat.format(Ew.fromEpoch(timeSpan.endTime)));
         list.add(line);
       } else {
         String line = String.format(" %d %s %s %s %s %s s4 ", st.sid, scnl.station, scnl.channel,

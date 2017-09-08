@@ -166,8 +166,8 @@ public class StationService extends FdsnwsService {
         }
 
         TimeSpan timeSpan = c.timeSpan;
-        stationStart = Math.min(stationStart, timeSpan.startTime);
-        stationEnd = Math.max(stationEnd, timeSpan.endTime);
+        stationStart = Math.min(stationStart, J2kSec.fromEpoch(timeSpan.startTime));
+        stationEnd = Math.max(stationEnd, J2kSec.fromEpoch(timeSpan.endTime));
 
         if (!"station".equals(level))
           stationElement.appendChild(createChannelElement(c, doc));
