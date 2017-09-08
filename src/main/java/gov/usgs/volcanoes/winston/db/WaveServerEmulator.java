@@ -68,39 +68,6 @@ public class WaveServerEmulator {
     return id;
   }
 
-
-  public List<String> getWaveServerMenu(final boolean wantScnl, final double embargo,
-      final double span) {
-    if (!winston.checkConnect()) {
-      return null;
-    }
-
-    final List<Channel> sts = channels.getChannels();
-    if (sts == null) {
-      return null;
-    }
-
-    final List<String> list = new ArrayList<String>(sts.size());
-    for (final Channel st : sts) {
-      Scnl scnl = st.scnl;
-      TimeSpan timeSpan = st.timeSpan;
-
-      if (wantScnl) {
-        String line = String.format(" %d %s %s %s s4 ", st.sid, scnl.toString(" "),
-            decimalFormat.format(Ew.fromEpoch(timeSpan.startTime)),
-            decimalFormat.format(Ew.fromEpoch(timeSpan.endTime)));
-        list.add(line);
-      } else {
-        String line = String.format(" %d %s %s %s %s %s s4 ", st.sid, scnl.station, scnl.channel,
-            scnl.network,
-            decimalFormat.format(Time.j2kToEw(timeSpan.startTime)),
-            decimalFormat.format(Time.j2kToEw(timeSpan.endTime)));
-        list.add(line);
-      }
-    }
-    return list;
-  }
-
   public String getWaveServerMenuItem(final int p, final double embargo, final double span) {
     if (!winston.checkConnect()) {
       return null;
