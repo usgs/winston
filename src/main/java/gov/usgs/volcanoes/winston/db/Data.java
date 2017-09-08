@@ -45,10 +45,10 @@ public class Data {
    * @param w
    *          WinstonDatabase
    */
-  public Data(final WinstonDatabase w) {
-    winston = w;
+  public Data(final WinstonDatabase winston) {
+    this.winston = winston;
     vdxName = "";
-    channels = new Channels(w);
+    channels = new Channels(winston);
     dateFormat = new SimpleDateFormat("yyyy_MM_dd");
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
   }

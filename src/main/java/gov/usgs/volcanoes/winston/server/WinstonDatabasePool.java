@@ -21,10 +21,22 @@ import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
  */
 public final class WinstonDatabasePool extends GenericObjectPool<WinstonDatabase> {
 
+  /**
+   * Constructor.
+   * @param configFile winston config file
+   * @param poolConfig pool config
+   */
   public WinstonDatabasePool(ConfigFile configFile, GenericObjectPoolConfig poolConfig) {
     super(new WinstonDatabaseFactory(configFile), poolConfig);
   }
 
+  /**
+   * Execute a database query.
+   * 
+   * @param consumer data consumer
+   * @return result
+   * @throws Exception when things go wrong
+   */
   public <T> T doCommand(WinstonConsumer<T> consumer) throws Exception {
     WinstonDatabase winston = null;
     try {

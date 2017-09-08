@@ -65,10 +65,12 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
   private final ConfigFile configFile;
   private final WinstonDatabasePool winstonDatabasePool;
 
+
   /**
    * Constructor.
-   *
-   * @param configFile Our configFile
+   * 
+   * @param configFile config file
+   * @param winstonDatabasePool database pool
    */
   public PortUnificationDecoder(ConfigFile configFile, WinstonDatabasePool winstonDatabasePool) {
     super();

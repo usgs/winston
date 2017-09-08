@@ -27,6 +27,11 @@ public class WinstonDatabaseFactory extends BasePooledObjectFactory<WinstonDatab
   final private String url;
   final private int maxDays;
 
+  /**
+   * Constructor.
+   * 
+   * @param config config file
+   */
   public WinstonDatabaseFactory(ConfigFile config) {
     driver = config.getString("driver");
     url = config.getString("url");

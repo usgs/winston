@@ -20,6 +20,7 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Tom Parker
  */
 public class VersionCommand extends WwsBaseCommand {
+  /** Winston protocol version   */
   public static final int PROTOCOL_VERSION = 3;
 
   /**
