@@ -220,7 +220,7 @@ public class ConnectionStatistics {
     Collections.sort(connections, getComparator(SortOrder.parse(col), desc));
 
     for (Connection connection : connections) {
-      sb.append(String.format("%-25s %-22s %-22s %-11d %-11d\n", connection.address(),
+      sb.append(String.format("%-25s %-22s %-22s %-11d %-11d%n", connection.address(),
           Time.format(Time.STANDARD_TIME_FORMAT, connection.connectTime()),
           Time.format(Time.STANDARD_TIME_FORMAT, connection.lastTime()),
           connection.cumulativeReadBytes(), connection.cumulativeWrittenBytes()));

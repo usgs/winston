@@ -9,6 +9,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import gov.usgs.volcanoes.core.contrib.HashCodeUtil;
 import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
@@ -29,11 +30,8 @@ public class Channel implements Comparable<Channel> {
 
   public final int sid;
   public final Instrument instrument;
-
-  /** My SCNL */
   public final Scnl scnl;
   public final TimeSpan timeSpan;
-
   public final double linearA;
   public final double linearB;
   public final String alias;
@@ -174,12 +172,13 @@ public class Channel implements Comparable<Channel> {
     if (groups == null)
       return "~";
 
-    String gs = "";
+    StringBuffer sb = new StringBuffer();
     for (int i = 0; i < groups.size() - 1; i++) {
-      gs += groups.get(i) + "|";
+      sb.append(groups.get(i)).append("|");
     }
-    gs += groups.get(groups.size() - 1);
-    return gs;
+    sb.append(groups.get(groups.size() - 1));
+
+    return sb.toString();
   }
 
   /**
@@ -234,4 +233,19 @@ public class Channel implements Comparable<Channel> {
   public int compareTo(final Channel o) {
     return scnl.compareTo(o.scnl);
   }
+  
+  public boolean equals(Object other) {
+    if (other instanceof Channel) {
+      return scnl.equals(((Channel) other).scnl);      
+    } else { 
+      return false;
+    }
+  }
+  
+  @Override
+  public int hashCode() {
+    return scnl.hashCode();
+  }
+
+  
 }

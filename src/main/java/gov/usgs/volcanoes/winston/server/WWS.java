@@ -103,8 +103,6 @@ public class WWS {
       } else if (s.equals("3")) {
         org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
         System.out.println("Logging level set to \"All\"");
-      } else if (s.equals("?")) {
-        WWS.printKeys();
       } else {
         WWS.printKeys();
       }
@@ -152,9 +150,7 @@ public class WWS {
 
     configFile = new ConfigFile(configFilename);
     if (!configFile.wasSuccessfullyRead()) {
-      LOGGER.error(String.format("%s: could not read config file.", configFilename));
-      System.exit(1);
-
+      throw new RuntimeException(String.format("%s: could not read config file.", configFilename));
     }
 
     final String addr = configFile.getString("wws.addr");
@@ -195,7 +191,8 @@ public class WWS {
     final GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
     poolConfig.setMaxTotal(dbConnections);
     final ConfigFile winstonConfig = configFile.getSubConfig("winston");
-    winstonConfig.put("maxDays", "" + configFile.getLong("wws.maxDays", WinstonDatabase.MAX_DAYS_UNLIMITED));
+    winstonConfig.put("maxDays",
+        "" + configFile.getLong("wws.maxDays", WinstonDatabase.MAX_DAYS_UNLIMITED));
     final WinstonDatabasePool databasePool = new WinstonDatabasePool(winstonConfig, poolConfig);
 
     final AttributeKey<ConnectionStatistics> connectionStatsKey =

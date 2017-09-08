@@ -128,7 +128,7 @@ public final class HttpConstants {
    * @param map map to be populated
    */
   public static void applyDefaults(Map<String, Object> map) {
-    map.put("DEFAULT_ORDER_BY", new Integer(ORDER_BY));
+    map.put("DEFAULT_ORDER_BY", Integer.valueOf(ORDER_BY));
     map.put("DEFAULT_SORT_ORDER", SORT_ORDER);
     map.put("TIME_ZONE", TIME_ZONE);
     

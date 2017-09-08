@@ -54,7 +54,8 @@ public final class MenuCommand extends HttpBaseCommand {
   }
 
 
-  public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request) throws UtilException, MalformedCommandException {
+  public void doCommand(ChannelHandlerContext ctx, FullHttpRequest request)
+      throws UtilException, MalformedCommandException {
     StringBuffer error = new StringBuffer();
 
     Map<String, String> params;
@@ -86,19 +87,15 @@ public final class MenuCommand extends HttpBaseCommand {
 
       String html = prepareResponse(sortCol, order, timeZone);
 
-      if (html != null) {
-        FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
-            HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
-        response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, html.length());
-        response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
+      FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
+          HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
+      response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, html.length());
+      response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
 
-        if (HttpHeaders.isKeepAlive(request)) {
-          response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-        }
-        ctx.write(response);
-      } else {
-        LOGGER.error("NULL server menu.");
+      if (HttpHeaders.isKeepAlive(request)) {
+        response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
       }
+      ctx.write(response);
     }
   }
 
@@ -188,18 +185,11 @@ public final class MenuCommand extends HttpBaseCommand {
           final double d1 = Double.parseDouble(e1[sortCol]);
           final double d2 = Double.parseDouble(e2[sortCol]);
 
-          // Do this the hard way to avoid an int overflow.
-          // Yes, this bug was encountered in a running system.
-          final double d = d1 - d2;
-          if (d == 0)
-            return 0;
-
-          final int i = (d < 0 ? -1 : 1);
-
-          if (order == 'a')
-            return i;
-          else
-            return -i;
+          if (order == 'a') {
+            return Double.compare(d1, d2);
+          } else {
+            return Double.compare(d2, d1);
+          }
         }
         // textual columns
         else {
