@@ -96,8 +96,7 @@ public class WinstonDatabase {
       preparedStatements.clear();
       LOGGER.info("Connected to database.");
     } catch (final ClassNotFoundException e) {
-      LOGGER.error("Could not load the database driver, check your CLASSPATH. ({})", e);
-      System.exit(-1);
+      throw new RuntimeException("Could not load the database driver, check your CLASSPATH. ({})", e);
     } catch (final Exception e) {
       winstonConnection = null;
       winstonStatement = null;

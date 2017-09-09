@@ -92,7 +92,6 @@ public class InputEW {
    *
    * @param w
    */
-  @SuppressWarnings("unchecked")
   public InputEW(final WinstonDatabase w) {
     setWinston(w);
     checkTableCache =

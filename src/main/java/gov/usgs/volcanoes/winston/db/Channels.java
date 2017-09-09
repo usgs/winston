@@ -66,7 +66,9 @@ public class Channels {
       rs.close();
 
       return result;
-    } catch (final Exception e) {
+    } catch (RuntimeException ex) {
+      throw ex;
+    } catch (Exception ex) {
       LOGGER.error("Could not get groups.");
     }
     return null;
@@ -193,8 +195,10 @@ public class Channels {
 
 
       return channels;
-    } catch (final Exception e) {
-      LOGGER.error("Could not get channels.", e);
+    } catch (RuntimeException ex) {
+      throw ex;
+    } catch (final Exception ex) {
+      LOGGER.error("Could not get channels.", ex);
     }
     return null;
   }
@@ -424,8 +428,9 @@ public class Channels {
         ps.execute();
       }
     } catch (final Exception e) {
-      LOGGER.error("Could not create channel.  Are permissions set properly? ({})", e.getMessage());
-      System.exit(1);
+      String msg = String.format("Could not create channel. Are permissions set properly? (%s)",
+          e.getMessage());
+      throw new RuntimeException(msg);
     }
   }
 
@@ -462,6 +467,8 @@ public class Channels {
       }
       rs.close();
       return insts;
+    } catch (RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
       LOGGER.error("Could not get instruments.");
     }

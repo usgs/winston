@@ -265,6 +265,7 @@ public class Admin {
    *
    * @param chx the channel expression
    * @param delay the delay in milliseconds between channels
+   * @throws InterruptedException 
    */
   public void deleteChannels(final String chx, final long delay) {
     String ch = chx;
@@ -282,10 +283,12 @@ public class Admin {
           doDeleteChannel(ch);
           LOGGER.info("Deleted channel: {}", ch);
         }
-        ch = chx;
       }
-    } catch (final Exception e) {
+    } catch (final SQLException ex) {
       LOGGER.error("Error during deleteChannels({})", ch);
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException(ex);
     }
   }
 
