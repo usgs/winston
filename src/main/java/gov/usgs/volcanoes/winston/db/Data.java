@@ -63,7 +63,7 @@ public class Data {
   public double[] getTimeSpan(final Scnl scnl) {
     return getTimeSpan(DbUtils.scnlAsWinstonCode(scnl));
   }
-  
+
 
   /**
    * Get timespan for specific channel
@@ -77,7 +77,7 @@ public class Data {
     return getTimeSpan(code);
   }
 
-  
+
   /**
    * Get timespan for specific channel
    *
@@ -96,13 +96,13 @@ public class Data {
       double et = rs.getDouble(2);
       st = applyLookback(st);
       double[] d = null;
-      
+
       if (et > st) {
         d = new double[] {st, et};
       }
 
       rs.close();
-      
+
       return d;
     } catch (final Exception e) {
       LOGGER.error("Could not get time span for channel: {}. ({})", code, e.getLocalizedMessage());
@@ -144,7 +144,7 @@ public class Data {
     if (t2 >= t1) {
       return null;
     }
-    
+
     if (!winston.checkConnect())
       return null;
 
@@ -194,11 +194,11 @@ public class Data {
         return gaps;
       }
 
-      final double epsilon = 0.01;
       if (bufs.get(0)[0] > t1) {
         gaps.add(new double[] {t1, bufs.get(0)[0]});
       }
       double last = bufs.get(0)[1];
+      double epsilon = 0.01;
       for (int i = 1; i < bufs.size(); i++) {
         final double[] buf = bufs.get(i);
         if (buf[0] - last > epsilon) {
@@ -274,12 +274,12 @@ public class Data {
    */
   public List<byte[]> getTraceBufBytes(final String code, double t1, final double t2,
       final int maxrows) throws UtilException {
-    
+
     t1 = applyLookback(t1);
     if (t1 >= t2) {
       return null;
     }
-    
+
     int numSamplesCounter = 0;
     if (!winston.checkConnect() || !winston.useDatabase(code))
       return null;
@@ -382,7 +382,7 @@ public class Data {
    */
 
   private int getNumSamples(final double st, final double et, final double sr) {
-    return new Double(sr * (et - st)).intValue();
+    return (int) (sr * (et - st));
   }
 
   public List<TraceBuf> getTraceBufs(final String code, final double t1, final double t2,
@@ -432,12 +432,12 @@ public class Data {
 
   public HelicorderData getHelicorderData(final Scnl scnl, double t1, final double t2,
       final int maxrows) throws UtilException {
-    
+
     t1 = applyLookback(t1);
     if (t1 >= t2) {
       return null;
     }
-  
+
     String code = DbUtils.scnlAsWinstonCode(scnl);
 
     if (!winston.checkConnect() || !winston.useDatabase(code))
@@ -508,12 +508,12 @@ public class Data {
 
   public RSAMData getRSAMData(final Scnl scnl, double t1, final double t2,
       final int maxrows, final DownsamplingType ds, final int dsInt) throws UtilException {
-    
+
     t1 = applyLookback(t1);
     if (t1 >= t2) {
       return null;
     }
-    
+
     if (!winston.checkConnect() || !winston.useDatabase(DbUtils.scnlAsWinstonCode(scnl)))
       return null;
 
@@ -617,14 +617,16 @@ public class Data {
       final String sql_from_where_clause = sql.substring(sql.toUpperCase().indexOf("FROM") - 1,
           sql.toUpperCase().lastIndexOf("ORDER BY") - 1);
       final String[] columns = sql_select_clause.split(",");
-      String avg_sql = "SELECT ";
+      StringBuffer sb = new StringBuffer();
+      sb.append("SELECT ");
       for (final String column : columns) {
-        avg_sql += "AVG(" + column.trim() + "), ";
+        sb.append("AVG(").append(column.trim()).append("), ");
       }
-      avg_sql += "((j2ksec-" + startTime + ") DIV " + dsInt + ") intNum ";
-      avg_sql += sql_from_where_clause;
-      avg_sql += " GROUP BY intNum";
-      return avg_sql;
+      sb.append("((j2ksec-").append(startTime).append(") DIV ").append(dsInt).append(") intNum ");
+      sb.append(sql_from_where_clause);
+      sb.append(" GROUP BY intNum");
+      
+      return sb.toString();
     } else
       throw new UtilException("Unknown downsampling type: " + ds);
   }

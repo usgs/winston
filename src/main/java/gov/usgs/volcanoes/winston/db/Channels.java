@@ -142,7 +142,6 @@ public class Channels {
           "SELECT sid, instruments.iid, code, alias, unit, linearA, linearB, st, et, instruments.lon, instruments.lat, height, name, description, timezone "
               + "FROM channels LEFT JOIN instruments ON channels.iid=instruments.iid "
               + "ORDER BY code ASC");
-      final Map<Integer, Channel> channelsMap = new HashMap<Integer, Channel>();
       final List<Channel> channels = new ArrayList<Channel>();
       while (rs.next()) {
         double lookBack = J2kSec.now() - winston.maxDays * Time.DAY_IN_S;
@@ -187,7 +186,6 @@ public class Channels {
         }
 
         Channel ch = builder.build();
-        channelsMap.put(ch.sid, ch);
         channels.add(ch);
 
       }
