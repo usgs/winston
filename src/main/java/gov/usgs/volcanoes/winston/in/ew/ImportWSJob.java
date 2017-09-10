@@ -180,6 +180,9 @@ public class ImportWSJob {
                 case SUCCESS_CREATED_TABLE:
                   LOGGER.info("{}: day table created ({})", channel,
                       J2kSec.format("yyyy-MM-dd", tb.getEndTimeJ2K() + 1));
+                  total++;
+                  LOGGER.debug("Insert: {}", tb.toString());
+                  break;
                 case SUCCESS:
                   total++;
                   LOGGER.debug("Insert: {}", tb.toString());
