@@ -53,6 +53,8 @@ abstract public class TraceBufFilter implements Comparable<TraceBufFilter> {
       case 2:
         logLevel = Level.WARNING;
         break;
+      default:
+        logLevel = Level.INFO;
     }
   }
 
