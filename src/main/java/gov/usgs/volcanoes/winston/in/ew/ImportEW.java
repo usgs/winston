@@ -10,10 +10,12 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
@@ -522,8 +524,11 @@ public class ImportEW extends Thread {
 
   private void cycle(final boolean force) {
     // CodeTimer ct0 = new CodeTimer("init");
-    for (final String key : channelTraceBufs.keySet()) {
-      final ConcurrentLinkedQueue<TraceBuf> q = channelTraceBufs.get(key);
+    for (final Iterator<Entry<String, ConcurrentLinkedQueue<TraceBuf>>> iter =
+        channelTraceBufs.entrySet().iterator(); iter.hasNext();) {
+      Entry<String, ConcurrentLinkedQueue<TraceBuf>> entry = iter.next();
+      String key = entry.getKey();
+      ConcurrentLinkedQueue<TraceBuf> q = entry.getValue();      
       if (q.isEmpty())
         continue;
 
@@ -535,6 +540,7 @@ public class ImportEW extends Thread {
         if (channelMetadata.containsKey(key))
           importMetadata(key, channelMetadata.get(key));
       }
+      
     }
     // ct0.stop();
     // if (ct0.getRunTimeMillis() > 1000)
