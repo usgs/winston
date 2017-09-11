@@ -41,11 +41,11 @@ public class Channel implements Comparable<Channel> {
 
 
   public static class Builder {
-
+    private static final TimeSpan DEFAULT_TIME_SPAN = new TimeSpan(Long.MAX_VALUE, Long.MIN_VALUE);
+    private Instrument instrument;
     private int sid = -1;
-    private Instrument instrument = Instrument.NULL;
     private Scnl scnl;
-    private TimeSpan timeSpan = new TimeSpan(Long.MAX_VALUE, Long.MIN_VALUE);
+    private TimeSpan timeSpan;
 
     private double linearA = Double.NaN;
     private double linearB = Double.NaN;
@@ -54,6 +54,10 @@ public class Channel implements Comparable<Channel> {
     private List<String> groups;
     private Map<String, String> metadata;
 
+    public Builder() {
+      timeSpan = DEFAULT_TIME_SPAN;
+    }
+    
     public Builder sid(int sid) {
       this.sid = sid;
       return this;
@@ -97,11 +101,26 @@ public class Channel implements Comparable<Channel> {
     public Builder group(String group) {
       if (groups == null)
         groups = new ArrayList<String>(2);
+
       groups.add(group);
+
+      
       return this;
     }
 
     public Channel build() {
+      if (instrument == null) {
+        instrument = new Instrument.Builder().build();
+      }
+      
+      if (groups == null) {
+        groups = new ArrayList<String>();
+      }
+      
+      if (metadata == null) {
+         metadata = new HashMap<String, String>();
+      }
+      
       return new Channel(this);
     }
     

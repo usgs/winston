@@ -143,6 +143,7 @@ public class Channels {
               + "FROM channels LEFT JOIN instruments ON channels.iid=instruments.iid "
               + "ORDER BY code ASC");
       final List<Channel> channels = new ArrayList<Channel>();
+
       while (rs.next()) {
         double lookBack = J2kSec.now() - winston.maxDays * Time.DAY_IN_S;
         double et = rs.getDouble("et");
@@ -163,13 +164,23 @@ public class Channels {
 
         double st = Math.max(rs.getDouble("st"), lookBack);
         TimeSpan timeSpan = new TimeSpan(J2kSec.asEpoch(st), J2kSec.asEpoch(et));
+
         Channel.Builder builder = new Channel.Builder().sid(sid).scnl(scnl).timeSpan(timeSpan);
-        builder.instrument(new Instrument.Builder().parse(rs).build());
+
+        Instrument.Builder instrument_builder = new Instrument.Builder();
+
+        instrument_builder.parse(rs);
+
+        builder.instrument(instrument_builder.build());
+
         builder.linearA(rs.getDouble("linearA")).linearB(rs.getDouble("linearB"));
         builder.unit(rs.getString("unit")).alias(rs.getString("alias"));
         List<String> links = chanNodes.get(sid);
-        for (String group : links) {
-          builder.group(group);
+        if (links != null) {
+          for (String group : links) {
+
+            builder.group(group);
+          }
         }
 
         if (fullMetadata) {
@@ -186,6 +197,7 @@ public class Channels {
         }
 
         Channel ch = builder.build();
+
         channels.add(ch);
 
       }
