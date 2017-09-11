@@ -228,8 +228,7 @@ public class ImportEW extends Thread {
    * Logs a severe message and exits uncleanly.
    */
   protected void fatalError(final String msg) {
-    LOGGER.error(msg);
-    System.exit(1);
+    throw new RuntimeException(msg);
   }
 
   /**
@@ -396,9 +395,12 @@ public class ImportEW extends Thread {
       try {
         String filterClass = fc.getString("class");
         if (filterClass.startsWith("gov.usgs.winston")) {
-          String newFilterClass = filterClass.replace("gov.usgs.winston", "gov.usgs.volcanoes.winston");
-          LOGGER.error("Defunct filter class found. I'll fix it this time, but this will cease to work in future versions.");
-          LOGGER.error("Update ImportEW config to reference {} in place of {}", newFilterClass, filterClass);
+          String newFilterClass =
+              filterClass.replace("gov.usgs.winston", "gov.usgs.volcanoes.winston");
+          LOGGER.error(
+              "Defunct filter class found. I'll fix it this time, but this will cease to work in future versions.");
+          LOGGER.error("Update ImportEW config to reference {} in place of {}", newFilterClass,
+              filterClass);
           filterClass = newFilterClass;
         }
         final TraceBufFilter filter =
@@ -460,6 +462,9 @@ public class ImportEW extends Thread {
   class TraceBufHandler implements MessageListener {
     public void messageReceived(final Message msg) {
       totalTraceBufs++;
+      if (!(msg instanceof TraceBuf)) {
+        throw new RuntimeException("Expected TraceBuf but received " + msg.getClass());
+      }
       final TraceBuf tb = (TraceBuf) msg;
       LOGGER.debug("RX: {}", tb.toString());
 
@@ -647,6 +652,10 @@ public class ImportEW extends Thread {
             LOGGER.info("Day table created: " + tb.toWinstonString() + " "
                 + winstonDateFormat.format(J2kSec.asDate(tb.getStartTimeJ2K())));
             fixer.submit(getPurgeRunnable(code, ip.maxDays));
+            attemptedRepair.remove(code);
+            totalTraceBufsWritten++;
+            LOGGER.debug("Insert: " + tb.toString());
+            break;
           case SUCCESS:
             attemptedRepair.remove(code);
             totalTraceBufsWritten++;
