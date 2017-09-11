@@ -5,8 +5,10 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.TimeSpan;
@@ -48,12 +50,12 @@ public class GetMetadataCommand extends WwsBaseCommand {
     try {
       if ("INSTRUMENT".equals(cmd.args[0])) {
         List<Instrument> instruments = databasePool.doCommand(getInstrumentsConsumer());
-        sb.append(String.format("%s %d\n", cmd.id, instruments.size()));
+        sb.append(String.format("%s %d%n", cmd.id, instruments.size()));
         sb.append(getInstrumentMetadata(instruments));
 
       } else if ("CHANNEL".equals(cmd.args[0])) {
         List<Channel> channels = databasePool.doCommand(getChannelsConsumer());
-        sb.append(String.format("%s %d\n", cmd.id, channels.size()));
+        sb.append(String.format("%s %d%n", cmd.id, channels.size()));
         sb.append(getChannelMetadata(channels));
       } else {
         throw new MalformedCommandException("Missing argument");
@@ -159,11 +161,11 @@ public class GetMetadataCommand extends WwsBaseCommand {
     if (map == null)
       return;
 
-    for (final String key : map.keySet()) {
-      final String value = map.get(key);
-      sb.append(escape(key));
+    for (final Iterator<Entry<String, String>> iter = map.entrySet().iterator(); iter.hasNext();) {
+      Entry<String, String> entry = iter.next();
+      sb.append(escape(entry.getKey()));
       sb.append("=");
-      sb.append(escape(value));
+      sb.append(escape(entry.getValue()));
       sb.append(",");
     }
   }

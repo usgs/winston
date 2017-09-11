@@ -18,6 +18,7 @@ import java.util.SortedSet;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 import java.util.zip.Deflater;
 
 import org.apache.commons.collections.map.LRUMap;
@@ -92,7 +93,6 @@ public class InputEW {
    *
    * @param w
    */
-  @SuppressWarnings("unchecked")
   public InputEW(final WinstonDatabase w) {
     setWinston(w);
     checkTableCache =
@@ -369,15 +369,17 @@ public class InputEW {
 
         final PreparedStatement ps = winston.getPreparedStatement(
             "REPLACE INTO channelmetadata (sid, name, value) VALUES (?,?,?);");
-        final Iterator<String> it = m.keySet().iterator();
-        while (it.hasNext()) {
-          final String name = it.next();
+        
+        for (final Iterator<Entry<String, String>> iter = m.entrySet().iterator(); iter.hasNext();) {
+          Entry<String, String> entry = iter.next();
+          String key = entry.getKey();
+          String value = entry.getValue();
           ps.setInt(1, sid);
-          ps.setString(2, name);
-          ps.setString(3, m.get(name));
+          ps.setString(2, key);
+          ps.setString(3, value);
 
           ps.executeUpdate();
-          LOGGER.error("Metadata updated for {}: {}={}", channel, name, m.get(name));
+          LOGGER.info("Metadata updated for {}: {}={}", channel, key, value);
         }
 
         m.clear();

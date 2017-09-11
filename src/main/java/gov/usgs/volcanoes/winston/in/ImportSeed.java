@@ -107,7 +107,7 @@ public class ImportSeed extends StaticImporter {
 
   public static void main(final String[] args) {
     final JSAPResult config = getArguments(args);
-    System.out.printf("RSAM parameters: delta=%d, duration=%d.\n", config.getInt("rsamDelta"),
+    System.out.printf("RSAM parameters: delta=%d, duration=%d.%n", config.getInt("rsamDelta"),
         config.getInt("rsamDuration"));
 
     final ImportSeed is = new ImportSeed(config);

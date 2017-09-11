@@ -57,7 +57,7 @@ public class StatusCommand extends WwsBaseCommand {
     int lines = 0;
 
     connectionStatistics = ctx.channel().attr(connectionStatsKey).get();
-    sb.append(String.format("Connection count: %d\n", connectionStatistics.getCount()));
+    sb.append(String.format("Connection count: %d%n", connectionStatistics.getCount()));
     lines++;
 
     List<Channel> sts;
@@ -71,7 +71,7 @@ public class StatusCommand extends WwsBaseCommand {
       throw new UtilException("Unable to get channels for status command");
     }
 
-    sb.append(String.format("Channel count: %d\n", sts.size()));
+    sb.append(String.format("Channel count: %d%n", sts.size()));
     lines++;
 
     final ArrayList<Double> ages = new ArrayList<Double>();
@@ -90,7 +90,7 @@ public class StatusCommand extends WwsBaseCommand {
     d = ages.toArray(d);
     Arrays.sort(d);
 
-    sb.append(String.format("Median data age: %s\n", d[(d.length - 1) / 2]));
+    sb.append(String.format("Median data age: %s%n", d[(d.length - 1) / 2]));
     lines++;
 
     ctx.write("GC: " + lines + '\n');

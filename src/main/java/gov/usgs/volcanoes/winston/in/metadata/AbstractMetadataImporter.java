@@ -29,8 +29,7 @@ public abstract class AbstractMetadataImporter {
   protected AbstractMetadataImporter(final String configFile) {
     final ConfigFile cf = new ConfigFile(configFile);
     if (!cf.wasSuccessfullyRead()) {
-      System.err.print("Can't read config file " + configFile);
-      System.exit(1);
+      throw new RuntimeException("Can't read config file " + configFile);
     }
 
     if (cf.getList("debug") != null) {

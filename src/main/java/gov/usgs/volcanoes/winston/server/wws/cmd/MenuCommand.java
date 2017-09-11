@@ -54,11 +54,10 @@ public class MenuCommand extends WwsBaseCommand {
     if (cmd.args != null) {
       if (cmd.args.length == 1 && "SCNL".equals(cmd.args[SCNL_ARG])) {
         isScnl = true;
+      } else if (cmd.args.length > 1) {
+        throw new MalformedCommandException();
       }
-    } else if (cmd.args != null && cmd.args.length > 1) {
-      throw new MalformedCommandException();
     }
-
     ctx.write(cmd.id + ' ');
 
     List<Channel> channels;

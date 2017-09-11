@@ -100,7 +100,7 @@ public class ErrorResponse {
    */
   public void sendError() {
     if (request == null || status == null || shortDescription == null || detailedDescription == null
-        || version == null || status == null)
+        || version == null)
       throw new IllegalStateException();
 
     StringBuffer sb = new StringBuffer();

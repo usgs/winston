@@ -182,8 +182,7 @@ public class ImportWS {
       startTime = tr[0];
       endTime = tr[1];
     } catch (final Exception e) {
-      LOGGER.error("Error parsing time range: {}", e.getMessage());
-      System.exit(-1);
+      throw new RuntimeException("Error parsing time range: " + e.getMessage());
     }
 
     LOGGER

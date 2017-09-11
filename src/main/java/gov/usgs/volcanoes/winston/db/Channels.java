@@ -66,7 +66,9 @@ public class Channels {
       rs.close();
 
       return result;
-    } catch (final Exception e) {
+    } catch (RuntimeException ex) {
+      throw ex;
+    } catch (Exception ex) {
       LOGGER.error("Could not get groups.");
     }
     return null;
@@ -140,8 +142,8 @@ public class Channels {
           "SELECT sid, instruments.iid, code, alias, unit, linearA, linearB, st, et, instruments.lon, instruments.lat, height, name, description, timezone "
               + "FROM channels LEFT JOIN instruments ON channels.iid=instruments.iid "
               + "ORDER BY code ASC");
-      final Map<Integer, Channel> channelsMap = new HashMap<Integer, Channel>();
       final List<Channel> channels = new ArrayList<Channel>();
+
       while (rs.next()) {
         double lookBack = J2kSec.now() - winston.maxDays * Time.DAY_IN_S;
         double et = rs.getDouble("et");
@@ -162,13 +164,23 @@ public class Channels {
 
         double st = Math.max(rs.getDouble("st"), lookBack);
         TimeSpan timeSpan = new TimeSpan(J2kSec.asEpoch(st), J2kSec.asEpoch(et));
+
         Channel.Builder builder = new Channel.Builder().sid(sid).scnl(scnl).timeSpan(timeSpan);
-        builder.instrument(new Instrument.Builder().parse(rs).build());
+
+        Instrument.Builder instrument_builder = new Instrument.Builder();
+
+        instrument_builder.parse(rs);
+
+        builder.instrument(instrument_builder.build());
+
         builder.linearA(rs.getDouble("linearA")).linearB(rs.getDouble("linearB"));
         builder.unit(rs.getString("unit")).alias(rs.getString("alias"));
         List<String> links = chanNodes.get(sid);
-        for (String group : links) {
-          builder.group(group);
+        if (links != null) {
+          for (String group : links) {
+
+            builder.group(group);
+          }
         }
 
         if (fullMetadata) {
@@ -185,7 +197,7 @@ public class Channels {
         }
 
         Channel ch = builder.build();
-        channelsMap.put(ch.sid, ch);
+
         channels.add(ch);
 
       }
@@ -193,8 +205,10 @@ public class Channels {
 
 
       return channels;
-    } catch (final Exception e) {
-      LOGGER.error("Could not get channels.", e);
+    } catch (RuntimeException ex) {
+      throw ex;
+    } catch (final Exception ex) {
+      LOGGER.error("Could not get channels.", ex);
     }
     return null;
   }
@@ -424,8 +438,9 @@ public class Channels {
         ps.execute();
       }
     } catch (final Exception e) {
-      LOGGER.error("Could not create channel.  Are permissions set properly? ({})", e.getMessage());
-      System.exit(1);
+      String msg = String.format("Could not create channel. Are permissions set properly? (%s)",
+          e.getMessage());
+      throw new RuntimeException(msg);
     }
   }
 
@@ -462,6 +477,8 @@ public class Channels {
       }
       rs.close();
       return insts;
+    } catch (RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
       LOGGER.error("Could not get instruments.");
     }
