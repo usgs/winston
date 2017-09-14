@@ -60,7 +60,15 @@ public class WWS {
     final WWS wws = new WWS(config.configFileName);
 
     wws.launch();
-
+    
+    if (config.isVerbose) {
+      org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+      System.out.println("Logging level set to \"All\"");
+    } else {
+      org.apache.log4j.Logger.getRootLogger().setLevel(Level.WARN);
+      System.out.println("Logging level set to \"Warn\"");
+    }
+    
     if (System.console() == null) {
       System.out.println("No console present. I will not listen for console commands.");
     } else {

@@ -29,18 +29,24 @@ abstract public class TimeConstraint extends FdsnConstraint {
 
   protected double dateStringToDouble(final String s1, final String s2) throws ParseException {
     String s = StringUtils.stringToString(s1, s2);
-    if (s.indexOf('T') == -1)
+    if (s.indexOf('T') == -1) {
       s += "T00:00:00.0000";
+    } else {
+      final int dot = s.indexOf('.');
+      if (dot == -1) {
+        s += ".0000";
+      } else if (dot + 5 > s.length()) {
+        s = s.substring(0, dot + 5);
+      } else {
+        StringBuffer sb = new StringBuffer();
+        sb.append(s);
+        while (dot + 5 > sb.length()) {
+          sb.append("0");
+        }
+        s = sb.toString();
 
-    final int dot = s.indexOf('.');
-    if (dot == -1)
-      s += ".0000";
-    else if (dot + 5 > s.length())
-      s = s.substring(0, dot + 5);
-    else
-      while (dot + 5 > s.length())
-        s += "0";
-
+      }
+    }
     return J2kSec.fromDate(FdsnwsDate.parse(s));
   }
 }
