@@ -86,7 +86,6 @@ public class GetScnlRawCommand extends EwDataRequest {
       errorString = hdrPreamble + " FL s4";
     } else if (startTime > timeSpan[1]) {
       errorString = hdrPreamble + " FR s4";
-      LOGGER.error("{} TIME {}", J2kSec.toDateString(startTime));
     }
 
     if (errorString != null) {
@@ -101,6 +100,9 @@ public class GetScnlRawCommand extends EwDataRequest {
         public List<byte[]> execute(WinstonDatabase winston) throws UtilException {
           double st = Math.max(startTime, timeSpan[0]);
           double et = Math.min(endTime, timeSpan[1]);
+          if (et < endTime) {
+            LOGGER.debug("Trimming end time: " + J2kSec.toDateString(endTime) + " -> " + J2kSec.toDateString(et) + "\n");
+          }
           return new Data(winston).getTraceBufBytes(code, st, et, 0);
         }
       });
