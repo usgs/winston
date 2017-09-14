@@ -139,7 +139,6 @@ public class GetScnlRawCommand extends EwDataRequest {
     bb.flip();
     LOGGER.debug("GETSCNLRAW returning {} bytes", bb.capacity());
     ctx.write(bb.array());
-    ctx.writeAndFlush("\n");
   }
 
   @Override
