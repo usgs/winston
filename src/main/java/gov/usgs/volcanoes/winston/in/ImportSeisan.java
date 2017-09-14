@@ -19,7 +19,7 @@ import gov.usgs.plot.data.file.SeismicDataFile;
 
 /**
  * Import a list of SEISAN files into Winston.
- * Modeled on ImportSEED
+ * Modeled on ImportSEED 
  *
  * @author Tom Parker
  */
