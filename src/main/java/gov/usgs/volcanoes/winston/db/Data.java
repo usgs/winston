@@ -1,8 +1,5 @@
 package gov.usgs.volcanoes.winston.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.sql.Blob;
 import java.sql.PreparedStatement;
@@ -14,13 +11,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.math.DownsamplingType;
 import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.UtilException;
 
 /**
@@ -43,13 +45,38 @@ public class Data {
    * @param w
    *          WinstonDatabase
    */
-  public Data(final WinstonDatabase w) {
-    winston = w;
+  public Data(final WinstonDatabase winston) {
+    this.winston = winston;
     vdxName = "";
-    channels = new Channels(w);
+    channels = new Channels(winston);
     dateFormat = new SimpleDateFormat("yyyy_MM_dd");
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
   }
+
+  /**
+   * Get timespan for specific channel
+   *
+   * @param code
+   *          channel code
+   * @return Array of start and end times
+   */
+  public double[] getTimeSpan(final Scnl scnl) {
+    return getTimeSpan(DbUtils.scnlAsWinstonCode(scnl));
+  }
+
+
+  /**
+   * Get timespan for specific channel
+   *
+   * @param sid
+   *          channel id
+   * @return Array of start and end times
+   */
+  public double[] getTimeSpan(final int sid) {
+    final String code = channels.getChannelCode(sid);
+    return getTimeSpan(code);
+  }
+
 
   /**
    * Get timespan for specific channel
@@ -62,28 +89,25 @@ public class Data {
     if (!winston.checkConnect())
       return null;
     try {
-      final ResultSet rs = winston.getStatement().executeQuery("SELECT st, et FROM `"
+      ResultSet rs = winston.getStatement().executeQuery("SELECT st, et FROM `"
           + winston.databasePrefix + "_ROOT`.channels WHERE code='" + code + "'");
       rs.next();
-      final double[] d = new double[] {rs.getDouble(1), rs.getDouble(2)};
+      double st = rs.getDouble(1);
+      double et = rs.getDouble(2);
+      st = applyLookback(st);
+      double[] d = null;
+
+      if (et > st) {
+        d = new double[] {st, et};
+      }
+
       rs.close();
+
       return d;
     } catch (final Exception e) {
       LOGGER.error("Could not get time span for channel: {}. ({})", code, e.getLocalizedMessage());
     }
     return null;
-  }
-
-  /**
-   * Get timespan for specific channel
-   *
-   * @param sid
-   *          channel id
-   * @return Array of start and end times
-   */
-  public double[] getTimeSpan(final int sid) {
-    final String code = channels.getChannelCode(sid);
-    return getTimeSpan(code);
   }
 
   /**
@@ -113,9 +137,14 @@ public class Data {
    * @param code
    * @param t1
    * @param t2
-   * @return List of data gaps (each gap by a start and end time)
+   * @return List of data gaps (each gap by a start and end time) or null if no data
    */
-  public List<double[]> findGaps(final String code, final double t1, final double t2) {
+  public List<double[]> findGaps(final String code, double t1, final double t2) {
+    t1 = applyLookback(t1);
+    if (t2 >= t1) {
+      return null;
+    }
+
     if (!winston.checkConnect())
       return null;
 
@@ -165,11 +194,11 @@ public class Data {
         return gaps;
       }
 
-      final double epsilon = 0.01;
       if (bufs.get(0)[0] > t1) {
         gaps.add(new double[] {t1, bufs.get(0)[0]});
       }
       double last = bufs.get(0)[1];
+      double epsilon = 0.01;
       for (int i = 1; i < bufs.size(); i++) {
         final double[] buf = bufs.get(i);
         if (buf[0] - last > epsilon) {
@@ -240,11 +269,17 @@ public class Data {
    * @param t1
    * @param t2
    * @param maxrows
-   * @return trace buf data
+   * @return trace buf data or null if no data
    * @throws UtilException
    */
-  public List<byte[]> getTraceBufBytes(final String code, final double t1, final double t2,
+  public List<byte[]> getTraceBufBytes(final String code, double t1, final double t2,
       final int maxrows) throws UtilException {
+
+    t1 = applyLookback(t1);
+    if (t1 >= t2) {
+      return null;
+    }
+
     int numSamplesCounter = 0;
     if (!winston.checkConnect() || !winston.useDatabase(code))
       return null;
@@ -347,7 +382,7 @@ public class Data {
    */
 
   private int getNumSamples(final double st, final double et, final double sr) {
-    return new Double(sr * (et - st)).intValue();
+    return (int) (sr * (et - st));
   }
 
   public List<TraceBuf> getTraceBufs(final String code, final double t1, final double t2,
@@ -395,8 +430,16 @@ public class Data {
     }
   }
 
-  public HelicorderData getHelicorderData(final String code, final double t1, final double t2,
+  public HelicorderData getHelicorderData(final Scnl scnl, double t1, final double t2,
       final int maxrows) throws UtilException {
+
+    t1 = applyLookback(t1);
+    if (t1 >= t2) {
+      return null;
+    }
+
+    String code = DbUtils.scnlAsWinstonCode(scnl);
+
     if (!winston.checkConnect() || !winston.useDatabase(code))
       return null;
     try {
@@ -463,9 +506,15 @@ public class Data {
     return null;
   }
 
-  public RSAMData getRSAMData(final String code, final double t1, final double t2,
+  public RSAMData getRSAMData(final Scnl scnl, double t1, final double t2,
       final int maxrows, final DownsamplingType ds, final int dsInt) throws UtilException {
-    if (!winston.checkConnect() || !winston.useDatabase(code))
+
+    t1 = applyLookback(t1);
+    if (t1 >= t2) {
+      return null;
+    }
+
+    if (!winston.checkConnect() || !winston.useDatabase(DbUtils.scnlAsWinstonCode(scnl)))
       return null;
 
     try {
@@ -482,7 +531,7 @@ public class Data {
         if (date.equals(endDate))
           done = true;
         ct += ONE_DAY;
-        final String table = code + "$$H" + date;
+        final String table = DbUtils.scnlAsWinstonCode(scnl) + "$$H" + date;
         ResultSet rs = null;
         String sql = "SELECT j2ksec, rsam" + " FROM `" + table + "` WHERE j2ksec>=" + t1
             + " AND j2ksec<=" + t2 + " AND rcnt>0" + " ORDER BY j2ksec";
@@ -544,7 +593,7 @@ public class Data {
       }
       return new RSAMData(list);
     } catch (final SQLException e) {
-      LOGGER.error("Could not get RSAM for {}, {}->{}", code, t1, t2);
+      LOGGER.error("Could not get RSAM for {}, {}->{}", DbUtils.scnlAsWinstonCode(scnl), t1, t2);
     }
     return null;
   }
@@ -568,14 +617,16 @@ public class Data {
       final String sql_from_where_clause = sql.substring(sql.toUpperCase().indexOf("FROM") - 1,
           sql.toUpperCase().lastIndexOf("ORDER BY") - 1);
       final String[] columns = sql_select_clause.split(",");
-      String avg_sql = "SELECT ";
+      StringBuffer sb = new StringBuffer();
+      sb.append("SELECT ");
       for (final String column : columns) {
-        avg_sql += "AVG(" + column.trim() + "), ";
+        sb.append("AVG(").append(column.trim()).append("), ");
       }
-      avg_sql += "((j2ksec-" + startTime + ") DIV " + dsInt + ") intNum ";
-      avg_sql += sql_from_where_clause;
-      avg_sql += " GROUP BY intNum";
-      return avg_sql;
+      sb.append("((j2ksec-").append(startTime).append(") DIV ").append(dsInt).append(") intNum ");
+      sb.append(sql_from_where_clause);
+      sb.append(" GROUP BY intNum");
+      
+      return sb.toString();
     } else
       throw new UtilException("Unknown downsampling type: " + ds);
   }
@@ -601,5 +652,9 @@ public class Data {
     return size;
   }
 
+  private double applyLookback(double time) {
+    double lookback = J2kSec.now() - winston.maxDays * Time.DAY_IN_S;
+    return Math.max(time, lookback);
+  }
 
 }

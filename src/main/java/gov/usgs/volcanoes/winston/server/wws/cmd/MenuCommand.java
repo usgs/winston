@@ -5,15 +5,17 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.Ew;
-import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
@@ -35,6 +37,7 @@ import io.netty.channel.ChannelHandlerContext;
 public class MenuCommand extends WwsBaseCommand {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MenuCommand.class);
+  private static final int SCNL_ARG = 0;
 
   /** 
    * Constructor.
@@ -48,15 +51,14 @@ public class MenuCommand extends WwsBaseCommand {
 
     boolean isScnl = false;
 
-    if (cmd.length() == 3) {
-      if (cmd.getString(2).equals("SCNL")) {
+    if (cmd.args != null) {
+      if (cmd.args.length == 1 && "SCNL".equals(cmd.args[SCNL_ARG])) {
         isScnl = true;
+      } else if (cmd.args.length > 1) {
+        throw new MalformedCommandException();
       }
-    } else if (cmd.length() != 2) {
-      throw new MalformedCommandException();
     }
-
-    ctx.write(cmd.getID() + " ");
+    ctx.write(cmd.id + ' ');
 
     List<Channel> channels;
     try {
@@ -71,8 +73,10 @@ public class MenuCommand extends WwsBaseCommand {
       throw new UtilException(e.getMessage());
     }
 
-    ctx.write(generateMenu(channels, isScnl).toString());
-    ctx.writeAndFlush('\n');
+    for (String line : generateMenu(channels, isScnl)) {
+      ctx.write(line);
+    }
+    ctx.writeAndFlush("\n");
   }
 
   /**
@@ -91,30 +95,25 @@ public class MenuCommand extends WwsBaseCommand {
     }
 
     DecimalFormat decimalFormat = WwsBaseCommand.getDecimalFormat();
-
     LOGGER.debug("channels count {}", channels.size());
     final List<String> list = new ArrayList<String>(channels.size());
     for (final Channel chan : channels) {
-      final String[] ss = chan.getCode().split("\\$");
-      final double[] ts = {chan.getMinTime(), chan.getMaxTime()};
-
-
-      if (ts != null && ts[0] < ts[1]) {
-
-        if (isScnl) {
-          final String loc = (ss.length == 4 ? ss[3] : "--");
-          final String line = " " + chan.getSID() + " " + ss[0] + " " + ss[1] + " " + ss[2] + " "
-              + loc + " " + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
-              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ";
-          list.add(line);
-        } else {
-          list.add(" " + chan.getSID() + " " + ss[0] + " " + ss[1] + " " + ss[2] + " "
-              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[0]))) + " "
-              + decimalFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ts[1]))) + " s4 ");
-        }
+      String line;
+      TimeSpan timeSpan = chan.timeSpan;
+      if (isScnl) {
+        line = String.format(" %d %s %s %s s4 ", chan.sid, chan.scnl.toString(" "),
+            decimalFormat.format(Ew.fromEpoch(timeSpan.startTime)),
+            decimalFormat.format(Ew.fromEpoch(timeSpan.endTime)));
+      } else {
+        Scnl scnl = chan.scnl;
+        line = String.format(" %d %s %s %s %s %s s4 ", chan.sid, scnl.station, scnl.channel,
+            scnl.network, decimalFormat.format(Ew.fromEpoch(timeSpan.startTime)),
+            decimalFormat.format(Ew.fromEpoch(timeSpan.endTime)));
       }
+      list.add(line);
     }
     LOGGER.debug("returning {} items.", list.size());
+
     return list;
   }
 }

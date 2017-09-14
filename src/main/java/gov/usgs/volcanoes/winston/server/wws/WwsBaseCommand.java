@@ -5,11 +5,12 @@
 
 package gov.usgs.volcanoes.winston.server.wws;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.net.InetSocketAddress;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.server.BaseCommand;
@@ -26,21 +27,11 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
   protected final static int ONE_HOUR_S = 60 * 60;
   protected final static int ONE_DAY_S = 24 * ONE_HOUR_S;
 
-  protected int maxDays;
-
   /**
    * Constructor.
    */
   public WwsBaseCommand() {
     super();
-  }
-
-  /**
-   * maxDays mutator.
-   * @param maxDays apparent data retention
-   */
-  public void setMaxDays(int maxDays) {
-    this.maxDays = maxDays;
   }
 
   /**
@@ -53,7 +44,8 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
    */
   public void respond(ChannelHandlerContext ctx, WwsCommandString req)
       throws MalformedCommandException, UtilException {
-    LOGGER.info("Recieved command: {}", req.getCommandString());
+    InetSocketAddress remoteAddr = (InetSocketAddress) ctx.channel().remoteAddress();
+    LOGGER.info("{} asks {}", remoteAddr.getAddress(), prettyRequest(req));
     doCommand(ctx, req);
   }
 
@@ -66,5 +58,9 @@ abstract public class WwsBaseCommand extends BaseCommand implements WwsCommand {
     } catch (ClassCastException ex) {
       throw new UtilException("Unable to cast NumberFormat to DecimalFormat.");
     }
+  }
+
+  protected String prettyRequest(WwsCommandString req) {
+    return req.commandString;
   }
 }

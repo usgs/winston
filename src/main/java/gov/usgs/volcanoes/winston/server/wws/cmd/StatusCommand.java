@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
@@ -31,13 +32,14 @@ import io.netty.util.AttributeKey;
  */
 public class StatusCommand extends WwsBaseCommand {
 
-  private ConnectionStatistics connectionStatistics;
-
+  private static final int AGE_ARG = 0;
   private static final AttributeKey<ConnectionStatistics> connectionStatsKey;
 
   static {
     connectionStatsKey = AttributeKey.valueOf("connectionStatistics");
   }
+
+  private ConnectionStatistics connectionStatistics;
 
   /**
    * Constructor.
@@ -49,14 +51,13 @@ public class StatusCommand extends WwsBaseCommand {
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    final double ageThreshold = StringUtils.stringToDouble(cmd.getString(2), 0);
-    final double now = J2kSec.fromEpoch(System.currentTimeMillis());
+    final double ageThreshold = StringUtils.stringToDouble(cmd.getString(AGE_ARG), 0);
 
     final StringBuilder sb = new StringBuilder();
     int lines = 0;
 
     connectionStatistics = ctx.channel().attr(connectionStatsKey).get();
-    sb.append(String.format("Connection count: %d\n", connectionStatistics.getCount()));
+    sb.append(String.format("Connection count: %d%n", connectionStatistics.getCount()));
     lines++;
 
     List<Channel> sts;
@@ -70,14 +71,18 @@ public class StatusCommand extends WwsBaseCommand {
       throw new UtilException("Unable to get channels for status command");
     }
 
-    sb.append(String.format("Channel count: %d\n", sts.size()));
+    sb.append(String.format("Channel count: %d%n", sts.size()));
     lines++;
 
     final ArrayList<Double> ages = new ArrayList<Double>();
-    for (final Channel st : sts)
-      if (st.getMaxTime() < now && (ageThreshold == 0 || now - st.getMaxTime() < ageThreshold))
-        ages.add(now - st.getMaxTime());
-
+    for (final Channel st : sts) {
+      TimeSpan timeSpan = st.timeSpan;
+      double endTime = J2kSec.fromEpoch(timeSpan.endTime);
+      double now = J2kSec.fromEpoch(System.currentTimeMillis());
+      double age = now - endTime;
+      if (endTime < now && (ageThreshold == 0 || age < ageThreshold))
+        ages.add(age);
+    }
     if (ages.size() == 0)
       ages.add(0d);
 
@@ -85,7 +90,7 @@ public class StatusCommand extends WwsBaseCommand {
     d = ages.toArray(d);
     Arrays.sort(d);
 
-    sb.append(String.format("Median data age: %s\n", d[(d.length - 1) / 2]));
+    sb.append(String.format("Median data age: %s%n", d[(d.length - 1) / 2]));
     lines++;
 
     ctx.write("GC: " + lines + '\n');

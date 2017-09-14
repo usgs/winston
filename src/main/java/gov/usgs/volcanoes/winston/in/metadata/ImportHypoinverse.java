@@ -1,12 +1,12 @@
 package gov.usgs.volcanoes.winston.in.metadata;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.winston.Instrument;
 
@@ -40,26 +40,27 @@ public class ImportHypoinverse extends AbstractMetadataImporter {
       record = in.readLine();
 
       while (record != null) {
-        final Instrument inst = new Instrument();
-        inst.setName(record.substring(0, 5).trim());
+        Instrument.Builder builder = new Instrument.Builder();
+        builder.name(record.substring(0, 5).trim());
 
         double lat = Double.parseDouble(record.substring(15, 17));
         lat += Double.parseDouble(record.substring(18, 25).trim()) / 60;
         if (record.substring(25, 26).equals("S"))
           lat *= -1;
-        inst.setLatitude(lat);
+        builder.latitude(lat);
 
         double lon = Double.parseDouble(record.substring(26, 29).trim());
         lon += Double.parseDouble(record.substring(30, 36).trim()) / 60;
         if (record.substring(37, 38).equals("W"))
           lon *= -1;
-        inst.setLongitude(lon);;
+        builder.longitude(lon);;
 
         final int height = Integer.parseInt(record.substring(38, 42).trim());
-        inst.setHeight(height);
+        builder.height(height);
 
-        list.add(inst);
+        list.add(builder.build());
         record = in.readLine();
+
       }
       in.close();
     } catch (final Exception e) {

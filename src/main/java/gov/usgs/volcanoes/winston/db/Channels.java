@@ -1,8 +1,5 @@
 package gov.usgs.volcanoes.winston.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -12,6 +9,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
+import gov.usgs.volcanoes.core.util.StringUtils;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.GroupNode;
 import gov.usgs.volcanoes.winston.Instrument;
@@ -28,10 +34,7 @@ public class Channels {
   private static final Logger LOGGER = LoggerFactory.getLogger(InputEW.class);
 
   private final WinstonDatabase winston;
-  
-  // exposed retention time in seconds
-  private int aparentRetention = Integer.MAX_VALUE;
-  
+
   /**
    * Constructor
    * 
@@ -63,16 +66,14 @@ public class Channels {
       rs.close();
 
       return result;
-    } catch (final Exception e) {
+    } catch (RuntimeException ex) {
+      throw ex;
+    } catch (Exception ex) {
       LOGGER.error("Could not get groups.");
     }
     return null;
   }
 
-  public void setAparentRetention(int i) {
-    aparentRetention = i;
-  }
-  
   /**
    * Get List of channels
    * 
@@ -92,8 +93,8 @@ public class Channels {
 
     Collections.sort(sts, new Comparator<Channel>() {
       public int compare(final Channel c1, final Channel c2) {
-        final Double t1 = c1.getMaxTime();
-        final Double t2 = c2.getMaxTime();
+        final Double t1 = J2kSec.fromEpoch(c1.timeSpan.endTime);
+        final Double t2 = J2kSec.fromEpoch(c2.timeSpan.endTime);
         return t2.compareTo(t1);
       }
     });
@@ -114,58 +115,128 @@ public class Channels {
 
     try {
       winston.useRootDatabase();
-      ResultSet rs = winston.executeQuery(
+
+      final Map<Integer, GroupNode> nodes = getGroupNodes();
+      Map<Integer, List<String>> chanNodes = new HashMap<Integer, List<String>>();
+
+      ResultSet rs = winston.executeQuery("SELECT sid, nid FROM grouplinks");
+      while (rs.next()) {
+        int sid = rs.getInt(1);
+        int nid = rs.getInt(2);
+        GroupNode gn = nodes.get(nid);
+        if (gn != null) {
+          List<String> links = chanNodes.get(sid);
+          if (links == null) {
+            links = new ArrayList<String>();
+            chanNodes.put(sid, links);
+          }
+
+          links.add(gn.toString());
+        }
+      }
+      rs.close();
+
+      final PreparedStatement ps = winston
+          .getPreparedStatement("SELECT * FROM channelmetadata WHERE sid=? ORDER BY name ASC");
+      rs = winston.executeQuery(
           "SELECT sid, instruments.iid, code, alias, unit, linearA, linearB, st, et, instruments.lon, instruments.lat, height, name, description, timezone "
               + "FROM channels LEFT JOIN instruments ON channels.iid=instruments.iid "
               + "ORDER BY code ASC");
-      final Map<Integer, Channel> channelsMap = new HashMap<Integer, Channel>();
       final List<Channel> channels = new ArrayList<Channel>();
-      while (rs.next()) {
-        final Channel ch = new Channel(rs, aparentRetention);
-        
-        if (ch.getMaxTime() > ch.getMinTime()) {
-          channelsMap.put(ch.getSID(), ch);
-          channels.add(ch);
-        }
-      }
-      rs.close();
-      final Map<Integer, GroupNode> nodes = getGroupNodes();
 
-      rs = winston.executeQuery("SELECT sid, nid FROM grouplinks");
       while (rs.next()) {
-        final int sid = rs.getInt(1);
-        final int nid = rs.getInt(2);
-        final Channel ch = channelsMap.get(sid);
-        if (ch != null) {
-          final GroupNode gn = nodes.get(nid);
-          if (gn != null)
-            ch.addGroup(gn.toString());
-        }
-      }
-      rs.close();
+        double lookBack = J2kSec.now() - winston.maxDays * Time.DAY_IN_S;
+        double et = rs.getDouble("et");
 
-      if (fullMetadata) {
-        final PreparedStatement ps = winston
-            .getPreparedStatement("SELECT * FROM channelmetadata WHERE sid=? ORDER BY name ASC");
-        for (final Channel ch : channels) {
+        if (et <= lookBack) {
+          LOGGER.debug("Skipping channel: {} <= {} : {}", et, lookBack, winston.maxDays);
+          continue;
+        }
+
+        int sid = rs.getInt("sid");
+        Scnl scnl;
+        try {
+          scnl = Scnl.parse(rs.getString("code"));
+        } catch (UtilException e) {
+          LOGGER.error("Cannot parse station code: {}", rs.getString("code"));
+          continue;
+        }
+
+        double st = Math.max(rs.getDouble("st"), lookBack);
+        TimeSpan timeSpan = new TimeSpan(J2kSec.asEpoch(st), J2kSec.asEpoch(et));
+
+        Channel.Builder builder = new Channel.Builder().sid(sid).scnl(scnl).timeSpan(timeSpan);
+
+        Instrument.Builder instrument_builder = new Instrument.Builder();
+
+        instrument_builder.parse(rs);
+
+        builder.instrument(instrument_builder.build());
+
+        builder.linearA(rs.getDouble("linearA")).linearB(rs.getDouble("linearB"));
+        builder.unit(rs.getString("unit")).alias(rs.getString("alias"));
+        List<String> links = chanNodes.get(sid);
+        if (links != null) {
+          for (String group : links) {
+
+            builder.group(group);
+          }
+        }
+
+        if (fullMetadata) {
           HashMap<String, String> md = null;
-          ps.setInt(1, ch.getSID());
-          rs = ps.executeQuery();
-          while (rs.next()) {
+          ps.setInt(1, sid);
+          ResultSet rs1 = ps.executeQuery();
+          while (rs1.next()) {
             if (md == null)
               md = new HashMap<String, String>();
-            md.put(rs.getString("name"), rs.getString("value"));
+            md.put(rs.getString("name"), rs1.getString("value"));
           }
-          ch.setMetadata(md);
+          rs1.close();
+          builder.metadata(md);
         }
+
+        Channel ch = builder.build();
+
+        channels.add(ch);
+
       }
+      rs.close();
+
 
       return channels;
-    } catch (final Exception e) {
-      LOGGER.error("Could not get channels.", e);
+    } catch (RuntimeException ex) {
+      throw ex;
+    } catch (final Exception ex) {
+      LOGGER.error("Could not get channels.", ex);
     }
     return null;
   }
+
+  // /**
+  // * Get channel ID from code
+  // *
+  // * @param code
+  // * @return channel ID
+  // */
+  // public int getChannelID(final String code) {
+  // if (!winston.checkConnect())
+  // return -1;
+  //
+  // try {
+  // int result = -1;
+  // winston.useRootDatabase();
+  // final ResultSet rs =
+  // winston.getStatement().executeQuery("SELECT sid FROM channels WHERE code='" + code + "'");
+  // if (rs.next())
+  // result = rs.getInt(1);
+  // rs.close();
+  // return result;
+  // } catch (final Exception e) {
+  // LOGGER.error("Could not get channel ID. ({})", e.getLocalizedMessage());
+  // }
+  // return -1;
+  // }
 
   /**
    * Get channel ID from code
@@ -173,15 +244,16 @@ public class Channels {
    * @param code
    * @return channel ID
    */
-  public int getChannelID(final String code) {
+  public int getChannelID(final Scnl scnl) {
     if (!winston.checkConnect())
       return -1;
 
     try {
       int result = -1;
       winston.useRootDatabase();
-      final ResultSet rs =
-          winston.getStatement().executeQuery("SELECT sid FROM channels WHERE code='" + code + "'");
+      String sql = String.format("SELECT sid FROM channels WHERE code='%s'",
+          DbUtils.scnlAsWinstonCode(scnl));
+      final ResultSet rs = winston.getStatement().executeQuery(sql);
       if (rs.next())
         result = rs.getInt(1);
       rs.close();
@@ -314,9 +386,9 @@ public class Channels {
     try {
       winston.useRootDatabase();
       winston.getStatement()
-          .execute("INSERT INTO channels (code, st, et) VALUES ('" + code + "', 1E300, -1E300)");
-      winston.getStatement()
           .execute("CREATE DATABASE `" + winston.databasePrefix + "_" + code + "`");
+      winston.getStatement()
+          .execute("INSERT INTO channels (code, st, et) VALUES ('" + code + "', 1E300, -1E300)");
       winston.getStatement().execute("USE `" + winston.databasePrefix + "_" + code + "`");
     } catch (final Exception e) {
       LOGGER.error("Could not create channel.  Are permissions set properly?");
@@ -337,7 +409,7 @@ public class Channels {
       return;
     try {
       winston.useRootDatabase();
-      int iid = getInstrumentId(inst.getName());
+      int iid = getInstrumentId(inst.name);
       PreparedStatement ps = null;
       final boolean instrumentExists = iid > 0;
       if (instrumentExists) {
@@ -348,26 +420,27 @@ public class Channels {
         ps = winston.getPreparedStatement(
             "INSERT INTO instruments (name, description, lon, lat, height) VALUES (?,?,?,?,?);");
       }
-      ps.setString(1, inst.getName());
-      ps.setString(2, inst.getDescription());
-      ps.setDouble(3, inst.getLongitude());
-      ps.setDouble(4, inst.getLatitude());
-      ps.setDouble(5, inst.getHeight());
+      ps.setString(1, inst.name);
+      ps.setString(2, inst.description);
+      ps.setDouble(3, inst.longitude);
+      ps.setDouble(4, inst.latitude);
+      ps.setDouble(5, inst.height);
       LOGGER.debug(ps.toString());
       ps.execute();
 
       if (!instrumentExists) {
-        iid = getInstrumentId(inst.getName());
+        iid = getInstrumentId(inst.name);
         ps = winston.getPreparedStatement("UPDATE channels set iid=? WHERE code LIKE ?;");
         ps.setInt(1, iid);
-        ps.setString(2, inst.getName() + "$%");
+        ps.setString(2, inst.name + "$%");
         LOGGER.debug(ps.toString());
 
         ps.execute();
       }
     } catch (final Exception e) {
-      LOGGER.error("Could not create channel.  Are permissions set properly? ({})", e.getMessage());
-      System.exit(1);
+      String msg = String.format("Could not create channel. Are permissions set properly? (%s)",
+          e.getMessage());
+      throw new RuntimeException(msg);
     }
   }
 
@@ -382,28 +455,30 @@ public class Channels {
 
     try {
       winston.useRootDatabase();
+      final PreparedStatement ps = winston
+          .getPreparedStatement("SELECT * FROM instrumentmetadata WHERE iid=? ORDER BY name ASC");
       ResultSet rs = winston.executeQuery("SELECT * FROM instruments ORDER BY name ASC");
       final List<Instrument> insts = new ArrayList<Instrument>();
       while (rs.next()) {
-        final Instrument inst = new Instrument(rs);
-        insts.add(inst);
-      }
-      rs.close();
+        Instrument.Builder builder = new Instrument.Builder().parse(rs);
 
-      final PreparedStatement ps = winston
-          .getPreparedStatement("SELECT * FROM instrumentmetadata WHERE iid=? ORDER BY name ASC");
-      for (final Instrument inst : insts) {
         HashMap<String, String> md = null;
-        ps.setInt(1, inst.getID());
-        rs = ps.executeQuery();
-        while (rs.next()) {
+        ps.setInt(1, rs.getInt("instruments.iid"));
+        ResultSet rs1 = ps.executeQuery();
+        while (rs1.next()) {
           if (md == null)
             md = new HashMap<String, String>();
-          md.put(rs.getString("name"), rs.getString("value"));
+          md.put(rs.getString("name"), rs1.getString("value"));
         }
-        inst.setMetadata(md);
+        rs1.close();
+        builder.metadata(md);
+
+        insts.add(builder.build());
       }
+      rs.close();
       return insts;
+    } catch (RuntimeException e) {
+      throw e;
     } catch (final Exception e) {
       LOGGER.error("Could not get instruments.");
     }

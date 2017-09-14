@@ -5,15 +5,19 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
+import java.nio.ByteBuffer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.ByteBuffer;
-
 import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
+import gov.usgs.volcanoes.winston.db.DbUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
@@ -24,10 +28,13 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * Return Channel details.
  * 
+ * <cmd> = "GETWAVERAW" <sp> <id> <sp> <scnl> <sp> <time span>
+ * 
  * @author Dan Cervelli
  * @author Tom Parker
  */
 public class GetWaveRawCommand extends WwsBaseCommand {
+  @SuppressWarnings("unused")
   private static final Logger LOGGER = LoggerFactory.getLogger(GetWaveRawCommand.class);
 
   /**
@@ -37,65 +44,54 @@ public class GetWaveRawCommand extends WwsBaseCommand {
     super();
   }
 
-  public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
+  public void doCommand(final ChannelHandlerContext ctx, final WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    if (!cmd.isLegalSCNLTT(9))
-      return; // malformed command
+    final String code = DbUtils.scnlAsWinstonCode(cmd.getScnl());
 
-    final double et = cmd.getT2(true);
-    final double st = cmd.getT1(true);
-    final String scnl = cmd.getWinstonSCNL();
-
+    TimeSpan ts = cmd.getJ2kSecTimeSpan(true);
+    final double st = J2kSec.fromEpoch(ts.startTime);
+    final double et = J2kSec.fromEpoch(ts.endTime);
     if (st >= et) {
-      throw new MalformedCommandException();
+      throw new MalformedCommandException(
+          String.format("End time must be after start time. (%s)", cmd.commandString));
     }
 
-    WinstonDatabase winston = null;
-    Wave wave;
+    Wave wave = null;
     try {
       wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
-
         public Wave execute(WinstonDatabase winston) throws UtilException {
           Data data = new Data(winston);
-          return data.getWave(scnl, st, et, 0);
+          return data.getWave(code, st, et, 0);
         }
       });
     } catch (Exception e1) {
-      throw new UtilException(e1.getMessage());
+      LOGGER.info(e1.getMessage());
     }
 
-
-    try {
-      winston = databasePool.borrowObject();
-      if (!winston.checkConnect()) {
-        LOGGER.error("WinstonDatabase unable to connect to MySQL.");
-      } else {
-        Data data = new Data(winston);
-        wave = data.getWave(cmd.getWinstonSCNL(), st, et, 0);
-      }
-    } catch (Exception e) {
-      LOGGER.error("Unable to fulfill command.", e);
-    } finally {
-      if (winston != null) {
-        databasePool.returnObject(winston);
-      }
-    }
-
-    ByteBuffer bb = null;
-    if (wave != null && wave.numSamples() > 0)
+    ByteBuffer bb;
+    if (wave != null && wave.numSamples() > 0) {
       bb = (ByteBuffer) wave.toBinary().flip();
-
-    String id = cmd.getID();
-
-    if (cmd.getInt(8) == 1)
-      bb = ByteBuffer.wrap(Zip.compress(bb.array()));
-
-    if (bb != null) {
-      ctx.write(id + " " + bb.limit() + "\n");
-      ctx.writeAndFlush(bb.array());
+      if (cmd.getInt(-1) == 1) {
+        bb = ByteBuffer.wrap(Zip.compress(bb.array()));
+      }
     } else {
-      throw new UtilException("Unable to compress results.");
+      bb = ByteBuffer.allocate(0);
+    }
+
+    ctx.writeAndFlush(String.format("%s %d%n", cmd.id, bb.limit()));
+    ctx.writeAndFlush(bb.array());
+  }
+
+  @Override
+  protected String prettyRequest(WwsCommandString cmd) {
+    try {
+      TimeSpan ts = cmd.getJ2kSecTimeSpan(WwsCommandString.HAS_LOCATION);
+      return String.format("%s %s %s %s +%s", cmd.command, cmd.id, cmd.getScnl(),
+          Time.toDateString(ts.startTime), ts.span());
+    } catch (MalformedCommandException e) {
+      return cmd.commandString;
     }
   }
+
 }

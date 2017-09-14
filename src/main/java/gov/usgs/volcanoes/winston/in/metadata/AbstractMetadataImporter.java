@@ -1,9 +1,9 @@
 package gov.usgs.volcanoes.winston.in.metadata;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.winston.Instrument;
@@ -29,8 +29,7 @@ public abstract class AbstractMetadataImporter {
   protected AbstractMetadataImporter(final String configFile) {
     final ConfigFile cf = new ConfigFile(configFile);
     if (!cf.wasSuccessfullyRead()) {
-      System.err.print("Can't read config file " + configFile);
-      System.exit(1);
+      throw new RuntimeException("Can't read config file " + configFile);
     }
 
     if (cf.getList("debug") != null) {

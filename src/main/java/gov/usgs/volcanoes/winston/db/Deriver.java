@@ -1,10 +1,10 @@
 package gov.usgs.volcanoes.winston.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.text.ParseException;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.CodeTimer;
@@ -68,15 +68,15 @@ public class Deriver {
       startTime = t[0];
       endTime = t[1];
     } catch (final ParseException e) {
-      System.err.println("Can't parse timeRange");
-      System.exit(1);
+      throw new RuntimeException("Can't parse timeRange");
     }
 
     chunkSize = StringUtils.stringToDouble(config.getString("chunkSize"), DEFAULT_CHUNK_SIZE);
 
     rsamEnable = StringUtils.stringToBoolean(config.getString("rsam.enable"), DEFAULT_RSAM_ENABLE);
     rsamDelta = StringUtils.stringToInt(config.getString("rsam.delta"), DEFAULT_RSAM_DELTA);
-    rsamDuration = StringUtils.stringToInt(config.getString("rsam.duration"), DEFAULT_RSAM_DURATION);
+    rsamDuration =
+        StringUtils.stringToInt(config.getString("rsam.duration"), DEFAULT_RSAM_DURATION);
   }
 
   public void deriveAll() {

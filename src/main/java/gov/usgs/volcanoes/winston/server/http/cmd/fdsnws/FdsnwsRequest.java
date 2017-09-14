@@ -14,14 +14,16 @@ import io.netty.handler.codec.http.FullHttpRequest;
  *
  */
 public class FdsnwsRequest {
-  private final FullHttpRequest request;
   public final String service;
   public final int majorVersion;
   public final String method;
 
+  /**
+   * Constructor.
+   * 
+   * @param request HTTP request
+   */
   public FdsnwsRequest(FullHttpRequest request) {
-    this.request = request;
-
     String[] splits = request.getUri().split("/");
     this.service = splits[2];
     this.majorVersion = Integer.parseInt(splits[3]);

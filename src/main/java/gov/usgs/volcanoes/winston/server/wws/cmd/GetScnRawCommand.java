@@ -5,6 +5,10 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
+import gov.usgs.volcanoes.core.contrib.HashCodeUtil;
+import gov.usgs.volcanoes.winston.server.MalformedCommandException;
+import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
+
 /**
  * 
  * @author Tom Parker
@@ -16,6 +20,14 @@ public class GetScnRawCommand extends GetScnlRawCommand {
    */
   public GetScnRawCommand() {
     super();
-    isScnl = false;
   }
+  
+  protected void parseCommand(WwsCommandString cmd) throws MalformedCommandException {
+    int hash = HashCodeUtil.hash(HashCodeUtil.SEED, cmd);
+    if (cmdHash == Integer.MIN_VALUE || cmdHash != hash) {
+      scnl = cmd.getScnl();
+      timeSpan = cmd.getEwTimeSpan(WwsCommandString.NO_LOCATION);      
+    }
+  }
+
 }

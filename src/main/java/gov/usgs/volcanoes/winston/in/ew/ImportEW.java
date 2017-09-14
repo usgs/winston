@@ -1,17 +1,5 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
-import com.martiansoftware.jsap.FlaggedOption;
-import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.JSAPResult;
-import com.martiansoftware.jsap.Parameter;
-import com.martiansoftware.jsap.SimpleJSAP;
-import com.martiansoftware.jsap.Switch;
-import com.martiansoftware.jsap.UnflaggedOption;
-
-import org.apache.log4j.Level;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -22,14 +10,28 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.martiansoftware.jsap.FlaggedOption;
+import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPResult;
+import com.martiansoftware.jsap.Parameter;
+import com.martiansoftware.jsap.SimpleJSAP;
+import com.martiansoftware.jsap.Switch;
+import com.martiansoftware.jsap.UnflaggedOption;
 
 import gov.usgs.earthworm.ImportGeneric;
 import gov.usgs.earthworm.MessageListener;
@@ -228,8 +230,7 @@ public class ImportEW extends Thread {
    * Logs a severe message and exits uncleanly.
    */
   protected void fatalError(final String msg) {
-    LOGGER.error(msg);
-    System.exit(1);
+    throw new RuntimeException(msg);
   }
 
   /**
@@ -396,9 +397,12 @@ public class ImportEW extends Thread {
       try {
         String filterClass = fc.getString("class");
         if (filterClass.startsWith("gov.usgs.winston")) {
-          String newFilterClass = filterClass.replace("gov.usgs.winston", "gov.usgs.volcanoes.winston");
-          LOGGER.error("Defunct filter class found. I'll fix it this time, but this will cease to work in future versions.");
-          LOGGER.error("Update ImportEW config to reference {} in place of {}", newFilterClass, filterClass);
+          String newFilterClass =
+              filterClass.replace("gov.usgs.winston", "gov.usgs.volcanoes.winston");
+          LOGGER.error(
+              "Defunct filter class found. I'll fix it this time, but this will cease to work in future versions.");
+          LOGGER.error("Update ImportEW config to reference {} in place of {}", newFilterClass,
+              filterClass);
           filterClass = newFilterClass;
         }
         final TraceBufFilter filter =
@@ -460,6 +464,9 @@ public class ImportEW extends Thread {
   class TraceBufHandler implements MessageListener {
     public void messageReceived(final Message msg) {
       totalTraceBufs++;
+      if (!(msg instanceof TraceBuf)) {
+        throw new RuntimeException("Expected TraceBuf but received " + msg.getClass());
+      }
       final TraceBuf tb = (TraceBuf) msg;
       LOGGER.debug("RX: {}", tb.toString());
 
@@ -517,8 +524,11 @@ public class ImportEW extends Thread {
 
   private void cycle(final boolean force) {
     // CodeTimer ct0 = new CodeTimer("init");
-    for (final String key : channelTraceBufs.keySet()) {
-      final ConcurrentLinkedQueue<TraceBuf> q = channelTraceBufs.get(key);
+    for (final Iterator<Entry<String, ConcurrentLinkedQueue<TraceBuf>>> iter =
+        channelTraceBufs.entrySet().iterator(); iter.hasNext();) {
+      Entry<String, ConcurrentLinkedQueue<TraceBuf>> entry = iter.next();
+      String key = entry.getKey();
+      ConcurrentLinkedQueue<TraceBuf> q = entry.getValue();      
       if (q.isEmpty())
         continue;
 
@@ -530,6 +540,7 @@ public class ImportEW extends Thread {
         if (channelMetadata.containsKey(key))
           importMetadata(key, channelMetadata.get(key));
       }
+      
     }
     // ct0.stop();
     // if (ct0.getRunTimeMillis() > 1000)
@@ -647,6 +658,10 @@ public class ImportEW extends Thread {
             LOGGER.info("Day table created: " + tb.toWinstonString() + " "
                 + winstonDateFormat.format(J2kSec.asDate(tb.getStartTimeJ2K())));
             fixer.submit(getPurgeRunnable(code, ip.maxDays));
+            attemptedRepair.remove(code);
+            totalTraceBufsWritten++;
+            LOGGER.debug("Insert: " + tb.toString());
+            break;
           case SUCCESS:
             attemptedRepair.remove(code);
             totalTraceBufsWritten++;

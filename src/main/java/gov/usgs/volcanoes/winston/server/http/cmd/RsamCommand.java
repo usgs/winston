@@ -17,6 +17,7 @@ import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.decorate.DefaultFrameDecorator;
 import gov.usgs.plot.decorate.DefaultFrameDecorator.Location;
 import gov.usgs.plot.render.MatrixRenderer;
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
@@ -58,7 +59,7 @@ public final class RsamCommand extends HttpBaseCommand {
   private double plotMax;
   private double plotMin;
   private boolean outputData;
-  private String code;
+  private Scnl scnl;
   private RSAMData rsamData;
   private FullHttpRequest request;
 
@@ -113,7 +114,7 @@ public final class RsamCommand extends HttpBaseCommand {
         rsamData = databasePool.doCommand(new WinstonConsumer<RSAMData>() {
 
           public RSAMData execute(WinstonDatabase winston) throws UtilException {
-            return new Data(winston).getRSAMData(code, startTime, endTime, 0, dst, dsInt);
+            return new Data(winston).getRSAMData(scnl, startTime, endTime, 0, dst, dsInt);
           }
         });
       } catch (Exception e) {
@@ -146,13 +147,15 @@ public final class RsamCommand extends HttpBaseCommand {
   private String validateParams(Map<String, String> arguments) throws MalformedCommandException {
     StringBuffer errorString = new StringBuffer();
 
-    code = arguments.get("code");
+    String code = arguments.get("code");
     if (code == null)
       errorString.append("Error: you must specify a channel (code).<br>");
     else {
-      code = code.replace('_', '$');
-      if (code.indexOf(";") != -1)
-        errorString.append("Error: illegal characters in channel (code).<br>");
+      try {
+        scnl = Scnl.parse(code, "_");
+      } catch (UtilException e) {
+        throw new MalformedCommandException(String.format("Cannot parse code. (%s)", code));
+      }
     }
 
     timeZone = TimeZone.getTimeZone(StringUtils.stringToString(arguments.get("tz"), "UTC"));
@@ -226,7 +229,7 @@ public final class RsamCommand extends HttpBaseCommand {
 
     mr.getAxis().setBottomLabelAsText(bottomText);
     mr.getAxis().setLeftLabelAsText("RSAM");
-    DefaultFrameDecorator.addLabel(mr, code.replace('$', ' '), Location.LEFT);
+    DefaultFrameDecorator.addLabel(mr, scnl.toString(" "), Location.LEFT);
     mr.createDefaultLineRenderers(Color.blue);
     // mr.setExtents(startTime, endTime, gdm.min(1), gdm.max(1));
     plot.addRenderer(mr);
@@ -254,13 +257,13 @@ public final class RsamCommand extends HttpBaseCommand {
 
   private FullHttpResponse sendData() {
     final String html = rsamData.toCSV();
-    final String fileName = code + "-RSAM.csv";
+    final String fileName = scnl.toString("_") + "-RSAM.csv";
 
     FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
         HttpResponseStatus.OK, Unpooled.copiedBuffer(html, Charset.forName("UTF-8")));
     response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, html.length());
     response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/csv; charset=utf-8");
-    response.headers().set("content-Disposition:", "attachment; filename='" + fileName + "'");
+    response.headers().set("content-Disposition", "attachment; filename='" + fileName + "'");
 
     if (HttpHeaders.isKeepAlive(request)) {
       response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);

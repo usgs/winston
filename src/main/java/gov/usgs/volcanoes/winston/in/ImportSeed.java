@@ -1,17 +1,17 @@
 package gov.usgs.volcanoes.winston.in;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Parameter;
 import com.martiansoftware.jsap.SimpleJSAP;
 import com.martiansoftware.jsap.UnflaggedOption;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 import gov.usgs.plot.data.Wave;
 import gov.usgs.plot.data.file.FileType;
@@ -107,7 +107,7 @@ public class ImportSeed extends StaticImporter {
 
   public static void main(final String[] args) {
     final JSAPResult config = getArguments(args);
-    System.out.printf("RSAM parameters: delta=%d, duration=%d.\n", config.getInt("rsamDelta"),
+    System.out.printf("RSAM parameters: delta=%d, duration=%d.%n", config.getInt("rsamDelta"),
         config.getInt("rsamDuration"));
 
     final ImportSeed is = new ImportSeed(config);

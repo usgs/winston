@@ -5,14 +5,18 @@
 
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
+import java.nio.ByteBuffer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.nio.ByteBuffer;
 
 import gov.usgs.math.DownsamplingType;
 import gov.usgs.plot.data.RSAMData;
 import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -24,13 +28,14 @@ import io.netty.channel.ChannelHandlerContext;
 
 /**
  * Return Channel details.
+ * <cmd> = "GETSCNLRSAMRAW" <sp> <id> <sp> <scnl> <sp> <time span> <downsampling factor> 
  * 
  * @author Dan Cervelli
  * @author Tom Parker
  */
 public class GetScnlRsamRawCommand extends WwsBaseCommand {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRsamRawCommand.class);
-
+  
   /**
    * Constructor.
    */
@@ -41,21 +46,19 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
-    if (!cmd.isLegalSCNLTT(10) || Double.isNaN(cmd.getDouble(8))
-        || cmd.getInt(9) == Integer.MIN_VALUE) {
-      throw new MalformedCommandException();
-    }
-    final double t1 = cmd.getT1(true);
-    final double t2 = cmd.getT2(true);
-    final int ds = (int) cmd.getDouble(8);
-    final String scnl = cmd.getWinstonSCNL();
+    TimeSpan ts = cmd.getJ2kSecTimeSpan(true);
+    final double st = J2kSec.fromEpoch(ts.startTime);
+    final double et = J2kSec.fromEpoch(ts.endTime);
+    
+    final int ds = cmd.getInt(-1);
     final DownsamplingType dst = (ds < 2) ? DownsamplingType.NONE : DownsamplingType.MEAN;
 
+    final Scnl scnl = cmd.getScnl();
     RSAMData rsam;
     try {
       rsam = databasePool.doCommand(new WinstonConsumer<RSAMData>() {
         public RSAMData execute(WinstonDatabase winston) throws UtilException {
-          return new Data(winston).getRSAMData(scnl, t1, t2, 0, dst, ds);
+          return new Data(winston).getRSAMData(scnl, st, et, 0, dst, ds);
         }
 
       });
@@ -67,13 +70,23 @@ public class GetScnlRsamRawCommand extends WwsBaseCommand {
     if (rsam != null && rsam.rows() > 0)
       bb = (ByteBuffer) rsam.toBinary().flip();
 
-    if (cmd.getInt(9) == 1)
+    if (cmd.getInt(-1) == 1)
       bb = ByteBuffer.wrap(Zip.compress(bb.array()));
 
     if (bb != null) {
-      LOGGER.warn("returning {} rsam bytes", bb.limit());
-      ctx.write(cmd.getID() + " " + bb.limit() + '\n');
+      LOGGER.debug("returning {} rsam bytes", bb.limit());
+      ctx.write(cmd.id + " " + bb.limit() + '\n');
       ctx.writeAndFlush(bb.array());
+    }
+  }
+
+  @Override
+  protected String prettyRequest(WwsCommandString cmd) {
+    try {
+      TimeSpan timeSpan = cmd.getJ2kSecTimeSpan(true);
+      return String.format("%s %s %s %s +%s %d", cmd.command, cmd.id, cmd.getScnl(), Time.toDateString(timeSpan.startTime), timeSpan.span(), cmd.getInt(-1));
+    } catch (MalformedCommandException e) {
+      return cmd.commandString;
     }
   }
 }

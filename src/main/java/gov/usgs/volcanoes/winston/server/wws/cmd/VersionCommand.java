@@ -14,13 +14,14 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * Return the server menu
  * 
- * request = /^MENU:? \d( SCNL)?$/
+ * <cdm> = "VERSION"
  *
  * @author Dan Cervelli
  * @author Tom Parker
  */
 public class VersionCommand extends WwsBaseCommand {
-  private static final int PROTOCOL_VERSION = 3;
+  /** Winston protocol version   */
+  public static final int PROTOCOL_VERSION = 3;
 
   /**
    * Constructor.

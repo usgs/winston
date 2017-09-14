@@ -6,21 +6,22 @@
 package gov.usgs.volcanoes.winston.server;
 
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.apache.log4j.Level;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Console;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.apache.log4j.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.Log;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Version;
+import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -55,62 +56,60 @@ public class WWS {
   public static void main(final String[] args) throws Exception {
 
     Log.addFileAppender("WWS.log");
-
     final WWSArgs config = new WWSArgs(args);
-    if (config.isVerbose) {
-      org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
-    }
-
     final WWS wws = new WWS(config.configFileName);
 
     wws.launch();
 
-    boolean run = true;
-    Console console = System.console();
-    if (console != null) {
-      while (run) {
-        System.out.println("Enter ? for console commands.");
-        String s = console.readLine();
-
-        if (s == null)
-          continue;
-
-        s = s.toLowerCase().trim();
-        if (s.equals("q")) {
-          run = false;
-          wws.shutdownGracefully();
-        } else if (s.startsWith("c")) {
-          wws.printConnections(s);
-          // } else if (s.startsWith("m")) {
-          // wws.printCommands(s);
-          // } else if (s.equals("d")) {
-          // wws.dropConnections(wws.idleTime);
-          // } else if (s.startsWith("t")) {
-          // wws.toggleTrace(s);
-        } else if (s.equals("0")) {
-          org.apache.log4j.Logger.getRootLogger().setLevel(Level.ERROR);
-        } else if (s.equals("1")) {
-          org.apache.log4j.Logger.getRootLogger().setLevel(Level.WARN);
-        } else if (s.equals("2")) {
-          org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
-        } else if (s.equals("3")) {
-          org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
-        } else if (s.equals("?")) {
-          WWS.printKeys();
-        } else {
-          WWS.printKeys();
-        }
-      }
-    } else {
+    if (System.console() == null) {
       System.out.println("No console present. I will not listen for console commands.");
+    } else {
+      attendConsole(wws);
     }
   }
 
-  public void printConnections(String s) {
-    System.out.println(connectionStatistics.printConnections(s));
+  private static void attendConsole(WWS wws) {
+    boolean run = true;
+    Console console = System.console();
+
+    while (run) {
+      System.out.println("Enter ? for console commands.");
+      String s = console.readLine();
+
+      if (s == null)
+        continue;
+
+      s = s.toLowerCase().trim();
+      if (s.equals("q")) {
+        run = false;
+        wws.shutdownGracefully();
+      } else if (s.startsWith("c")) {
+        System.out.println(wws.connectionStatistics.printConnections(s));
+        // } else if (s.startsWith("m")) {
+        // wws.printCommands(s);
+        // } else if (s.equals("d")) {
+        // wws.dropConnections(wws.idleTime);
+        // } else if (s.startsWith("t")) {
+        // wws.toggleTrace(s);
+      } else if (s.equals("0")) {
+        org.apache.log4j.Logger.getRootLogger().setLevel(Level.ERROR);
+        System.out.println("Logging level set to \"Error\"");
+      } else if (s.equals("1")) {
+        org.apache.log4j.Logger.getRootLogger().setLevel(Level.WARN);
+        System.out.println("Logging level set to \"Warn\"");
+      } else if (s.equals("2")) {
+        org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
+        System.out.println("Logging level set to \"Info\"");
+      } else if (s.equals("3")) {
+        org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+        System.out.println("Logging level set to \"All\"");
+      } else {
+        WWS.printKeys();
+      }
+    }
   }
 
-  public static void printKeys() {
+  private static void printKeys() {
     final StringBuffer sb = new StringBuffer();
     sb.append(Version.VERSION_STRING + "\n");
     sb.append("Keys:\n");
@@ -132,31 +131,58 @@ public class WWS {
     System.out.println(sb);
   }
 
-  private ConfigFile configFile;
-  protected String configFilename;
-  protected int dbConnections;
-  private InetAddress serverIp;
-  private int serverPort;
+  private final ConfigFile configFile;
+  protected final int dbConnections;
+  private final InetAddress serverIp;
+  private final int serverPort;
   private NioEventLoopGroup group;
   private final ConnectionStatistics connectionStatistics;
 
   /**
-   * Creates a new WWS.
+   * Constructor.
+   * @param cf config file
+   * @throws UtilException when things go wrong
    */
   public WWS(final String cf) throws UtilException {
-    super();
-
     connectionStatistics = new ConnectionStatistics();
     LOGGER.info(Version.VERSION_STRING);
-    configFilename = cf;
-    processConfigFile();
+    String configFilename = cf;
+
+    configFile = new ConfigFile(configFilename);
+    if (!configFile.wasSuccessfullyRead()) {
+      throw new RuntimeException(String.format("%s: could not read config file.", configFilename));
+    }
+
+    final String addr = configFile.getString("wws.addr");
+    if (addr != null) {
+      try {
+        serverIp = InetAddress.getByName(addr);
+      } catch (final UnknownHostException e) {
+        throw new UtilException(
+            String.format("%s: unable to resolve configured wws.addr. (%s)", configFilename, addr));
+      }
+      LOGGER.info("config: wws.addr={}.", serverIp.getCanonicalHostName());
+    } else {
+      serverIp = null;
+    }
+
+    final int port = StringUtils.stringToInt(configFile.getString("wws.port"), -1);
+    if (port < 0 || port > 65535) {
+      throw new UtilException(
+          String.format("%s: bad or missing 'wws.port' setting. (%s)", configFilename, port));
+    } else {
+      serverPort = port;
+      LOGGER.info("config: wws.port={}.", serverPort);
+    }
+
+    dbConnections =
+        StringUtils.stringToInt(configFile.getString("wws.dbConnections"), DEFAULT_DB_CONNECTIONS);
+    LOGGER.info("config: wws.dbConnections={}.", dbConnections);
   }
 
-  protected void fatalError(final String msg) {
-    LOGGER.error(msg);
-    System.exit(1);
-  }
-
+  /**
+   * Start listening.
+   */
   public void launch() {
     LOGGER.info("Launching WWS. {}", Version.VERSION_STRING);
     group = new NioEventLoopGroup();
@@ -164,8 +190,12 @@ public class WWS {
     // TODO: figure out how much flexibility is needed here
     final GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
     poolConfig.setMaxTotal(dbConnections);
-
     final ConfigFile winstonConfig = configFile.getSubConfig("winston");
+    long maxDays = configFile.getLong("wws.maxDays", 0);
+    if (maxDays == 0)
+      maxDays = WinstonDatabase.MAX_DAYS_UNLIMITED;
+    
+    winstonConfig.put("maxDays", "" + maxDays);
     final WinstonDatabasePool databasePool = new WinstonDatabasePool(winstonConfig, poolConfig);
 
     final AttributeKey<ConnectionStatistics> connectionStatsKey =
@@ -180,7 +210,7 @@ public class WWS {
           public void initChannel(SocketChannel ch) throws Exception {
             connectionStatistics.incrOpenCount();
             final ChannelTrafficShapingHandler trafficCounter =
-                new ChannelTrafficShapingHandler(1000);
+                new ChannelTrafficShapingHandler(0);
             final InetSocketAddress remoteAddress = ch.remoteAddress();
             connectionStatistics.mapChannel(remoteAddress, trafficCounter);
 
@@ -194,74 +224,36 @@ public class WWS {
                 connectionStatistics.unmapChannel(remoteAddress);
               }
             });
-
           }
         });
 
     final ChannelFuture f = b.bind();
-    while (!f.isDone())
-
-    {
+    while (!f.isDone()) {
       try {
         f.sync();
-      } catch (final InterruptedException ignore) {
-        // do nothing
+      } catch (final InterruptedException ex) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException(ex);
       }
-
     }
-    if (f.isSuccess())
-
-    {
+    if (f.isSuccess()) {
       LOGGER.info("WWS started and listen on {}", f.channel().localAddress());
-    } else
-
-    {
+    } else {
       LOGGER.error("Unable to start server.");
       shutdownGracefully();
     }
-
   }
 
-  public void shutdownGracefully() {
+  private void shutdownGracefully() {
     LOGGER.warn("shutting down");
 
     final Future<?> ff = group.shutdownGracefully();
     try {
       ff.sync();
-    } catch (final InterruptedException ignore) {
-      // do nothing
+    } catch (final InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException(ex);
     }
   }
 
-  /**
-   * Processes the configuration file (default 'WWS.config'). See the default file for documentation
-   * on the different options.
-   */
-  public void processConfigFile() throws UtilException {
-    configFile = new ConfigFile(configFilename);
-    if (!configFile.wasSuccessfullyRead()) {
-      fatalError(configFilename + ": could not read config file.");
-    }
-
-    final String a = configFile.getString("wws.addr");
-    if (a != null) {
-      try {
-        serverIp = InetAddress.getByName(a);
-      } catch (final UnknownHostException e) {
-        throw new UtilException(configFilename + ": unable to resolve configured wws.addr.");
-      }
-      LOGGER.info("config: wws.addr={}.", serverIp.getCanonicalHostName());
-    }
-
-    final int p = StringUtils.stringToInt(configFile.getString("wws.port"), -1);
-    if (p < 0 || p > 65535) {
-      throw new UtilException(configFilename + ": bad or missing 'wws.port' setting.");
-    }
-    serverPort = p;
-    LOGGER.info("config: wws.port={}.", serverPort);
-
-    dbConnections =
-        StringUtils.stringToInt(configFile.getString("wws.dbConnections"), DEFAULT_DB_CONNECTIONS);
-    LOGGER.info("config: wws.dbConnections={}.", dbConnections);
-  }
 }

@@ -1,13 +1,13 @@
 package gov.usgs.volcanoes.winston.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.DataUtils;
@@ -62,15 +62,15 @@ public class Merge {
       total = 0;
       while (drs.next()) {
         total++;
-        sourceTimes.remove(new Integer((int) Math.round(drs.getDouble(1))));
+        sourceTimes.remove(Integer.valueOf((int) Math.round(drs.getDouble(1))));
       }
 
       total = 0;
       double read = 0;
       double write = 0;
       LOGGER.info("Begin merging.");
-      final PreparedStatement insert = dest.getConnection()
-          .prepareStatement("INSERT IGNORE INTO `" + code + "$$H" + date + "` VALUES (?,?,?,?,?)");
+      String sql = "INSERT IGNORE INTO `" + code + "$$H" + date + "` VALUES (?,?,?,?,?)";
+      final PreparedStatement insert = dest.getConnection().prepareStatement(sql);
       final CodeTimer readTimer = new CodeTimer();
       for (final Iterator<Integer> it = sourceTimes.iterator(); it.hasNext();) {
         final int d = it.next().intValue();
@@ -89,6 +89,7 @@ public class Merge {
           total++;
         }
       }
+      insert.close();
       readTimer.stop();
       read = readTimer.getRunTimeMillis() - write;
       LOGGER.info("Done merging, " + read + "ms reading, " + write + "ms writing.");
@@ -126,8 +127,8 @@ public class Merge {
       LOGGER.info("Begin merging.");
       double read = 0;
       double write = 0;
-      final PreparedStatement insert = dest.getConnection()
-          .prepareStatement("INSERT IGNORE INTO `" + code + "$$" + date + "` VALUES (?,?,?,?,?)");
+      String sql = "INSERT IGNORE INTO `" + code + "$$" + date + "` VALUES (?,?,?,?,?)";
+      final PreparedStatement insert = dest.getConnection().prepareStatement(sql);
       final CodeTimer readTimer = new CodeTimer();
       for (final Iterator<Double> it = sourceTimes.iterator(); it.hasNext();) {
         final double d = it.next().doubleValue();
@@ -146,6 +147,7 @@ public class Merge {
           total++;
         }
       }
+      insert.close();
       readTimer.stop();
       read = readTimer.getRunTimeMillis() - write;
       LOGGER.info("Done merging, " + read + "ms reading, " + write + "ms writing.");

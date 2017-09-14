@@ -17,6 +17,11 @@ public abstract class BaseCommand {
 
   protected BaseCommand() {}
 
+  /**
+   * Constructor.
+   * 
+   * @param databasePool database pool
+   */
   public void databasePool(WinstonDatabasePool databasePool) {
     this.databasePool = databasePool;
   }

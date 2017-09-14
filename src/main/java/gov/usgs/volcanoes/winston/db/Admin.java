@@ -1,15 +1,16 @@
 package gov.usgs.volcanoes.winston.db;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.winston.Channel;
 
 /**
@@ -215,7 +216,7 @@ public class Admin {
     try {
       final List<Channel> st = channels.getChannels();
       for (final Iterator<Channel> it = st.iterator(); it.hasNext();) {
-        final String code = it.next().getCode();
+        final String code = it.next().scnl.toString();
         System.out.print(code + "...");
         input.calculateSpan(code);
         System.out.println("done.");
@@ -264,6 +265,7 @@ public class Admin {
    *
    * @param chx the channel expression
    * @param delay the delay in milliseconds between channels
+   * @throws InterruptedException 
    */
   public void deleteChannels(final String chx, final long delay) {
     String ch = chx;
@@ -281,10 +283,12 @@ public class Admin {
           doDeleteChannel(ch);
           LOGGER.info("Deleted channel: {}", ch);
         }
-        ch = chx;
       }
-    } catch (final Exception e) {
+    } catch (final SQLException ex) {
       LOGGER.error("Error during deleteChannels({})", ch);
+    } catch (InterruptedException ex) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException(ex);
     }
   }
 
@@ -295,7 +299,7 @@ public class Admin {
     try {
       final List<Channel> chs = channels.getChannels();
       for (final Channel ch : chs) {
-        deleteChannel(ch.getCode());
+        deleteChannel(ch.scnl.toString());
       }
       winston.getStatement().execute("DROP DATABASE `" + winston.databasePrefix + "_ROOT`");
     } catch (final Exception e) {
@@ -355,10 +359,11 @@ public class Admin {
   public void listChannels(final boolean times) {
     final List<Channel> st = channels.getChannels();
     for (final Channel ch : st) {
-      final String code = ch.getCode();
+      final String code = ch.scnl.toString();
       System.out.print(code);
       if (times) {
-        System.out.print("\t" + ch.getMinTime() + "\t" + ch.getMaxTime());
+        TimeSpan timeSpan = ch.timeSpan;
+        System.out.print("\t" + timeSpan.startTime + "\t" + timeSpan.endTime);
       }
       System.out.println();
     }
@@ -413,7 +418,7 @@ public class Admin {
     if (chString == null) {
       final List<Channel> chs = channels.getChannels();
       for (final Channel ch : chs) {
-        repairChannel(day, ch.getCode());
+        repairChannel(day, ch.scnl.toString());
       }
     } else {
       repairChannel(day, chString);

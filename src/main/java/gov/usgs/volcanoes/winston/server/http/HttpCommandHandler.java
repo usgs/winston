@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -110,14 +111,17 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
       } catch (MalformedCommandException e) {
         response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST,
             e.getLocalizedMessage());
+	LOGGER.debug(e.getLocalizedMessage());
       } catch (UtilException e) {
+        LOGGER.debug(e.getLocalizedMessage());
         response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST,
-            e.getLocalizedMessage());
+            "" + e.getLocalizedMessage());
       }
 
     }
 
     if (response != null) {
+      // TODO: icon.ico requests fall here sometimes. Why?
       LOGGER.info("sending error response");
       if (HttpHeaders.isKeepAlive(req)) {
         response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
@@ -156,18 +160,25 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
       channels = winstonDatabasePool.doCommand(new WinstonConsumer<List<Channel>>() {
 
         public List<Channel> execute(WinstonDatabase winston) throws UtilException {
-          return new Channels(winston).getChannels();
+          Channels channels = new Channels(winston);
+          return channels.getChannels();
         }
 
       });
     } catch (Exception e) {
+      LOGGER.error(e.getClass().getName());
       throw new UtilException(e.getMessage());
     }
 
+    List<String> channelNames = new ArrayList<String>();
+    for (Channel chan : channels) {
+      channelNames.add(chan.scnl.toString("_"));
+    }
+    
     Map<String, Object> root = new HashMap<String, Object>();
 
     root.put("timeZones", TimeZone.getAvailableIDs());
-    root.put("channels", channels);
+    root.put("channels", channelNames);
     root.put("httpCommands", HttpCommandFactory.values());
     root.put("httpCommandNames", HttpCommandFactory.getNames());
     root.put("versionString", Version.VERSION_STRING);

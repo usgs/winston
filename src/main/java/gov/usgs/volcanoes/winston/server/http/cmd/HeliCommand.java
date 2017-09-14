@@ -11,6 +11,7 @@ import java.util.TimeZone;
 import gov.usgs.plot.HelicorderSettings;
 import gov.usgs.plot.PlotException;
 import gov.usgs.plot.data.HelicorderData;
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
@@ -59,7 +60,7 @@ public final class HeliCommand extends HttpBaseCommand {
     }
 
     final HelicorderSettings settings = validateParams(params);
-    final String channel = settings.channel;
+    final Scnl scnl = Scnl.parse(settings.channel);
     final double startTime = settings.startTime;
     final double endTime = settings.endTime;
 
@@ -68,7 +69,7 @@ public final class HeliCommand extends HttpBaseCommand {
       heliData = databasePool.doCommand(new WinstonConsumer<HelicorderData>() {
 
         public HelicorderData execute(WinstonDatabase winston) throws UtilException {
-          return new Data(winston).getHelicorderData(channel, startTime, endTime, 0);
+          return new Data(winston).getHelicorderData(scnl, startTime, endTime, 0);
         }
       });
     } catch (Exception e) {

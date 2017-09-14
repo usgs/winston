@@ -20,24 +20,30 @@ import gov.usgs.volcanoes.winston.db.WinstonDatabase;
  */
 public class WinstonDatabaseFactory extends BasePooledObjectFactory<WinstonDatabase> {
 
-  private final static int DEFAULT_MAX_AGE = Integer.MIN_VALUE;
   final private String driver;
   final private String prefix;
   final private int statementCacheCap;
   final private String tableEngine;
   final private String url;
+  final private long maxDays;
 
+  /**
+   * Constructor.
+   * 
+   * @param config config file
+   */
   public WinstonDatabaseFactory(ConfigFile config) {
     driver = config.getString("driver");
     url = config.getString("url");
     prefix = config.getString("prefix");
     tableEngine = config.getString("tableEngine");
     statementCacheCap = config.getInt("statementCacheCap");
+    maxDays = config.getLong("maxDays");
   }
 
   @Override
   public WinstonDatabase create() throws Exception {
-    WinstonDatabase winston = new WinstonDatabase(driver, url, prefix, tableEngine, statementCacheCap);
+    WinstonDatabase winston = new WinstonDatabase(driver, url, prefix, tableEngine, statementCacheCap, maxDays);
     return winston;
   }
 

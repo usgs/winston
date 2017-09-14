@@ -1,298 +1,186 @@
 package gov.usgs.volcanoes.winston;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import gov.usgs.volcanoes.core.contrib.HashCodeUtil;
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
+import gov.usgs.volcanoes.core.util.UtilException;
+import gov.usgs.volcanoes.winston.db.DbUtils;
 
 
 /**
  * A class representing one row of the channels table.
  *
  * @author Dan Cervelli
+ * @author Tom Parker
  */
 public class Channel implements Comparable<Channel> {
-  public static final int ONE_DAY = 24 * 60 * 60;
 
-  private final int sid;
-  private Instrument instrument;
+  @SuppressWarnings("unused")
+  private static final Logger LOGGER = LoggerFactory.getLogger(Channel.class);
 
-  private final String code;
-  private final double minTime;
-  private final double maxTime;
+  public final int sid;
+  public final Instrument instrument;
+  public final Scnl scnl;
+  public final TimeSpan timeSpan;
+  public final double linearA;
+  public final double linearB;
+  public final String alias;
+  public final String unit;
+  public final List<String> groups;
+  public final Map<String, String> metadata;
 
-  public final String station;
-  public final String channel;
-  public final String network;
-  public final String location;
 
-  private double linearA;
-  private double linearB;
-  private String alias;
-  private String unit;
+  public static class Builder {
+    private static final TimeSpan DEFAULT_TIME_SPAN = new TimeSpan(Long.MAX_VALUE, Long.MIN_VALUE);
+    private Instrument instrument;
+    private int sid = -1;
+    private Scnl scnl;
+    private TimeSpan timeSpan;
 
-  private List<String> groups;
+    private double linearA = Double.NaN;
+    private double linearB = Double.NaN;
+    private String alias;
+    private String unit;
+    private List<String> groups;
+    private Map<String, String> metadata;
 
-  private Map<String, String> metadata;
+    public Builder() {
+      timeSpan = DEFAULT_TIME_SPAN;
+    }
+
+    public Builder sid(int sid) {
+      this.sid = sid;
+      return this;
+    }
+
+    public Builder instrument(Instrument instrument) {
+      this.instrument = instrument;
+      return this;
+    }
+
+    public Builder scnl(Scnl scnl) {
+      this.scnl = scnl;
+      return this;
+    }
+
+    public Builder timeSpan(TimeSpan timeSpan) {
+      this.timeSpan = timeSpan;
+      return this;
+    }
+
+    public Builder linearA(double linearA) {
+      this.linearA = linearA;
+      return this;
+    }
+
+    public Builder linearB(double linearB) {
+      this.linearB = linearB;
+      return this;
+    }
+
+    public Builder alias(String alias) {
+      this.alias = alias == null ? "" : alias;
+      return this;
+    }
+
+    public Builder unit(String unit) {
+      this.unit = unit == null ? "" : unit;
+      return this;
+    }
+
+    public Builder group(String group) {
+      if (groups == null)
+        groups = new ArrayList<String>(2);
+
+      groups.add(group);
+
+
+      return this;
+    }
+
+    public Channel build() {
+      if (instrument == null) {
+        instrument = new Instrument.Builder().build();
+      }
+
+      if (groups == null) {
+        groups = new ArrayList<String>();
+      }
+
+      if (metadata == null) {
+        metadata = new HashMap<String, String>();
+      }
+
+      return new Channel(this);
+    }
+
+    public Builder parse(String s) throws UtilException {
+      final String[] ss = s.split(":");
+      sid = Integer.parseInt(ss[0]);
+      scnl = Scnl.parse(ss[1]);
+      double minTime = Double.parseDouble(ss[2]);
+      double maxTime = Double.parseDouble(ss[3]);
+      timeSpan = new TimeSpan(J2kSec.asEpoch(minTime), J2kSec.asEpoch(maxTime));
+
+      Instrument.Builder builder = new Instrument.Builder();
+      builder.longitude(Double.parseDouble(ss[4]));
+      builder.latitude(Double.parseDouble(ss[5]));
+      instrument = builder.build();
+
+      if (ss.length == 12) // metadata present
+      {
+        if (ss[6].length() >= 1)
+          builder.timeZone(ss[6]);
+        if (ss[7].length() >= 1)
+          alias = ss[7];
+        if (ss[8].length() >= 1)
+          unit = ss[8];
+        linearA = Double.parseDouble(ss[9]);
+        linearB = Double.parseDouble(ss[10]);
+        if (!ss[11].equals("~")) {
+          final String[] gs = ss[11].split("\\|");
+          for (final String g : gs)
+            group(g);
+        }
+      }
+
+      return this;
+    }
+
+    public Builder metadata(HashMap<String, String> metadata) {
+      this.metadata = metadata;
+      return this;
+    }
+  }
+
+
 
   /**
    * Default constructor
    */
-  public Channel() {
-    sid = -1;
-    code = null;
-    instrument = Instrument.NULL;
-    minTime = Double.NaN;
-    maxTime = Double.NaN;
-    station = "";
-    channel = "";
-    network = "";
-    location = "--";
+  private Channel(Builder builder) {
+    sid = builder.sid;
+    scnl = builder.scnl;
+    timeSpan = builder.timeSpan;
+    instrument = builder.instrument;
+    linearA = builder.linearA;
+    linearB = builder.linearB;
+    alias = builder.alias;
+    unit = builder.unit;
+    groups = Collections.unmodifiableList(builder.groups);
+    metadata = Collections.unmodifiableMap(builder.metadata);
   }
 
-  /**
-   * Constructor from minimal info
-   *
-   * @param s
-   *          sid
-   * @param c
-   *          code
-   * @param min
-   *          minTime
-   * @param max
-   *          maxTime
-   */
-  public Channel(final int s, final String c, final double min, final double max) {
-    sid = s;
-    code = c;
-    minTime = min;
-    maxTime = max;
-
-    final String[] cmp = code.split("$");
-
-    if (cmp.length > 0)
-      station = cmp[0];
-    else
-      station = "";
-
-    if (cmp.length > 1)
-      channel = cmp[1];
-    else
-      channel = "";
-
-    if (cmp.length > 2)
-      network = cmp[2];
-    else
-      network = "";
-
-    if (cmp.length > 3)
-      location = cmp[0];
-    else
-      location = "--";
-
-  }
-
-  /**
-   * Constructor from a ResultSet
-   *
-   * @param rs
-   *          ResultSet
-   * @throws SQLException
-   */
-  public Channel(final ResultSet rs) throws SQLException {
-    this(rs, Integer.MAX_VALUE);
-  }
-  
-  public Channel(final ResultSet rs, int aparentRetention) throws SQLException {
-    sid = rs.getInt("sid");
-    code = rs.getString("code");
-    
-    
-    double mt = rs.getDouble("st");
-    minTime = Math.max(mt, J2kSec.now() - aparentRetention);
-    maxTime = rs.getDouble("et");
-
-    instrument = new Instrument(rs);
-    linearA = rs.getDouble("linearA");
-    if (linearA == 1e300)
-      linearA = Double.NaN;
-    linearB = rs.getDouble("linearB");
-    if (linearB == 1e300)
-      linearB = Double.NaN;
-    unit = rs.getString("unit");
-    if (unit == null)
-      unit = "";
-    alias = rs.getString("alias");
-    if (alias == null)
-      alias = "";
-
-    final String[] cmp = code.split("\\$");
-
-    if (cmp.length > 0)
-      station = cmp[0];
-    else
-      station = "";
-
-    if (cmp.length > 1)
-      channel = cmp[1];
-    else
-      channel = "";
-
-    if (cmp.length > 2)
-      network = cmp[2];
-    else
-      network = "";
-
-    if (cmp.length > 3)
-      location = cmp[0];
-    else
-      location = "--";
-  }
-
-  /**
-   * Constructor from a String
-   *
-   * @param s
-   *          colon-separated string of values defining a Channel
-   */
-  public Channel(final String s) {
-    final String[] ss = s.split(":");
-    sid = Integer.parseInt(ss[0]);
-    code = ss[1];
-    minTime = Double.parseDouble(ss[2]);
-    maxTime = Double.parseDouble(ss[3]);
-    instrument = new Instrument();
-    instrument.setLongitude(Double.parseDouble(ss[4]));
-    instrument.setLatitude(Double.parseDouble(ss[5]));
-    if (ss.length == 12) // metadata present
-    {
-      if (ss[6].length() >= 1)
-        instrument.setTimeZone(ss[6]);
-      if (ss[7].length() >= 1)
-        alias = ss[7];
-      if (ss[8].length() >= 1)
-        unit = ss[8];
-      linearA = Double.parseDouble(ss[9]);
-      linearB = Double.parseDouble(ss[10]);
-      if (!ss[11].equals("~")) {
-        final String[] gs = ss[11].split("\\|");
-        for (final String g : gs)
-          addGroup(g);
-      }
-    }
-
-    final String[] cmp = code.split("\\$");
-
-    if (cmp.length > 0)
-      station = cmp[0];
-    else
-      station = "";
-
-    if (cmp.length > 1)
-      channel = cmp[1];
-    else
-      channel = "";
-
-    if (cmp.length > 2)
-      network = cmp[2];
-    else
-      network = "";
-
-    if (cmp.length > 3)
-      location = cmp[0];
-    else
-      location = "--";
-
-  }
-
-  /**
-   * Setter for metadata
-   *
-   * @param map
-   *          Mapping of metadata keys to values
-   */
-  public void setMetadata(final Map<String, String> map) {
-    metadata = map;
-  }
-
-  /**
-   * Getter for metadata
-   *
-   * @return mapping of metadata keys to values
-   */
-  public Map<String, String> getMetadata() {
-    return metadata;
-  }
-
-  /**
-   * Add g to list of groups
-   *
-   * @param g
-   *          group to add
-   */
-  public void addGroup(final String g) {
-    if (groups == null)
-      groups = new ArrayList<String>(2);
-    groups.add(g);
-  }
-
-  /**
-   * Getter for sid
-   *
-   * @return sid
-   */
-  public int getSID() {
-    return sid;
-  }
-
-  /**
-   * Getter for code
-   *
-   * @return code
-   */
-  public String getCode() {
-    return code;
-  }
-
-  /**
-   * Getter for instrument
-   *
-   * @return instrument
-   */
-  public Instrument getInstrument() {
-    return instrument;
-  }
-
-  /**
-   * Getter for min time
-   *
-   * @return min time
-   */
-  public double getMinTime() {
-    return minTime;
-  }
-
-  /**
-   * Getter for max time
-   *
-   * @return max time
-   */
-  public double getMaxTime() {
-    return maxTime;
-  }
-
-  /**
-   * Getter for code
-   *
-   * @return code
-   */
-  @Override
-  public String toString() {
-    return code;
-  }
 
   /**
    * Getter for groups as a |-separated string
@@ -300,38 +188,26 @@ public class Channel implements Comparable<Channel> {
    * @return groups as a string
    */
   public String getGroupString() {
-    if (groups == null)
+    if (groups.size() < 1) {
       return "~";
-
-    String gs = "";
-    for (int i = 0; i < groups.size() - 1; i++) {
-      gs += groups.get(i) + "|";
     }
-    gs += groups.get(groups.size() - 1);
-    return gs;
-  }
 
-  /**
-   * Getter for List of groups
-   *
-   * @return List of groups
-   */
-  public List<String> getGroups() {
-    return groups;
+    StringBuffer sb = new StringBuffer();
+    for (int i = 0; i < groups.size() - 1; i++) {
+      sb.append(groups.get(i)).append("|");
+    }
+    sb.append(groups.get(groups.size() - 1));
+
+    return sb.toString();
   }
 
   /**
    * Getter for metadata as a :-separated string
-   *
    * @return metadata as a string
    */
-  public String toMetadataString(final int maxDays) {
-    return String.format("%s:%s:%s:%s:%f:%f:%s:", toPV2String(maxDays), instrument.getTimeZone(),
-        alias, unit, linearA, linearB, getGroupString());
-  }
-
   public String toMetadataString() {
-    return toMetadataString(0);
+    return String.format("%s:%s:%s:%s:%f:%f:%s:", toPV2String(), instrument.timeZone,
+        alias, unit, linearA, linearB, getGroupString());
   }
 
   /**
@@ -339,21 +215,12 @@ public class Channel implements Comparable<Channel> {
    *
    * @return PV2 as a string
    */
-  public String toPV2String(final int maxDays) {
-    double min = minTime;
-    double max = maxTime;
-
-    if (maxDays > 0) {
-      min = Math.max(min, J2kSec.now() - (maxDays * ONE_DAY));
-      max = Math.max(max, J2kSec.now() - (maxDays * ONE_DAY));
-    }
-
-    return String.format("%d:%s:%f:%f:%f:%f", sid, code, minTime, maxTime,
-        instrument.getLongitude(), instrument.getLatitude());
-  }
-
   public String toPV2String() {
-    return toPV2String(0);
+    double min = J2kSec.fromEpoch(timeSpan.startTime);
+    double max = J2kSec.fromEpoch(timeSpan.endTime);
+
+    return String.format("%d:%s:%f:%f:%f:%f", sid, DbUtils.scnlAsWinstonCode(scnl), min, max,
+        instrument.longitude, instrument.latitude);
   }
 
   /**
@@ -363,90 +230,20 @@ public class Channel implements Comparable<Channel> {
    */
   public String toVDXString() {
     // this contains the new output for what VDX is expecting
-    final String stripped = code.replace('$', ' ');
+    final String stripped = scnl.toString(" ");
     // return String.format("%s:%f:%f:%s:%s", code,
     // instrument.getLongitude(), instrument.getLatitude(), stripped,
     // stripped);
-    return String.format("%d:%s:%s:%f:%f:%f:%s", sid, code, stripped, instrument.getLongitude(),
-        instrument.getLatitude(), instrument.getHeight(), "0");
+    return String.format("%d:%s:%s:%f:%f:%f:%s", sid, DbUtils.scnlAsWinstonCode(scnl), stripped,
+        instrument.longitude,
+        instrument.latitude, instrument.height, "0");
   }
 
   /**
-   * Getter for linearA
-   *
-   * @return linearA
+   * Return channel code. 
    */
-  public double getLinearA() {
-    return linearA;
-  }
-
-  /**
-   * Setter for linearA
-   *
-   * @param linearA
-   */
-  public void setLinearA(final double linearA) {
-    this.linearA = linearA;
-  }
-
-  /**
-   * Getter for linearB
-   *
-   * @return linearB
-   */
-  public double getLinearB() {
-    return linearB;
-  }
-
-  /**
-   * Setter for linearB
-   *
-   * @param linearB
-   */
-  public void setLinearB(final double linearB) {
-    this.linearB = linearB;
-  }
-
-  /**
-   * Getter for alias
-   *
-   * @return alias
-   */
-  public String getAlias() {
-    if (alias == null || alias.length() == 0)
-      return null;
-
-    return alias;
-  }
-
-  /**
-   * Setter for alias
-   *
-   * @param alias
-   */
-  public void setAlias(final String alias) {
-    this.alias = alias;
-  }
-
-  /**
-   * Getter for unit
-   *
-   * @return unit
-   */
-  public String getUnit() {
-    if (unit == null || unit.length() == 0)
-      return null;
-
-    return unit;
-  }
-
-  /**
-   * Setter for unit
-   *
-   * @param unit
-   */
-  public void setUnit(final String unit) {
-    this.unit = unit;
+  public String toString() {
+    return DbUtils.scnlAsWinstonCode(scnl);
   }
 
   /**
@@ -454,15 +251,21 @@ public class Channel implements Comparable<Channel> {
    * the top
    */
   public int compareTo(final Channel o) {
-    if (!network.equals(o.network))
-      return network.compareTo(o.network);
-
-    if (!station.equals(o.station))
-      return station.compareTo(o.station);
-
-    if (!channel.equals(o.channel))
-      return channel.compareTo(o.channel);
-
-    return location.compareTo(o.location);
+    return scnl.compareTo(o.scnl);
   }
+
+  public boolean equals(Object other) {
+    if (other instanceof Channel) {
+      return scnl.equals(((Channel) other).scnl);
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public int hashCode() {
+    return scnl.hashCode();
+  }
+
+
 }

@@ -1,11 +1,11 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.Menu;
 import gov.usgs.earthworm.WaveServer;
@@ -180,6 +180,9 @@ public class ImportWSJob {
                 case SUCCESS_CREATED_TABLE:
                   LOGGER.info("{}: day table created ({})", channel,
                       J2kSec.format("yyyy-MM-dd", tb.getEndTimeJ2K() + 1));
+                  total++;
+                  LOGGER.debug("Insert: {}", tb.toString());
+                  break;
                 case SUCCESS:
                   total++;
                   LOGGER.debug("Insert: {}", tb.toString());

@@ -6,256 +6,194 @@
 
 package gov.usgs.volcanoes.winston.server.wws;
 
+import java.util.Arrays;
+
+import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
+import gov.usgs.volcanoes.winston.server.MalformedCommandException;
+
 /**
  * A convenience class for dealing with WWS commands.
- * fields are separated by a single space
- * position 0: command optionally followed by a colon
- * position 1: id
- * positions 2 through 4: SCN
- * positions 2 through 5: SCNL
- * position 5 or 6: start time
- * position 6 or 7: end time
- *
+ * 
+ * <req> = <cmd> " " <id> " " [ <args> ] <crlf>
+ * <args>  = <command-specific arg 1> [ <sp> <command-specific arg 2> ]
+ *         | <channel spec> <sp> [ <command-specific args> ]
+ * <channel spec> = <SCNL> [ <sp> <time span> ]
+ * <SCNL> = <station> <sp> <channel> <sp> <network> <sp> [ <location> ]
+ * <time span> = <start time> <sp> <end time>
+ * <start time> = <J2kSec>
+ * <end time> = <J2kSec>
+ * 
  * @author Dan Cervelli
+ * @author Tom Parker
  */
 public class WwsCommandString {
-  private final String commandString;
-  private final String command;
-  private final String[] commandSplits;
+  /** No location provided in request */
+  public static final boolean NO_LOCATION = false;
+  
+  /** location provided in request */
+  public static final boolean HAS_LOCATION = true;
+
+  /** String sent by client  */
+  public final String commandString;
+  
+  /** command requested */
+  public final String command;
+ 
+  /** id echoed back for client use */
+  public final String id;
+  
+  /** command args */
+  public final String[] args;
+
+  private Scnl scnl;
+  private TimeSpan timeSpan;
 
   /**
    * Constructor.
    * @param commandString my command string
+   * @throws MalformedCommandException when things go wrong
    */
-  public WwsCommandString(final String commandString) {
+  public WwsCommandString(final String commandString) throws MalformedCommandException {
     this.commandString = commandString;
-    commandSplits = commandString.split(" ");
-    String cmd = commandString;
-    int cmdEnd = cmd.indexOf(' ');
-    if (cmdEnd != -1) {
-      cmd = cmd.substring(0, cmdEnd);
-    }
+    String[] commandSplits = commandString.split(" ");
+    String cmd = commandSplits[0];
     if (cmd.endsWith(":")) {
-      cmd = cmd.substring(0, cmd.length() - 1);
+      command = cmd.substring(0, cmd.length() - 1);
+    } else {
+      command = cmd;
     }
 
-    command = cmd;
-  }
+    if (commandSplits.length > 1) {
+      id = commandSplits[1];
+    } else {
+      id = null;
+    }
 
-  /**
-   * Command name accessor.
-   * @return the command name
-   */
-  public String getCommand() {
-    return command;
-  }
-
-  /**
-   * Full command string accessor.
-   * @return the full command string
-   */
-  public String getCommandString() {
-    return commandString;
+    if (commandSplits.length > 2) {
+      args = Arrays.copyOfRange(commandSplits, 2, commandSplits.length);
+    } else {
+      args = null;
+    }
   }
 
   /**
    * Command token accessor.
-   * @return command tokens
-   */
-  public String[] getCommandSplits() {
-    return commandSplits;
-  }
-
-  /**
-   * Command token accessor.
-   * @param i token index
+   * @param index token index
    * @return command token
    */
-  public String getString(final int i) {
-    if (i >= commandSplits.length)
+  public String getString(int index) {
+    index = getIndex(index);
+    if (index >= args.length)
       return null;
     else
-      return commandSplits[i];
+      return args[index];
   }
 
   /**
    * Command token accessor
-   * @param i token index
+   * @param index token index
    * @return command token
+   * @throws MalformedCommandException When int cannot be parsed
    */
-  public int getInt(final int i) {
-    int result = Integer.MIN_VALUE;
+  public int getInt(int index) throws MalformedCommandException {
+    index = getIndex(index);
+    int result;
     try {
-      result = Integer.parseInt(commandSplits[i]);
-    } catch (final Exception e) {
+      result = Integer.parseInt(args[index]);
+    } catch (final NumberFormatException ex) {
+      throw new MalformedCommandException(ex.getLocalizedMessage());
     }
     return result;
   }
 
   /**
    * Command token accessor
-   * @param i token index
+   * @param index token index
    * @return command token
+   * @throws MalformedCommandException  when double cannot be parsed
    */
-  public double getDouble(final int i) {
-    double result = Double.NaN;
+  public double getDouble(int index) throws MalformedCommandException {
+    index = getIndex(index);
+    double result;
     try {
-      result = Double.parseDouble(commandSplits[i]);
-    } catch (final Exception e) {
+      result = Double.parseDouble(args[index]);
+    } catch (final NumberFormatException ex) {
+      throw new MalformedCommandException(ex.getLocalizedMessage());
     }
     return result;
   }
 
-  /**
-   * Id accessor.
-   * @return the Id
-   */
-  public String getID() {
-    if (commandSplits.length < 2)
-      return null;
-    else
-      return commandSplits[1];
-  }
-
-  /**
-   * $-delimited SNL accessor.
-   * @return the SCNL
-   */
-  public String getWinstonSCNL() {
-    if (commandSplits.length < 6)
-      return null;
-    else {
-      String loc = "";
-      if (!commandSplits[5].equals("--"))
-        loc = "$" + commandSplits[5];
-      return commandSplits[2] + "$" + commandSplits[3] + "$" + commandSplits[4] + loc;
+  private int getIndex(int index) {
+    if (index < 0) {
+      return index + args.length;
+    } else {
+      return index;
     }
   }
 
   /**
-   * startTime accessor.
-   * @param isScnl if true assume location code is present
-   * @return the start time
+   * Return command SCN and update where the time span may be located. This will always be the first arg.
+   * 
+   * @return the scn channel requested.
+   * @throws MalformedCommandException when arg list is too short
    */
-  public double getT1(final boolean isScnl) {
-    int ofs = 0;
-    if (isScnl)
-      ofs = 1;
-    if (commandSplits.length < 6 + ofs)
-      return Double.NaN;
-    else
-      return getDouble(5 + ofs);
-  }
-  
-  /**
-   * endTime accessor.
-   * @param isScnl if true assume location code is present
-   * @return the end time
-   */
-  public double getT2(final boolean isScnl) {
-    int ofs = 0;
-    if (isScnl)
-      ofs = 1;
-    if (commandSplits.length < 7 + ofs)
-      return Double.NaN;
-    else
-      return getDouble(6 + ofs);
+  public synchronized Scnl getScn() throws MalformedCommandException {
+    if (scnl == null) {
+      scnl = new Scnl(args[0], args[1], args[2]);
+    }
+    return scnl;
   }
 
   /**
-   * token count accessor.
-   * @return number of tokens
+   * Return command SCN or SCNL. This will always be the first arg.
+   * 
+   * @return the scnl channel requested
+   * @throws MalformedCommandException when arg list is too short
    */
-  public int length() {
-    return commandSplits.length;
+  public synchronized Scnl getScnl() throws MalformedCommandException {
+    if (scnl == null) {
+      scnl = new Scnl(args[0], args[1], args[2], args[3]);
+    }
+    return scnl;
   }
 
   /**
-   * Validate token count.
-   * @param cnt number of tokens
-   * @return true if command has expected number of tokens
+   * Return command time stamp. Timestamp always immediately follows a SCN or SCNL.
+   * 
+   * @param isScnl If true, I will search for a time span starting at position 4 otherwise I will search starting at position 3
+   * @return Request time span
+   * @throws MalformedCommandException when arg list is too short
    */
-  public boolean isLegal(final int cnt) {
-    return commandSplits.length == cnt;
+  public synchronized TimeSpan getEwTimeSpan(boolean isScnl) throws MalformedCommandException {
+    if (timeSpan == null) {
+      int index = isScnl ? 4 : 3;
+
+      long st = (long) (1000 * Double.parseDouble(args[index]));
+      long et = (long) (1000 * Double.parseDouble(args[index + 1]));
+      timeSpan = new TimeSpan(st, et);
+    }
+
+    return timeSpan;
   }
 
   /**
-   * Validate token count and times.
-   * @param cnt number of tokens
-   * @return true if token count correct and times are found
+   * Return command time stamp. Timestamp always immediately follows a SCN or SCNL.
+   * 
+   * @param isScnl If true, I will search for a time span starting at position 4 otherwise I will search starting at position 3
+   * @return Request time span
+   * @throws MalformedCommandException when arg list is too short
    */
-  public boolean isLegalSCNTT(final int cnt) {
-    if (commandSplits.length != cnt)
-      return false;
+  public synchronized TimeSpan getJ2kSecTimeSpan(boolean isScnl) throws MalformedCommandException {
+    if (timeSpan == null) {
+      int index = isScnl ? 4 : 3;
 
-    if (Double.isNaN(getT1(false)) || Double.isNaN(getT2(false)))
-      return false;
+      double st = Double.parseDouble(args[index]);
+      double et = Double.parseDouble(args[index + 1]);
+      timeSpan = new TimeSpan(J2kSec.asEpoch(st), J2kSec.asEpoch(et));
+    }
 
-    return true;
-  }
-
-  /**
-   * Validate token count and times.
-   * @param cnt number of tokens
-   * @return true if token count correct and times are found
-   */
-  public boolean isLegalSCNLTT(final int cnt) {
-    if (commandSplits.length != cnt)
-      return false;
-
-    if (Double.isNaN(getT1(true)) || Double.isNaN(getT2(true)))
-      return false;
-
-    return true;
-  }
-
-  /**
-   * Station accessor.
-   * @return station
-   */
-  public String getS() {
-    if (commandSplits.length <= 2)
-      return null;
-
-    return commandSplits[2];
-  }
-
-  /**
-   * Channel accessor.
-   * @return accessor
-   */
-  public String getC() {
-    if (commandSplits.length <= 3)
-      return null;
-
-    return commandSplits[3];
-  }
-
-  /**
-   * Network accessor.
-   * @return network
-   */
-  public String getN() {
-    if (commandSplits.length <= 4)
-      return null;
-
-    return commandSplits[4];
-  }
-
-  /**
-   * Location accessor.
-   * @return location
-   */
-  public String getL() {
-    if (commandSplits.length <= 5)
-      return null;
-
-    return commandSplits[5];
-  }
-
-  // TODO: fix getL() below.
-  public String getEarthwormErrorString(final int sid, final String msg) {
-    return getID() + " " + sid + " " + getS() + " " + getC() + " " + getN() + " " + getL() + " "
-        + msg + "\n";
+    return timeSpan;
   }
 }

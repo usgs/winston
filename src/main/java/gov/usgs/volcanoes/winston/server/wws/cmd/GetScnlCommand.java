@@ -1,16 +1,16 @@
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
 import java.nio.ByteBuffer;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.plot.data.Wave;
-import gov.usgs.volcanoes.core.time.Ew;
+import gov.usgs.volcanoes.core.contrib.HashCodeUtil;
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -22,48 +22,65 @@ import io.netty.channel.ChannelHandlerContext;
 /**
  * 
  * @author Tom Parker
+ * 
+ * <cmd> = "GETSCNL" <sp> <id> <sp> <channel spec>
  *
  */
 public class GetScnlCommand extends EwDataRequest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRawCommand.class);
+  protected Scnl scnl;
+  protected TimeSpan timeSpan;
+  private int cmdHash = Integer.MIN_VALUE;
 
   /**
    * Constructor.
    */
   public GetScnlCommand() {
     super();
-    isScnl = true;
+    // isScnl = true;
+  }
+
+  protected void parseCommand(WwsCommandString cmd) throws MalformedCommandException {
+    int hash = HashCodeUtil.hash(HashCodeUtil.SEED, cmd);
+    if (cmdHash == Integer.MIN_VALUE || cmdHash != hash) {
+      scnl = cmd.getScnl();
+      timeSpan = cmd.getEwTimeSpan(WwsCommandString.HAS_LOCATION);      
+    }
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    if (cmd.length() < (isScnl ? 8 : 7))
-      throw new MalformedCommandException();
 
-    final String id = cmd.getID();
-    final String chan = getChan(cmd, " ");
-    final String code = getChan(cmd, "$");
+    parseCommand(cmd);
 
-    final double startTime = Time.ewToj2k(cmd.getT1(isScnl));
-    final double endTime = Time.ewToj2k(cmd.getT2(isScnl));
-
-    final Integer chanId = getChanId(code);
+    final Integer chanId = getChanId(scnl);
     if (chanId == -1) {
-      ctx.writeAndFlush(id + " " + id + " 0 " + chan + " FN\n");
+      ctx.writeAndFlush(String.format("%s FN%n", cmd.id));
       return;
     }
 
-    final double[] timeSpan = getTimeSpan(chanId);
+    final String chan = scnl.toString(" ");
 
-    String hdrPreamble = id + " " + chanId + " " + chan + " ";
+    final double startTime = J2kSec.fromEpoch(timeSpan.startTime);
+    final double endTime = J2kSec.fromEpoch(timeSpan.endTime);
+
+    final double[] chanTimeSpan = getTimeSpan(chanId);
+
+    String hdrPreamble = cmd.id + " " + chanId + " " + chan + " ";
     String errorString = null;
     if (endTime < startTime) {
       errorString = hdrPreamble + "FB";
-    } else if (endTime < timeSpan[0]) {
+    } else if (endTime < chanTimeSpan[0]) {
       errorString = hdrPreamble + "FL s4";
-    } else if (startTime > timeSpan[1]) {
+      LOGGER.debug("Request span too early. Req: {} - {}; Have: {} - {}",
+          J2kSec.toDateString(startTime), J2kSec.toDateString(endTime),
+          J2kSec.toDateString(chanTimeSpan[0]), J2kSec.toDateString(chanTimeSpan[1]));
+   } else if (startTime > chanTimeSpan[1]) {
       errorString = hdrPreamble + "FR s4";
+      LOGGER.debug("Request span too late. Req: {} - {}; Have: {} - {}",
+          J2kSec.toDateString(startTime), J2kSec.toDateString(endTime),
+          J2kSec.toDateString(chanTimeSpan[0]), J2kSec.toDateString(chanTimeSpan[1]));
     }
 
     if (errorString != null) {
@@ -75,8 +92,8 @@ public class GetScnlCommand extends EwDataRequest {
     try {
       wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
         public Wave execute(WinstonDatabase winston) throws UtilException {
-          double st = Math.max(startTime, timeSpan[0]);
-          double et = Math.min(endTime, timeSpan[1]);
+          double st = Math.max(startTime, chanTimeSpan[0]);
+          double et = Math.min(endTime, chanTimeSpan[1]);
           return new Data(winston).getWave(chanId, st, et, 0);
         }
       });
@@ -91,9 +108,6 @@ public class GetScnlCommand extends EwDataRequest {
       return;
     }
 
-    final NumberFormat numberFormat = new DecimalFormat("#.######");
-    String sts = null;
-
     // find first sample time
     double ct = wave.getStartTime() - wave.getRegistrationOffset();
     final double dt = 1 / wave.getSamplingRate();
@@ -102,17 +116,10 @@ public class GetScnlCommand extends EwDataRequest {
         break;
       ct += dt;
     }
-    sts = numberFormat.format(Ew.fromEpoch(J2kSec.asEpoch(ct)));
+    
+    String header = String.format("%s %d %s F s4 %.4f %d %n", cmd.command, chanId, chan, Time.j2kToEw(ct), (int)wave.getSamplingRate());
+    ctx.write(header);
     final ByteBuffer bb = ByteBuffer.allocate(wave.numSamples() * 13 + 256);
-    bb.put(id.getBytes());
-    bb.put((byte) ' ');
-    bb.put(Integer.toString(chanId).getBytes());
-    bb.put(chan.getBytes());
-    bb.put(" F s4 ".getBytes());
-    bb.put(sts.getBytes());
-    bb.put((byte) ' ');
-    bb.put(Double.toString(wave.getSamplingRate()).getBytes());
-    bb.put(" ".getBytes());
     int sample;
     ct = wave.getStartTime();
     // int samples = 0;
@@ -121,7 +128,7 @@ public class GetScnlCommand extends EwDataRequest {
         // samples++;
         sample = wave.buffer[i];
         if (sample == Wave.NO_DATA)
-          bb.put(cmd.getString(isScnl ? 8 : 7).getBytes());
+          bb.put(cmd.args[1].getBytes());
         else
           bb.put(Integer.toString(wave.buffer[i]).getBytes());
         bb.put((byte) ' ');
@@ -133,5 +140,15 @@ public class GetScnlCommand extends EwDataRequest {
     bb.put((byte) '\n');
     bb.flip();
     ctx.writeAndFlush(bb.array());
+  }
+
+  @Override
+  protected String prettyRequest(WwsCommandString cmd) {
+    try {
+      parseCommand(cmd);
+      return String.format("%s %s %s %s +%s", cmd.command, cmd.id, scnl, Time.toDateString(timeSpan.startTime), timeSpan.span());
+    } catch (MalformedCommandException e) {
+      return cmd.commandString;
+    }
   }
 }

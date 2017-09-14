@@ -14,9 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.earthworm.message.TraceBuf;
+import gov.usgs.volcanoes.core.contrib.HashCodeUtil;
+import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
+import gov.usgs.volcanoes.winston.db.DbUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
 import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
@@ -33,46 +38,60 @@ public class GetScnlRawCommand extends EwDataRequest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRawCommand.class);
 
+  protected Scnl scnl;
+  protected TimeSpan timeSpan;
+  protected int cmdHash;
+
   /**
    * Constructor.
    */
   public GetScnlRawCommand() {
     super();
-    isScnl = true;
+  }
+
+  protected void parseCommand(WwsCommandString cmd) throws MalformedCommandException {
+    int hash = HashCodeUtil.hash(HashCodeUtil.SEED, cmd);
+    if (cmdHash == Integer.MIN_VALUE || cmdHash != hash) {
+      scnl = cmd.getScnl();
+      timeSpan = cmd.getEwTimeSpan(WwsCommandString.HAS_LOCATION);
+    }
   }
 
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
-    if (cmd.length() < (isScnl ? 8 : 7))
-      throw new MalformedCommandException();
 
-    final String id = cmd.getID();
-    final String chan = getChan(cmd, " ");
-    final String code = getChan(cmd, "$");
+    parseCommand(cmd);
 
-    final double startTime = Time.ewToj2k(cmd.getT1(isScnl));
-    final double endTime = Time.ewToj2k(cmd.getT2(isScnl));
+    final String id = cmd.id;
+    final String chan = scnl.toString(" ");
+    final String code = DbUtils.scnlAsWinstonCode(scnl);
 
-    final Integer chanId = getChanId(code);
+    final double startTime = J2kSec.fromEpoch(timeSpan.startTime);
+    final double endTime = J2kSec.fromEpoch(timeSpan.endTime);
+
+    final Integer chanId = getChanId(scnl);
     if (chanId == -1) {
+      LOGGER.info("Cannot find  {}", scnl);
       ctx.writeAndFlush(id + " " + id + " 0 " + chan + " FN\n");
       return;
     }
 
     final double[] timeSpan = getTimeSpan(chanId);
 
-    String hdrPreamble = id + " " + chanId + " " + chan + " ";
+    String hdrPreamble = id + " " + chanId + " " + chan;
     String errorString = null;
     if (endTime < startTime) {
-      errorString = hdrPreamble + "FB";
+      errorString = hdrPreamble + " FB";
     } else if (endTime < timeSpan[0]) {
-      errorString = hdrPreamble + "FL s4";
+      errorString = hdrPreamble + " FL s4";
     } else if (startTime > timeSpan[1]) {
-      errorString = hdrPreamble + "FR s4";
+      errorString = hdrPreamble + " FR s4";
+      LOGGER.error("{} TIME {}", J2kSec.toDateString(startTime));
     }
 
     if (errorString != null) {
-      ctx.writeAndFlush(errorString + "\n");
+      LOGGER.debug("Returning error: {}", errorString);
+      ctx.writeAndFlush(errorString + "\r\n");
       return;
     }
 
@@ -90,7 +109,7 @@ public class GetScnlRawCommand extends EwDataRequest {
     }
 
     if (bufs == null || bufs.size() == 0) {
-      ctx.writeAndFlush(hdrPreamble + "FG s4\n");
+      ctx.writeAndFlush(hdrPreamble + " FG s4\n");
       LOGGER.debug("Returning empty trace list");
       return;
     }
@@ -109,15 +128,29 @@ public class GetScnlRawCommand extends EwDataRequest {
       total += buf.length;
     }
 
-    String hdr = hdrPreamble + " F " + firstBuf.dataType() + " " + firstBuf.getStartTime() + " "
-        + lastBuf.getEndTime() + " " + total + '\n';
-    ctx.write(hdr);
-
+    String hdr = String.format("%s F %s %f %f %d", hdrPreamble, firstBuf.dataType(),
+        firstBuf.getStartTime(), lastBuf.getEndTime(), total);
+    ctx.writeAndFlush(hdr + "\n");
+    LOGGER.debug("Returning header: {}", hdr);
     final ByteBuffer bb = ByteBuffer.allocate(total);
     for (final Iterator<byte[]> it = bufs.iterator(); it.hasNext();) {
       bb.put((byte[]) it.next());
     }
     bb.flip();
-    ctx.writeAndFlush(bb.array());
+    LOGGER.debug("GETSCNLRAW returning {} bytes", bb.capacity());
+    ctx.write(bb.array());
+    ctx.writeAndFlush("\n");
   }
+
+  @Override
+  protected String prettyRequest(WwsCommandString cmd) {
+    try {
+      parseCommand(cmd);
+      return String.format("%s %s %s %s +%s", cmd.command, cmd.id, scnl,
+          Time.toDateString(timeSpan.startTime), timeSpan.span());
+    } catch (MalformedCommandException e) {
+      return cmd.commandString;
+    }
+  }
+
 }
