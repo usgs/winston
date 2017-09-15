@@ -121,7 +121,7 @@ public class WWS {
     final StringBuffer sb = new StringBuffer();
     sb.append(Version.VERSION_STRING + "\n");
     sb.append("Keys:\n");
-    sb.append(" 0-3: logging level\n");
+    sb.append("      0-3: logging level\n");
     // sb.append(" d: drop idle connections\n");
     sb.append("        q: quit\n");
     sb.append("        ?: display keys\n");
