@@ -42,11 +42,6 @@ abstract public class StaticImporter {
   protected WinstonDatabase winston;
   protected InputEW input;
   protected Channels channels;
-  protected Data data;
-
-  protected static String driver;
-  protected static String url;
-  protected static String db;
 
   protected boolean rsamEnable = true;
   protected int rsamDelta = 10;
@@ -61,12 +56,10 @@ abstract public class StaticImporter {
     final String db = cf.getString("winston.prefix");
     winston = new WinstonDatabase(driver, url, db);
     if (!winston.checkDatabase()) {
-      System.err.println("Winston database does not exist and could not be created.");
-      System.exit(-1);
+      throw new RuntimeException("Winston database does not exist and could not be created.");
     }
     input = new InputEW(winston);
     channels = new Channels(winston);
-    data = new Data(winston);
   }
 
   public void importMap(final Map<String, List<Wave>> map) {

@@ -66,7 +66,7 @@ public class InputEW {
     }
   }
 
-  private static Map<String, double[]> channelTimeSpans;
+  private static Map<String, double[]> channelTimeSpans = Collections.synchronizedMap(new HashMap<String, double[]>());
 
   /*
    * These two static fields are for optimization purposes. They are static
