@@ -122,11 +122,8 @@ public class WWS {
     sb.append(Version.VERSION_STRING + "\n");
     sb.append("Keys:\n");
     sb.append("      0-3: logging level\n");
-    // sb.append(" d: drop idle connections\n");
     sb.append("        q: quit\n");
     sb.append("        ?: display keys\n");
-    // sb.append(" m: print running commands\n");
-    // sb.append(" t<index>: toggle tracing of a connection\n");
     sb.append("        c: print connections sorted by bytes transmited\n");
     sb.append("       cA: print connections sorted by address\n");
     sb.append("       cC: print connections sorted by connect time\n");
