@@ -10,20 +10,18 @@ public class Connection {
 
 
   public static enum SortField {
-    ADDRESS, CONNECT_TIME, LAST_REQUEST_TIME, RX_BYTES, TX_BYTES, INDEX;
+    ADDRESS, CONNECT_TIME, IDLE_TIME, RX_BYTES, TX_BYTES, INDEX;
 
     public static SortField parse(char c) {
       switch (Character.toUpperCase(c)) {
-        case 'L':
-          return LAST_REQUEST_TIME;
+        case 'I':
+          return IDLE_TIME;
         case 'C':
           return CONNECT_TIME;
         case 'R':
           return RX_BYTES;
         case 'T':
           return TX_BYTES;
-        case 'I':
-          return INDEX;
         case 'A':
         default:
           return ADDRESS;
@@ -79,11 +77,11 @@ public class Connection {
         int cmp;
 
         switch (sortField) {
-          case LAST_REQUEST_TIME:
-            cmp = Long.compare(c1.lastTime(), c2.lastTime());
+          case IDLE_TIME:
+            cmp = Long.compare(c2.lastTime(), c1.lastTime());
             break;
           case CONNECT_TIME:
-            cmp = Long.compare(c1.connectTime(), c2.connectTime());
+            cmp = Long.compare(c2.connectTime(), c1.connectTime());
             break;
           case RX_BYTES:
             cmp = Long.compare(c1.cumulativeReadBytes(), c2.cumulativeReadBytes());
