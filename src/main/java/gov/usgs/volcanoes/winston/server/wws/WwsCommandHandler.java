@@ -68,7 +68,8 @@ public class WwsCommandHandler extends SimpleChannelInboundHandler<WwsCommandStr
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    if (!"Connection reset by peer".equals(cause.getMessage())) {
+//    if (!"Connection reset by peer".equals(cause.getMessage())) {
+    if (!(cause instanceof java.io.IOException)) {
       try {
         LOGGER.error("Exception caught in WwsCommandHandler while servicing {}: {} ({})",
             ctx.channel().remoteAddress(), cause.getClass().getName(), cause.getMessage());

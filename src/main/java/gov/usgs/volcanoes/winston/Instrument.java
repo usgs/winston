@@ -107,6 +107,10 @@ public class Instrument {
     }
     
     public Instrument build() {
+      if (metadata == null) {
+        metadata = new HashMap<String, String>();
+      }
+      
       return new Instrument(this);
     }
   
