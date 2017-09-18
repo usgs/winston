@@ -173,8 +173,8 @@ public class Channel implements Comparable<Channel> {
     scnl = builder.scnl;
     timeSpan = builder.timeSpan;
     instrument = builder.instrument;
-    linearA = builder.linearA;
-    linearB = builder.linearB;
+    linearA = builder.linearA == 1e300 ? Double.NaN : builder.linearA;
+    linearB = builder.linearB == 1e300 ? Double.NaN : builder.linearB;
     alias = builder.alias;
     unit = builder.unit;
     groups = Collections.unmodifiableList(builder.groups);
@@ -222,6 +222,7 @@ public class Channel implements Comparable<Channel> {
     return String.format("%d:%s:%f:%f:%f:%f", sid, DbUtils.scnlAsWinstonCode(scnl), min, max,
         instrument.longitude, instrument.latitude);
   }
+  
 
   /**
    * Getter for VDX as a :-separated string
