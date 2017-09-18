@@ -3,6 +3,7 @@ package gov.usgs.volcanoes.winston;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import gov.usgs.volcanoes.winston.Channel.Builder;
@@ -102,6 +103,10 @@ public class Instrument {
     }
     
     public Instrument build() {
+      if (metadata == null) {
+        metadata = new HashMap<String, String>();
+      }
+      
       return new Instrument(this);
     }
   
