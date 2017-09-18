@@ -41,11 +41,11 @@ public class Channel implements Comparable<Channel> {
 
 
   public static class Builder {
-
+    private static final TimeSpan DEFAULT_TIME_SPAN = new TimeSpan(Long.MAX_VALUE, Long.MIN_VALUE);
+    private Instrument instrument;
     private int sid = -1;
-    private Instrument instrument = Instrument.NULL;
     private Scnl scnl;
-    private TimeSpan timeSpan = new TimeSpan(Long.MAX_VALUE, Long.MIN_VALUE);
+    private TimeSpan timeSpan;
 
     private double linearA = Double.NaN;
     private double linearB = Double.NaN;
@@ -53,6 +53,10 @@ public class Channel implements Comparable<Channel> {
     private String unit;
     private List<String> groups;
     private Map<String, String> metadata;
+
+    public Builder() {
+      timeSpan = DEFAULT_TIME_SPAN;
+    }
 
     public Builder sid(int sid) {
       this.sid = sid;
@@ -78,17 +82,17 @@ public class Channel implements Comparable<Channel> {
       this.linearA = linearA;
       return this;
     }
-   
+
     public Builder linearB(double linearB) {
       this.linearB = linearB;
       return this;
     }
-    
+
     public Builder alias(String alias) {
       this.alias = alias == null ? "" : alias;
       return this;
     }
-    
+
     public Builder unit(String unit) {
       this.unit = unit == null ? "" : unit;
       return this;
@@ -97,14 +101,29 @@ public class Channel implements Comparable<Channel> {
     public Builder group(String group) {
       if (groups == null)
         groups = new ArrayList<String>(2);
+
       groups.add(group);
+
+
       return this;
     }
 
     public Channel build() {
+      if (instrument == null) {
+        instrument = new Instrument.Builder().build();
+      }
+
+      if (groups == null) {
+        groups = new ArrayList<String>();
+      }
+
+      if (metadata == null) {
+        metadata = new HashMap<String, String>();
+      }
+
       return new Channel(this);
     }
-    
+
     public Builder parse(String s) throws UtilException {
       final String[] ss = s.split(":");
       sid = Integer.parseInt(ss[0]);
@@ -112,12 +131,12 @@ public class Channel implements Comparable<Channel> {
       double minTime = Double.parseDouble(ss[2]);
       double maxTime = Double.parseDouble(ss[3]);
       timeSpan = new TimeSpan(J2kSec.asEpoch(minTime), J2kSec.asEpoch(maxTime));
-      
+
       Instrument.Builder builder = new Instrument.Builder();
       builder.longitude(Double.parseDouble(ss[4]));
       builder.latitude(Double.parseDouble(ss[5]));
       instrument = builder.build();
-      
+
       if (ss.length == 12) // metadata present
       {
         if (ss[6].length() >= 1)
@@ -133,8 +152,8 @@ public class Channel implements Comparable<Channel> {
           for (final String g : gs)
             group(g);
         }
-      } 
-      
+      }
+
       return this;
     }
 
@@ -162,15 +181,16 @@ public class Channel implements Comparable<Channel> {
     metadata = Collections.unmodifiableMap(builder.metadata);
   }
 
- 
+
   /**
    * Getter for groups as a |-separated string
    *
    * @return groups as a string
    */
   public String getGroupString() {
-    if (groups == null)
+    if (groups.size() < 1) {
       return "~";
+    }
 
     StringBuffer sb = new StringBuffer();
     for (int i = 0; i < groups.size() - 1; i++) {
@@ -233,19 +253,19 @@ public class Channel implements Comparable<Channel> {
   public int compareTo(final Channel o) {
     return scnl.compareTo(o.scnl);
   }
-  
+
   public boolean equals(Object other) {
     if (other instanceof Channel) {
-      return scnl.equals(((Channel) other).scnl);      
-    } else { 
+      return scnl.equals(((Channel) other).scnl);
+    } else {
       return false;
     }
   }
-  
+
   @Override
   public int hashCode() {
     return scnl.hashCode();
   }
 
-  
+
 }

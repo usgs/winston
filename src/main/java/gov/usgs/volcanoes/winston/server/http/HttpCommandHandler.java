@@ -121,6 +121,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
     }
 
     if (response != null) {
+      // TODO: icon.ico requests fall here sometimes. Why?
       LOGGER.info("sending error response");
       if (HttpHeaders.isKeepAlive(req)) {
         response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
@@ -159,11 +160,13 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
       channels = winstonDatabasePool.doCommand(new WinstonConsumer<List<Channel>>() {
 
         public List<Channel> execute(WinstonDatabase winston) throws UtilException {
-          return new Channels(winston).getChannels();
+          Channels channels = new Channels(winston);
+          return channels.getChannels();
         }
 
       });
     } catch (Exception e) {
+      LOGGER.error(e.getClass().getName());
       throw new UtilException(e.getMessage());
     }
 

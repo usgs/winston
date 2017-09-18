@@ -22,7 +22,7 @@ import gov.usgs.volcanoes.winston.Channel.Builder;
  * @author Dan Cervelli
  */
 public class Instrument {
-  public static Instrument NULL = new Builder().build();
+//  public final static Instrument NULL = new Builder().build();
 
   public final int iid;
   public final String name;
@@ -44,6 +44,10 @@ public class Instrument {
     private String timeZone;
     private Map<String, String> metadata;
 
+    public Builder() {
+      metadata = new HashMap<String, String>();
+    }
+    
     public Builder iid(int iid) {
       this.iid = iid;
       return this;

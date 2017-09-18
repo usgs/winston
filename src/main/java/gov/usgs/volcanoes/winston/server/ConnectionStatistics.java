@@ -18,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
+import gov.usgs.volcanoes.core.util.StringUtils;
 import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 
 /**
@@ -29,7 +31,7 @@ import io.netty.handler.traffic.ChannelTrafficShapingHandler;
 public class ConnectionStatistics {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionStatistics.class);
-
+  private static final String HEADER_FORMAT = "%-25s %-22s %-22s %-11s %-11s%n";
 
   private final AtomicLong connectionCount;
   private final AtomicLong wwsCount;
@@ -148,31 +150,37 @@ public class ConnectionStatistics {
    * @return connection string
    */
   public String printConnections(String s) {
+    String header = String.format(HEADER_FORMAT, "[A]ddress", "[C]onnect duration", "[I]dle time",
+        "[R]X", "[T]X");
     StringBuffer sb = new StringBuffer();
     sb.append("------- Connections --------\n");
-    sb.append(
-        "[A]ddress                 [C]onnect time         [L]ast time            [R]X bytes  [T]X bytes  [I]ndex\n");
+    sb.append(header);
 
     char col = 'T';
     if (s.length() > 1)
       col = s.charAt(1);
-    
+
     Connection.SortField field = Connection.SortField.parse(col);
-    Connection.SortOrder order =  s.endsWith("-") ? Connection.SortOrder.DESCENDING : Connection.SortOrder.ASCENDING;
+    Connection.SortOrder order =
+        s.endsWith("-") ? Connection.SortOrder.DESCENDING : Connection.SortOrder.ASCENDING;
 
     List<Connection> connections = new ArrayList<Connection>(connectionMap.size());
     connections.addAll(connectionMap.values());
     Collections.sort(connections, Connection.getComparator(field, order));
 
+    long now = System.currentTimeMillis();
     for (Connection connection : connections) {
-      sb.append(String.format("%-25s %-22s %-22s %-11d %-11d%n", connection.address(),
-          Time.format(Time.STANDARD_TIME_FORMAT, connection.connectTime()),
-          Time.format(Time.STANDARD_TIME_FORMAT, connection.lastTime()),
-          connection.cumulativeReadBytes(), connection.cumulativeWrittenBytes()));
+      TimeSpan connectTimeSpan = new TimeSpan(connection.connectTime(), now);
+      TimeSpan idleTimeSpan = new TimeSpan(connection.lastTime(), now);
+
+      sb.append(String.format(HEADER_FORMAT, connection.address(),
+          connectTimeSpan.span(),
+          idleTimeSpan.span(),
+          StringUtils.numBytesToString(connection.cumulativeReadBytes()),
+          StringUtils.numBytesToString(connection.cumulativeWrittenBytes())));
 
     }
-    sb.append(
-        "[A]ddress                 [C]onnect time         [L]ast time            [R]X bytes  [T]X bytes  [I]ndex\n");
+    sb.append(header);
     sb.append("\n\n");
     sb.append("Total Connections : ").append(connectionCount).append('\n');
     sb.append("Open Connections  : ").append(openCount).append('\n');

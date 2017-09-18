@@ -81,10 +81,10 @@ public final class MenuCommand extends HttpBaseCommand {
     final String tz = StringUtils.stringToString(params.get("tz"), HttpConstants.TIME_ZONE);
     final TimeZone timeZone = TimeZone.getTimeZone(tz);
 
-    if (error.length() > 0) {
+    if (error.length() > 0) {    
+
       throw new MalformedCommandException(error.toString());
     } else {
-
       String html = prepareResponse(sortCol, order, timeZone);
 
       FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
@@ -95,8 +95,10 @@ public final class MenuCommand extends HttpBaseCommand {
       if (HttpHeaders.isKeepAlive(request)) {
         response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
       }
+      
       ctx.write(response);
     }
+
   }
 
 
@@ -127,11 +129,13 @@ public final class MenuCommand extends HttpBaseCommand {
       channels = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
 
         public List<Channel> execute(WinstonDatabase winston) throws UtilException {
-          return new Channels(winston).getChannels();
+          Channels channels = new Channels(winston);
+          return channels.getChannels();
         }
 
       });
     } catch (Exception e) {
+
       throw new UtilException(e.getMessage());
     }
 

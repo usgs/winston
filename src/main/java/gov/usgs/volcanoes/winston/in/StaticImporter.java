@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.plot.data.Wave;
@@ -20,6 +22,7 @@ import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.InputEW;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.in.ew.Options;
 
 
 /**
@@ -39,11 +42,6 @@ abstract public class StaticImporter {
   protected WinstonDatabase winston;
   protected InputEW input;
   protected Channels channels;
-  protected Data data;
-
-  protected static String driver;
-  protected static String url;
-  protected static String db;
 
   protected boolean rsamEnable = true;
   protected int rsamDelta = 10;
@@ -58,12 +56,10 @@ abstract public class StaticImporter {
     final String db = cf.getString("winston.prefix");
     winston = new WinstonDatabase(driver, url, db);
     if (!winston.checkDatabase()) {
-      System.err.println("Winston database does not exist and could not be created.");
-      System.exit(-1);
+      throw new RuntimeException("Winston database does not exist and could not be created.");
     }
     input = new InputEW(winston);
     channels = new Channels(winston);
-    data = new Data(winston);
   }
 
   public void importMap(final Map<String, List<Wave>> map) {
@@ -75,15 +71,20 @@ abstract public class StaticImporter {
     final CodeTimer timer = new CodeTimer("import");
     double minTime = 1E300;
     double maxTime = -1E300;
-    for (final String code : map.keySet()) {
+
+    for (final Iterator<Entry<String, List<Wave>>> iter = map.entrySet().iterator(); iter
+        .hasNext();) {      
+      Entry<String, List<Wave>> entry = iter.next();
+      String code = entry.getKey();
+  
       if (!channels.channelExists(code)) {
         System.out.println("Creating new channel '" + code + "' in Winston.");
         channels.createChannel(code);
       }
 
-      System.out.printf("Importing channel: %s.\n", code);
-      List<Wave> waves = map.get(code);
-      System.out.printf("Converting %d waves into TraceBufs.\n", waves.size());
+      System.out.printf("Importing channel: %s.%n", code);
+      List<Wave> waves = entry.getValue();
+      System.out.printf("Converting %d waves into TraceBufs.%n", waves.size());
       final List<TraceBuf> tbs = new ArrayList<TraceBuf>(waves.size());
 
       final int maxSamples = (int) (Math.pow(2, 16) / 4);
@@ -115,8 +116,9 @@ abstract public class StaticImporter {
 
       System.out.println("Done.");
     }
+
     timer.stop();
-    System.out.printf("Completed in %.2fs\n", timer.getRunTimeMillis() / 1000);
+    System.out.printf("Completed in %.2fs%n", timer.getRunTimeMillis() / 1000);
   }
 
   public static void process(final List<String> files, final StaticImporter impt) {
@@ -138,7 +140,7 @@ abstract public class StaticImporter {
         if (dFiles == null)
           continue;
         for (final File ff : dFiles) {
-          
+
           if (ff.getName() != null)
             it.add(fn + File.pathSeparatorChar + ff.getName());
         }
@@ -165,7 +167,7 @@ abstract public class StaticImporter {
     rsamDelta = StringUtils.stringToInt(rd, 10);
     final String rl = args.get("-rl");
     rsamDuration = StringUtils.stringToInt(rl, 60);
-    System.out.printf("RSAM parameters: delta=%d, duration=%d.\n", rsamDelta, rsamDuration);
+    System.out.printf("RSAM parameters: delta=%d, duration=%d.%n", rsamDelta, rsamDuration);
   }
 
   public void setRsamDelta(final int i) {

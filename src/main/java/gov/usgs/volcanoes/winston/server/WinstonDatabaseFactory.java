@@ -25,7 +25,7 @@ public class WinstonDatabaseFactory extends BasePooledObjectFactory<WinstonDatab
   final private int statementCacheCap;
   final private String tableEngine;
   final private String url;
-  final private int maxDays;
+  final private long maxDays;
 
   /**
    * Constructor.
@@ -38,7 +38,7 @@ public class WinstonDatabaseFactory extends BasePooledObjectFactory<WinstonDatab
     prefix = config.getString("prefix");
     tableEngine = config.getString("tableEngine");
     statementCacheCap = config.getInt("statementCacheCap");
-    maxDays = config.getInt("maxDays");
+    maxDays = config.getLong("maxDays");
   }
 
   @Override
