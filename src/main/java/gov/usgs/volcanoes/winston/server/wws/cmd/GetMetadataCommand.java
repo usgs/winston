@@ -18,7 +18,7 @@ import gov.usgs.volcanoes.winston.Instrument;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
+import gov.usgs.volcanoes.winston.server.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
 import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,6 +32,21 @@ import io.netty.channel.ChannelHandlerContext;
  * @author Tom Parker
  */
 public class GetMetadataCommand extends WwsBaseCommand {
+  
+  static private class RequestChannels implements WinstonConsumer<List<Channel>> {
+    @Override
+    public List<Channel> execute(WinstonDatabase winston) throws UtilException {
+      return new Channels(winston).getChannels();
+    }
+  }
+
+  static private class RequestInstruments implements WinstonConsumer<List<Instrument>> {
+    @Override
+    public List<Instrument> execute(WinstonDatabase winston) {
+      return new Channels(winston).getInstruments();
+    }
+  }
+  
   /**
    * Constructor.
    */
@@ -49,12 +64,12 @@ public class GetMetadataCommand extends WwsBaseCommand {
     StringBuilder sb = new StringBuilder();
     try {
       if ("INSTRUMENT".equals(cmd.args[0])) {
-        List<Instrument> instruments = databasePool.doCommand(getInstrumentsConsumer());
+        List<Instrument> instruments = databasePool.doCommand(new RequestInstruments());
         sb.append(String.format("%s %d%n", cmd.id, instruments.size()));
         sb.append(getInstrumentMetadata(instruments));
 
       } else if ("CHANNEL".equals(cmd.args[0])) {
-        List<Channel> channels = databasePool.doCommand(getChannelsConsumer());
+        List<Channel> channels = databasePool.doCommand(new RequestChannels());
         sb.append(String.format("%s %d%n", cmd.id, channels.size()));
         sb.append(getChannelMetadata(channels));
       } else {
@@ -70,24 +85,7 @@ public class GetMetadataCommand extends WwsBaseCommand {
 
   }
 
-  private WinstonConsumer<List<Channel>> getChannelsConsumer() {
-    return new WinstonConsumer<List<Channel>>() {
-
-      public List<Channel> execute(WinstonDatabase winston) {
-        return new Channels(winston).getChannels();
-      }
-    };
-  }
-
-  private WinstonConsumer<List<Instrument>> getInstrumentsConsumer() {
-    return new WinstonConsumer<List<Instrument>>() {
-
-      public List<Instrument> execute(WinstonDatabase winston) {
-        return new Channels(winston).getInstruments();
-      }
-    };
-  }
-
+ 
   private String getInstrumentMetadata(List<Instrument> insts) {
     final StringBuilder sb = new StringBuilder(insts.size() * 60);
     for (final Instrument inst : insts) {

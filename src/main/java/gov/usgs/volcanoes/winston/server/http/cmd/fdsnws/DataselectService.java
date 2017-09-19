@@ -18,10 +18,10 @@ import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.server.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.ChannelConstraint;
 import gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint.TimeSimpleConstraint;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -121,7 +121,6 @@ public class DataselectService extends FdsnwsService {
       Wave wave;
       try {
         wave = databasePool.doCommand(new WinstonConsumer<Wave>() {
-
           public Wave execute(WinstonDatabase winston) throws UtilException {
             Data data = new Data(winston);
             return data.getWave(c.sid, st, et, 0);

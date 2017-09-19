@@ -26,11 +26,11 @@ import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.server.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.http.HttpBaseCommand;
 import gov.usgs.volcanoes.winston.server.http.HttpConstants;
 import gov.usgs.volcanoes.winston.server.http.HttpTemplateConfiguration;
 import gov.usgs.volcanoes.winston.server.http.UnsupportedMethodException;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -248,16 +248,14 @@ public final class GapsCommand extends HttpBaseCommand {
 
     header.append(output);
 
-    if (header != null) {
-      FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
-          HttpResponseStatus.OK, Unpooled.copiedBuffer(header, Charset.forName("UTF-8")));
-      response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, header.length());
-      response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
+    FullHttpResponse response = new DefaultFullHttpResponse(request.getProtocolVersion(),
+        HttpResponseStatus.OK, Unpooled.copiedBuffer(header, Charset.forName("UTF-8")));
+    response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, header.length());
+    response.headers().set(HttpHeaders.Names.CONTENT_TYPE, "text/html; charset=UTF-8");
 
-      if (HttpHeaders.isKeepAlive(request)) {
-        response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
-      }
-      ctx.writeAndFlush(response);
+    if (HttpHeaders.isKeepAlive(request)) {
+      response.headers().set(HttpHeaders.Names.CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
     }
+    ctx.writeAndFlush(response);
   }
 }

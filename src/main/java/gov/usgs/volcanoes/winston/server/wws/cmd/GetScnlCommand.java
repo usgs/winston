@@ -15,7 +15,7 @@ import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
+import gov.usgs.volcanoes.winston.server.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;
 
@@ -45,7 +45,7 @@ public class GetScnlCommand extends EwDataRequest {
     int hash = HashCodeUtil.hash(HashCodeUtil.SEED, cmd);
     if (cmdHash == Integer.MIN_VALUE || cmdHash != hash) {
       scnl = cmd.getScnl();
-      timeSpan = cmd.getEwTimeSpan(WwsCommandString.HAS_LOCATION);      
+      timeSpan = cmd.getEwTimeSpan(WwsCommandString.HAS_LOCATION);
     }
   }
 
@@ -53,7 +53,10 @@ public class GetScnlCommand extends EwDataRequest {
       throws MalformedCommandException, UtilException {
 
     parseCommand(cmd);
-
+    if (scnl == null || timeSpan == null) {
+      throw new MalformedCommandException("Cannot parse command. " + cmd);
+    }
+    
     final Integer chanId = getChanId(scnl);
     if (chanId == -1) {
       ctx.writeAndFlush(String.format("%s FN%n", cmd.id));
@@ -61,7 +64,6 @@ public class GetScnlCommand extends EwDataRequest {
     }
 
     final String chan = scnl.toString(" ");
-
     final double startTime = J2kSec.fromEpoch(timeSpan.startTime);
     final double endTime = J2kSec.fromEpoch(timeSpan.endTime);
 
@@ -76,7 +78,7 @@ public class GetScnlCommand extends EwDataRequest {
       LOGGER.debug("Request span too early. Req: {} - {}; Have: {} - {}",
           J2kSec.toDateString(startTime), J2kSec.toDateString(endTime),
           J2kSec.toDateString(chanTimeSpan[0]), J2kSec.toDateString(chanTimeSpan[1]));
-   } else if (startTime > chanTimeSpan[1]) {
+    } else if (startTime > chanTimeSpan[1]) {
       errorString = hdrPreamble + "FR s4";
       LOGGER.debug("Request span too late. Req: {} - {}; Have: {} - {}",
           J2kSec.toDateString(startTime), J2kSec.toDateString(endTime),
@@ -116,8 +118,9 @@ public class GetScnlCommand extends EwDataRequest {
         break;
       ct += dt;
     }
-    
-    String header = String.format("%s %d %s F s4 %.4f %d %n", cmd.command, chanId, chan, Time.j2kToEw(ct), (int)wave.getSamplingRate());
+
+    String header = String.format("%s %d %s F s4 %.4f %d %n", cmd.command, chanId, chan,
+        Time.j2kToEw(ct), (int) wave.getSamplingRate());
     ctx.write(header);
     final ByteBuffer bb = ByteBuffer.allocate(wave.numSamples() * 13 + 256);
     int sample;
@@ -144,11 +147,16 @@ public class GetScnlCommand extends EwDataRequest {
 
   @Override
   protected String prettyRequest(WwsCommandString cmd) {
-    try {
-      parseCommand(cmd);
-      return String.format("%s %s %s %s +%s", cmd.command, cmd.id, scnl, Time.toDateString(timeSpan.startTime), timeSpan.span());
-    } catch (MalformedCommandException e) {
+    if (scnl == null || timeSpan == null) {
       return cmd.commandString;
+    } else {
+      try {
+        parseCommand(cmd);
+        return String.format("%s %s %s %s +%s", cmd.command, cmd.id, scnl,
+            Time.toDateString(timeSpan.startTime), timeSpan.span());
+      } catch (MalformedCommandException e) {
+        return cmd.commandString;
+      }
     }
   }
 }

@@ -19,7 +19,7 @@ import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
+import gov.usgs.volcanoes.winston.server.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
 import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;
@@ -54,7 +54,6 @@ public class GetScnlHeliRawCommand extends WwsBaseCommand {
     HelicorderData heli;
     try {
       heli = databasePool.doCommand(new WinstonConsumer<HelicorderData>() {
-
         public HelicorderData execute(WinstonDatabase winston) throws UtilException {
           Data data = new Data(winston);
           try {
