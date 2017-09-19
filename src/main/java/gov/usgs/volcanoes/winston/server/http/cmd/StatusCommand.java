@@ -25,9 +25,10 @@ import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
+import gov.usgs.volcanoes.winston.server.GetChannelsConsumer;
+import gov.usgs.volcanoes.winston.server.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.http.HttpBaseCommand;
 import gov.usgs.volcanoes.winston.server.http.HttpTemplateConfiguration;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
@@ -67,13 +68,7 @@ public final class StatusCommand extends HttpBaseCommand {
     // get and sort menu
     List<Channel> sts;
     try {
-      sts = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
-
-        public List<Channel> execute(WinstonDatabase winston) throws UtilException {
-          return new Channels(winston).getChannelsByLastInsert();
-        }
-
-      });
+      sts = databasePool.doCommand(new GetChannelsConsumer());
     } catch (Exception e) {
       throw new UtilException(e.getMessage());
     }

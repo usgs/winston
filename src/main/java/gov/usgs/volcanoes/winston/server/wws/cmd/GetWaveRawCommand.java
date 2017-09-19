@@ -20,7 +20,7 @@ import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.DbUtils;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
+import gov.usgs.volcanoes.winston.server.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
 import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;

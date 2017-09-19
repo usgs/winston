@@ -20,8 +20,9 @@ import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.server.GetChannelsConsumer;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
+import gov.usgs.volcanoes.winston.server.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
 import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;
@@ -62,13 +63,7 @@ public class MenuCommand extends WwsBaseCommand {
 
     List<Channel> channels;
     try {
-      channels = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
-
-        public List<Channel> execute(WinstonDatabase winston) throws UtilException {
-          return new Channels(winston).getChannels();
-        }
-
-      });
+      channels = databasePool.doCommand(new GetChannelsConsumer());
     } catch (Exception e) {
       throw new UtilException(e.getMessage());
     }

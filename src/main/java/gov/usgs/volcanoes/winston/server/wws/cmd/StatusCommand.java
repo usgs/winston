@@ -17,8 +17,9 @@ import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
+import gov.usgs.volcanoes.winston.server.GetChannelsConsumer;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
+import gov.usgs.volcanoes.winston.server.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
 import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;
@@ -62,11 +63,7 @@ public class StatusCommand extends WwsBaseCommand {
 
     List<Channel> sts;
     try {
-      sts = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
-        public List<Channel> execute(WinstonDatabase winston) {
-          return new Channels(winston).getChannels();
-        }
-      });
+      sts = databasePool.doCommand(new GetChannelsConsumer());
     } catch (Exception e) {
       throw new UtilException("Unable to get channels for status command");
     }
