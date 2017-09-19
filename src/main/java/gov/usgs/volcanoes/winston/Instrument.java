@@ -69,7 +69,7 @@ public class Instrument {
     }
 
     public Builder latitude(double latitude) {
-      this.longitude = latitude;
+      this.latitude = latitude;
       return this;
     }
 
