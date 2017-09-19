@@ -74,7 +74,7 @@ public class Instrument {
     }
 
     public Builder height(double height) {
-      this.longitude = height;
+      this.height = height;
       return this;
     }
 
