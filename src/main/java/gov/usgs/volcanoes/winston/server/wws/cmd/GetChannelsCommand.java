@@ -55,12 +55,16 @@ public class GetChannelsCommand extends WwsBaseCommand {
 
     final StringBuilder sb = new StringBuilder(chs.size() * 60);
     sb.append(String.format("%s %d%n", cmd.id, chs.size()));
-    for (final Channel ch : chs) {
-      if (metadata)
+    if (metadata) {
+      for (Channel ch : chs) {
         sb.append(ch.toMetadataString() + "\n");
-      else
+      }
+    } else {
+      for (Channel ch : chs) {
         sb.append(ch.toPV2String() + "\n");
+      }
     }
+
     ctx.writeAndFlush(sb.toString());
   }
 

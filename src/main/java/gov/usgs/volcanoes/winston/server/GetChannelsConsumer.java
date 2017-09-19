@@ -8,8 +8,19 @@ import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 
 public class GetChannelsConsumer implements WinstonConsumer<List<Channel>> {
+  
+  boolean wantsMetadata;
+
+  public GetChannelsConsumer() {
+    this(false);
+  }
+
+  public GetChannelsConsumer(boolean wantsMetadata) {
+    this.wantsMetadata = wantsMetadata;
+  }
+  
   @Override
   public List<Channel> execute(WinstonDatabase winston) throws UtilException {
-    return new Channels(winston).getChannels();
+    return new Channels(winston).getChannels(wantsMetadata);
   }
 }
