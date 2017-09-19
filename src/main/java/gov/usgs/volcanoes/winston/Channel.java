@@ -125,6 +125,8 @@ public class Channel implements Comparable<Channel> {
     }
 
     public Builder parse(String s) throws UtilException {
+//      2139:ANCK$BHE$AV:553935572.827000:559119563.488000:-999.000000:-999.000000
+
       final String[] ss = s.split(":");
       sid = Integer.parseInt(ss[0]);
       scnl = Scnl.parse(ss[1]);
