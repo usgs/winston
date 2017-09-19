@@ -2,6 +2,7 @@ package gov.usgs.volcanoes.winston.in.metadata;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,13 +18,11 @@ import gov.usgs.volcanoes.winston.Instrument;
  * Format taken from:
  * http://folkworm.ceri.memphis.edu/ew-doc/USER_GUIDE/hypoinv_sta.html
  *
- * @author tparker
+ * @author Tom Parker
  *
  */
 public class ImportHypoinverse extends AbstractMetadataImporter {
   private static final Logger LOGGER = LoggerFactory.getLogger(ImportHypoinverse.class);
-
-  public static final String me = ImportHypoinverse.class.getName();
 
   public ImportHypoinverse(final String configFile) {
     super(configFile);
@@ -34,9 +33,10 @@ public class ImportHypoinverse extends AbstractMetadataImporter {
     LOGGER.info("Reading {}", fn);
 
     final List<Instrument> list = new LinkedList<Instrument>();
+    BufferedReader in = null;
     try {
       String record;
-      final BufferedReader in = new BufferedReader(new FileReader(fn));
+      in = new BufferedReader(new FileReader(fn));
       record = in.readLine();
 
       while (record != null) {
@@ -53,7 +53,7 @@ public class ImportHypoinverse extends AbstractMetadataImporter {
         lon += Double.parseDouble(record.substring(30, 36).trim()) / 60;
         if (record.substring(37, 38).equals("W"))
           lon *= -1;
-        builder.longitude(lon);;
+        builder.longitude(lon);
 
         final int height = Integer.parseInt(record.substring(38, 42).trim());
         builder.height(height);
@@ -63,8 +63,16 @@ public class ImportHypoinverse extends AbstractMetadataImporter {
 
       }
       in.close();
-    } catch (final Exception e) {
+    } catch (final IOException e) {
       e.printStackTrace();
+    } finally {
+      if (in != null) {
+        try {
+          in.close();
+        } catch (IOException e) {
+          throw new RuntimeException(e);
+        }
+      }
     }
     return list;
   }
