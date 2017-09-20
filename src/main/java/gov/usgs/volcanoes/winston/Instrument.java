@@ -6,8 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import gov.usgs.volcanoes.winston.Channel.Builder;
-
 /**
  * $Log: not supported by cvs2svn $
  * Revision 1.3 2006/08/03 22:10:02 cervelli

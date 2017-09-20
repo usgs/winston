@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Parameter;
 import com.martiansoftware.jsap.SimpleJSAP;
@@ -63,7 +64,7 @@ public class ImportSeisan extends StaticImporter {
     rsamDelta = config.getInt("rsamDelta");
     rsamDuration = config.getInt("rsamDuration");
   }
-  
+
   @Override
   public Map<String, List<Wave>> readFile(final String fn) throws IOException {
     final Map<String, List<Wave>> map = new HashMap<String, List<Wave>>();
@@ -74,24 +75,24 @@ public class ImportSeisan extends StaticImporter {
       System.out.println("All imported data will have a '" + network + "' network code.");
       file.setNetwork(network);
     }
-    
+
     if (station != null) {
       System.out.println("All imported data will ahve a '" + station + "' station code.");
       file.setStation(station);
     }
-    
+
     if (channel != null) {
       System.out.println("All imported data will have a '" + channel + "' channel code.");
       file.setChannel(channel);
     }
-    
+
     if (location != null) {
       System.out.println("All imported data will have a '" + location + "' location code.");
       file.setLocation(location);
     }
-    
+
     file.read();
-    
+
     for (final String ch : file.getChannels()) {
       String chan = ch.replace('_', '$');
       final List<Wave> list = new ArrayList<Wave>();
@@ -103,29 +104,23 @@ public class ImportSeisan extends StaticImporter {
   }
 
 
-  public static JSAPResult getArguments(final String[] args) {
+  public static JSAPResult getArguments(final String[] args) throws JSAPException {
     JSAPResult config = null;
-    try {
-      final SimpleJSAP jsap = new SimpleJSAP(JSAP_PROGRAM_NAME, JSAP_EXPLANATION, JSAP_PARAMETERS);
+    final SimpleJSAP jsap = new SimpleJSAP(JSAP_PROGRAM_NAME, JSAP_EXPLANATION, JSAP_PARAMETERS);
 
-      config = jsap.parse(args);
+    config = jsap.parse(args);
 
-      if (jsap.messagePrinted() || config.getStringArray("file").length == 0) {
-        // The following error message is useful for catching the case
-        // when args are missing, but help isn't printed.
-        if (!config.getBoolean("help"))
-          System.err.println("Try using the --help flag.");
-
-        System.exit(1);
+    if (jsap.messagePrinted() || config.getStringArray("file").length == 0) {
+      // The following error message is useful for catching the case
+      // when args are missing, but help isn't printed.
+      if (!config.getBoolean("help")) {
+        throw new RuntimeException("Try using the --help flag.");
       }
-    } catch (final Exception ex) {
-      ex.printStackTrace();
-      System.exit(1);
     }
     return config;
   }
 
-  public static void main(final String[] args) {
+  public static void main(final String[] args) throws JSAPException {
     final JSAPResult config = getArguments(args);
     System.out.printf("RSAM parameters: delta=%d, duration=%d.%n", config.getInt("rsamDelta"),
         config.getInt("rsamDuration"));

@@ -6,6 +6,7 @@ import java.util.logging.Level;
 
 import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.contrib.HashCodeUtil;
 import gov.usgs.volcanoes.core.util.StringUtils;
 
 /**
@@ -89,7 +90,26 @@ abstract public class TraceBufFilter implements Comparable<TraceBufFilter> {
     metadata.put(n, v);
   }
 
-  public int compareTo(final TraceBufFilter other) {
-    return order - other.order;
+  public int compareTo(TraceBufFilter other) {
+    return Integer.compare(order, other.order);
+  }
+
+  public boolean equals(Object other) {
+    if (other instanceof TraceBufFilter) {
+      return order == ((TraceBufFilter) other).order;
+    }
+    return false;
+  }
+
+
+  /**
+   * Simple hash implementation. This suffers a small performance hit when 
+   * used with multiple filters of the same order. This is acceptable.
+   */
+  public int hashCode() {
+    int result = HashCodeUtil.SEED;
+    result = HashCodeUtil.hash(result, order);
+
+    return result;
   }
 }

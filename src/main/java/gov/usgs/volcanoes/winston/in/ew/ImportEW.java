@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Parameter;
 import com.martiansoftware.jsap.SimpleJSAP;
@@ -409,8 +410,13 @@ public class ImportEW extends Thread {
             (TraceBufFilter) Class.forName(filterClass).newInstance();
         filter.configure(fc);
         traceBufFilters.add(filter);
-      } catch (final Exception ex) {
+      } catch (final IllegalAccessException ex) {
         LOGGER.error("Could not create TraceBuf filter: {}", ex);
+      } catch (InstantiationException ex) {
+        LOGGER.error("Could not create TraceBuf filter: {}", ex);
+      } catch (ClassNotFoundException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
     }
     Collections.sort(traceBufFilters);
@@ -528,7 +534,7 @@ public class ImportEW extends Thread {
         channelTraceBufs.entrySet().iterator(); iter.hasNext();) {
       Entry<String, ConcurrentLinkedQueue<TraceBuf>> entry = iter.next();
       String key = entry.getKey();
-      ConcurrentLinkedQueue<TraceBuf> q = entry.getValue();      
+      ConcurrentLinkedQueue<TraceBuf> q = entry.getValue();
       if (q.isEmpty())
         continue;
 
@@ -540,7 +546,7 @@ public class ImportEW extends Thread {
         if (channelMetadata.containsKey(key))
           importMetadata(key, channelMetadata.get(key));
       }
-      
+
     }
     // ct0.stop();
     // if (ct0.getRunTimeMillis() > 1000)
@@ -554,7 +560,8 @@ public class ImportEW extends Thread {
           fixerInput.purgeTables(code, maxDays);
           try {
             Thread.sleep(dropTableDelay);
-          } catch (final Exception e) {
+          } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
           }
         } catch (final OutOfMemoryError e) {
           handleOutOfMemoryError(e);
@@ -759,7 +766,8 @@ public class ImportEW extends Thread {
       if (!connected) {
         try {
           Thread.sleep(100);
-        } catch (final Exception e) {
+        } catch (final InterruptedException e) {
+          Thread.currentThread().interrupt();
         }
       }
     }
@@ -886,26 +894,21 @@ public class ImportEW extends Thread {
    * 
    * @param args
    *          The command line arguments.
+   * @throws JSAPException 
    */
-  public static JSAPResult getArguments(final String[] args) {
+  public static JSAPResult getArguments(final String[] args) throws JSAPException {
     JSAPResult config = null;
-    try {
-      final SimpleJSAP jsap = new SimpleJSAP(JSAP_PROGRAM_NAME,
-          JSAP_EXPLANATION_PREFACE + DEFAULT_JSAP_EXPLANATION, DEFAULT_JSAP_PARAMETERS);
+    final SimpleJSAP jsap = new SimpleJSAP(JSAP_PROGRAM_NAME,
+        JSAP_EXPLANATION_PREFACE + DEFAULT_JSAP_EXPLANATION, DEFAULT_JSAP_PARAMETERS);
 
-      config = jsap.parse(args);
+    config = jsap.parse(args);
 
-      if (jsap.messagePrinted()) {
-        // The following error message is useful for catching the case
-        // when args are missing, but help isn't printed.
-        if (!config.getBoolean("help")) {
-          System.err.println("Try using the --help flag.");
-        }
-        System.exit(1);
+    if (jsap.messagePrinted()) {
+      // The following error message is useful for catching the case
+      // when args are missing, but help isn't printed.
+      if (!config.getBoolean("help")) {
+        throw new RuntimeException("Try using the --help flag.");
       }
-    } catch (final Exception ex) {
-      ex.printStackTrace();
-      System.exit(1);
     }
     return config;
   }
@@ -980,22 +983,19 @@ public class ImportEW extends Thread {
     }
   }
 
-  public static void main(final String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException, JSAPException {
     Log.addFileAppender("ImportEW.log");
     final JSAPResult config = getArguments(args);
 
-    final String fn =
-        StringUtils.stringToString(config.getString("configFilename"), DEFAULT_CONFIG_FILENAME);
+    if (!config.getBoolean("help")) {
+      String configFileName = config.getString("configFilename");
+      final String fn = StringUtils.stringToString(configFileName, DEFAULT_CONFIG_FILENAME);
+      final ImportEW im = new ImportEW(fn);
 
-
-    final ImportEW im = new ImportEW(fn);
-
-    // Start the importer. start() automatically calls run()
-    im.start();
-
-    // Decide if we're accepting commands based on the args parsed by jsap
-    // and pass the importer to the consoleInputManager if we are.
-    if (!(config.getBoolean("noinput")))
-      consoleInputManager(im);
+      im.start();
+      
+      if (!(config.getBoolean("noinput")))
+        consoleInputManager(im);
+    }
   }
 }

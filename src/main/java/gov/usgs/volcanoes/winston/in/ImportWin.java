@@ -25,23 +25,17 @@ public class ImportWin extends StaticImporter {
   public Map<String, List<Wave>> readFile(String fn) throws IOException {
     final SeismicDataFile file = SeismicDataFile.getFile(fn, FileType.WIN);
     Map<String, List<Wave>> map = new HashMap<String, List<Wave>>();
-    
-    try {
-      file.read();
-      for(String channel: file.getChannels()){
-        final List<Wave> list = new ArrayList<Wave>();
-        list.add(file.getWave(channel));
-        channel = channel.replace('_', '$');
-        map.put(channel, list);
-      }
-      return map;
-    } catch (final Exception e) {
-      System.err.println("Error reading file: " + fn);
+
+    file.read();
+    for (String channel : file.getChannels()) {
+      final List<Wave> list = new ArrayList<Wave>();
+      list.add(file.getWave(channel));
+      channel = channel.replace('_', '$');
+      map.put(channel, list);
     }
-    
-    return null;
+    return map;
   }
-  
+
   public static void main(final String[] args) {
 
     instructions.append("Winston ImportWin\n\n");
@@ -49,9 +43,9 @@ public class ImportWin extends StaticImporter {
     instructions.append("Information about connecting to the Winston database must be present\n");
     instructions.append("in Winston.config in the current directory.\n\n");
     instructions.append("Usage:\n");
-    instructions.append("  java gov.usgs.volcanoes.winston.in.ImportWin -c [config file] [files]\n");
+    instructions.append(" java gov.usgs.volcanoes.winston.in.ImportWin -c [config file] [files]\n");
 
-    
+
     final ImportWin is = new ImportWin();
     final Set<String> kvs = is.getArgumentSet();
     kvs.add("-c");

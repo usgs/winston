@@ -1,5 +1,6 @@
 package gov.usgs.volcanoes.winston.in;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -43,7 +44,7 @@ public class ImportSAC extends StaticImporter {
       final Map<String, List<Wave>> map = new HashMap<String, List<Wave>>();
       map.put(channel, list);
       return map;
-    } catch (final Exception e) {
+    } catch (final IOException e) {
       System.err.println("Error reading file: " + fn);
     }
     return null;
