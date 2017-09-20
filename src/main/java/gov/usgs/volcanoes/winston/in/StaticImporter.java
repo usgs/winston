@@ -47,7 +47,9 @@ abstract public class StaticImporter {
   protected int rsamDelta = 10;
   protected int rsamDuration = 60;
 
-  public StaticImporter() {}
+  public StaticImporter() {
+    setupWinston();
+  }
 
   public void setupWinston() {
     final ConfigFile cf = new ConfigFile("Winston.config");
@@ -125,7 +127,6 @@ abstract public class StaticImporter {
     if (files.size() == 0) {
       System.out.println("No files to import.");
     }
-    impt.setupWinston();
 
     final ListIterator<String> it = files.listIterator();
     while (it.hasNext()) {

@@ -21,6 +21,10 @@ import java.util.Set;
  */
 public class ImportWin extends StaticImporter {
 
+  public ImportWin() {
+    super();
+  }
+  
   @Override
   public Map<String, List<Wave>> readFile(String fn) throws IOException {
     final SeismicDataFile file = SeismicDataFile.getFile(fn, FileType.WIN);
