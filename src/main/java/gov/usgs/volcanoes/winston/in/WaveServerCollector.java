@@ -165,16 +165,17 @@ public class WaveServerCollector extends Thread {
   @Override
   public void run() {
     try {
-      Thread.sleep(delay * 1000);
-    } catch (final Exception e) {
+      Thread.sleep(delay * 1000l);
+    } catch (final InterruptedException e) {
+      Thread.currentThread().interrupt();
     }
     if (mode == COLLECT) {
       while (true) {
+        collect();
         try {
-          collect();
-          Thread.sleep(interval * 1000);
-        } catch (final Exception e) {
-          e.printStackTrace();
+          Thread.sleep(interval * 1000l);
+        } catch (final InterruptedException e) {
+          Thread.currentThread().interrupt();
         }
       }
     } else {
