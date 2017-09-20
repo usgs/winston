@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Parameter;
 import com.martiansoftware.jsap.SimpleJSAP;
@@ -83,30 +84,24 @@ public class ImportSeed extends StaticImporter {
     return map;
   }
 
-  public static JSAPResult getArguments(final String[] args) {
+  public static JSAPResult getArguments(final String[] args) throws JSAPException {
     JSAPResult config = null;
-    try {
-      final SimpleJSAP jsap = new SimpleJSAP(JSAP_PROGRAM_NAME, JSAP_EXPLANATION, JSAP_PARAMETERS);
+    final SimpleJSAP jsap = new SimpleJSAP(JSAP_PROGRAM_NAME, JSAP_EXPLANATION, JSAP_PARAMETERS);
 
-      config = jsap.parse(args);
+    config = jsap.parse(args);
 
-      if (jsap.messagePrinted() || config.getStringArray("file").length == 0) {
-        // The following error message is useful for catching the case
-        // when args are missing, but help isn't printed.
-        if (!config.getBoolean("help"))
-          System.err.println("Try using the --help flag.");
-
-        System.exit(1);
-      }
-    } catch (final Exception ex) {
-      ex.printStackTrace();
-      System.exit(1);
+    if (jsap.messagePrinted() || config.getStringArray("file").length == 0) {
+      // The following error message is useful for catching the case
+      // when args are missing, but help isn't printed.
+      if (!config.getBoolean("help"))
+        throw new RuntimeException("Try using the --help flag.");
     }
+
     return config;
   }
 
-  public static void main(final String[] args) {
-    final JSAPResult config = getArguments(args);
+  public static void main(final String[] args) throws JSAPException {
+    JSAPResult config = getArguments(args);
     System.out.printf("RSAM parameters: delta=%d, duration=%d.%n", config.getInt("rsamDelta"),
         config.getInt("rsamDuration"));
 
