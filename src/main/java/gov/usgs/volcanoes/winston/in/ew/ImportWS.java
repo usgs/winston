@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.martiansoftware.jsap.FlaggedOption;
 import com.martiansoftware.jsap.JSAP;
+import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 import com.martiansoftware.jsap.Parameter;
 import com.martiansoftware.jsap.SimpleJSAP;
@@ -284,31 +285,27 @@ public class ImportWS {
    * Find and parse the command line arguments.
    *
    * @param args The command line arguments.
+   * @throws JSAPException 
    */
-  public static JSAPResult getArguments(final String[] args) {
+  private static JSAPResult getArguments(final String[] args) throws JSAPException {
     JSAPResult config = null;
-    try {
-      final SimpleJSAP jsap = new SimpleJSAP(JSAP_PROGRAM_NAME,
-          JSAP_EXPLANATION_PREFACE + DEFAULT_JSAP_EXPLANATION, DEFAULT_JSAP_PARAMETERS);
+    final SimpleJSAP jsap = new SimpleJSAP(JSAP_PROGRAM_NAME,
+        JSAP_EXPLANATION_PREFACE + DEFAULT_JSAP_EXPLANATION, DEFAULT_JSAP_PARAMETERS);
 
-      config = jsap.parse(args);
+    config = jsap.parse(args);
 
-      if (jsap.messagePrinted()) {
-        // The following error message is useful for catching the case
-        // when args are missing, but help isn't printed.
-        if (!config.getBoolean("help"))
-          System.err.println("Try using the --help flag.");
-
-        System.exit(1);
-      }
-    } catch (final Exception ex) {
-      ex.printStackTrace();
-      System.exit(1);
+    if (jsap.messagePrinted()) {
+      // The following error message is useful for catching the case
+      // when args are missing, but help isn't printed.
+      if (!config.getBoolean("help"))
+        throw new RuntimeException("Try using the --help flag.");
     }
+    
     return config;
   }
 
-  public static void main(final String[] args) throws IOException {
+  
+  public static void main(final String[] args) throws IOException, JSAPException {
     final JSAPResult config = getArguments(args);
     final ImportWS w = new ImportWS(config.getString("configFilename"));
 
