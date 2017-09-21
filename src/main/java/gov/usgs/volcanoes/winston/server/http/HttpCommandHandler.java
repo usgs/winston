@@ -29,9 +29,10 @@ import gov.usgs.volcanoes.winston.Version;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import gov.usgs.volcanoes.winston.server.ConnectionStatistics;
+import gov.usgs.volcanoes.winston.server.GetChannelsConsumer;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
+import gov.usgs.volcanoes.winston.server.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.WinstonDatabasePool;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -157,14 +158,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
   private String sendUsage(String host) throws UtilException {
     List<Channel> channels;
     try {
-      channels = winstonDatabasePool.doCommand(new WinstonConsumer<List<Channel>>() {
-
-        public List<Channel> execute(WinstonDatabase winston) throws UtilException {
-          Channels channels = new Channels(winston);
-          return channels.getChannels();
-        }
-
-      });
+      channels = winstonDatabasePool.doCommand(new GetChannelsConsumer());
     } catch (Exception e) {
       LOGGER.error(e.getClass().getName());
       throw new UtilException(e.getMessage());

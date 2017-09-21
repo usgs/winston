@@ -14,8 +14,9 @@ import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
+import gov.usgs.volcanoes.winston.server.GetChannelsConsumer;
 import gov.usgs.volcanoes.winston.server.MalformedCommandException;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
+import gov.usgs.volcanoes.winston.server.WinstonConsumer;
 import gov.usgs.volcanoes.winston.server.wws.WwsBaseCommand;
 import gov.usgs.volcanoes.winston.server.wws.WwsCommandString;
 import io.netty.channel.ChannelHandlerContext;
@@ -30,6 +31,7 @@ import io.netty.channel.ChannelHandlerContext;
 public class GetChannelsCommand extends WwsBaseCommand {
   @SuppressWarnings("unused")
   private static final Logger LOGGER = LoggerFactory.getLogger(GetChannelsCommand.class);
+
 
   /**
    * Constructor.
@@ -46,24 +48,23 @@ public class GetChannelsCommand extends WwsBaseCommand {
 
     List<Channel> chs = null;
     try {
-      chs = databasePool.doCommand(new WinstonConsumer<List<Channel>>() {
-        public List<Channel> execute(WinstonDatabase winston) {
-          Channels channels = new Channels(winston);
-          return channels.getChannels(metadata);
-        }
-      });
+      chs = databasePool.doCommand(new GetChannelsConsumer());
     } catch (Exception e) {
       throw new UtilException("Unable to get channels.");
     }
 
     final StringBuilder sb = new StringBuilder(chs.size() * 60);
     sb.append(String.format("%s %d%n", cmd.id, chs.size()));
-    for (final Channel ch : chs) {
-      if (metadata)
+    if (metadata) {
+      for (Channel ch : chs) {
         sb.append(ch.toMetadataString() + "\n");
-      else
+      }
+    } else {
+      for (Channel ch : chs) {
         sb.append(ch.toPV2String() + "\n");
+      }
     }
+
     ctx.writeAndFlush(sb.toString());
   }
 

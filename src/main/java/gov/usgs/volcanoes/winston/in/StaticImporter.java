@@ -47,7 +47,9 @@ abstract public class StaticImporter {
   protected int rsamDelta = 10;
   protected int rsamDuration = 60;
 
-  public StaticImporter() {}
+  public StaticImporter() {
+    setupWinston();
+  }
 
   public void setupWinston() {
     final ConfigFile cf = new ConfigFile("Winston.config");
@@ -73,10 +75,10 @@ abstract public class StaticImporter {
     double maxTime = -1E300;
 
     for (final Iterator<Entry<String, List<Wave>>> iter = map.entrySet().iterator(); iter
-        .hasNext();) {      
+        .hasNext();) {
       Entry<String, List<Wave>> entry = iter.next();
       String code = entry.getKey();
-  
+
       if (!channels.channelExists(code)) {
         System.out.println("Creating new channel '" + code + "' in Winston.");
         channels.createChannel(code);
@@ -124,9 +126,7 @@ abstract public class StaticImporter {
   public static void process(final List<String> files, final StaticImporter impt) {
     if (files.size() == 0) {
       System.out.println("No files to import.");
-      System.exit(1);
     }
-    impt.setupWinston();
 
     final ListIterator<String> it = files.listIterator();
     while (it.hasNext()) {
@@ -141,8 +141,7 @@ abstract public class StaticImporter {
           continue;
         for (final File ff : dFiles) {
 
-          if (ff.getName() != null)
-            it.add(fn + File.pathSeparatorChar + ff.getName());
+          it.add(fn + File.pathSeparatorChar + ff.getName());
         }
       } else {
         try {

@@ -6,8 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import gov.usgs.volcanoes.winston.Channel.Builder;
-
 /**
  * $Log: not supported by cvs2svn $
  * Revision 1.3 2006/08/03 22:10:02 cervelli
@@ -69,12 +67,12 @@ public class Instrument {
     }
 
     public Builder latitude(double latitude) {
-      this.longitude = latitude;
+      this.latitude = latitude;
       return this;
     }
 
     public Builder height(double height) {
-      this.longitude = height;
+      this.height = height;
       return this;
     }
 
@@ -107,6 +105,10 @@ public class Instrument {
     }
     
     public Instrument build() {
+      if (metadata == null) {
+        metadata = new HashMap<String, String>();
+      }
+      
       return new Instrument(this);
     }
   

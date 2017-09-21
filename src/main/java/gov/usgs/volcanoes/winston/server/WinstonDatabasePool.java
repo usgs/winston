@@ -11,7 +11,6 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
-import gov.usgs.volcanoes.winston.server.wws.WinstonConsumer;
 
 /**
  * Pool connections to a winston database.
