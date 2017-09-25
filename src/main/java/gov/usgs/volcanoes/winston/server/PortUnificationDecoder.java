@@ -123,4 +123,18 @@ public class PortUnificationDecoder extends ByteToMessageDecoder {
     pipeline.addLast(new WwsCommandHandler(configFile, winstonDatabasePool));
     pipeline.remove(this);
   }
+  
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    if (!(cause instanceof java.io.IOException)) {
+      try {
+        LOGGER.error("Exception caught in PortUnificationDecoder while servicing {}: {} ({})",
+            ctx.channel().remoteAddress(), cause.getClass().getName(), cause.getMessage());
+      } catch (Exception e) {
+        LOGGER.error("Exception caught catching exception. ({})", e.getLocalizedMessage());
+      }
+    }
+    ctx.close();
+  }
+
 }

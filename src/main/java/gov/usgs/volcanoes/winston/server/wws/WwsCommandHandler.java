@@ -71,8 +71,12 @@ public class WwsCommandHandler extends SimpleChannelInboundHandler<WwsCommandStr
 //    if (!"Connection reset by peer".equals(cause.getMessage())) {
     if (!(cause instanceof java.io.IOException)) {
       try {
+        
+//        2017-09-21 04:01:13 ERROR - Exception caught in WwsCommandHandler while servicing /130.118.183.170:61390: java.lang.NullPointerException (null)
+        
         LOGGER.error("Exception caught in WwsCommandHandler while servicing {}: {} ({})",
             ctx.channel().remoteAddress(), cause.getClass().getName(), cause.getMessage());
+        LOGGER.error("exception: ", cause);
       } catch (Exception e) {
         LOGGER.error("Exception caught catching exception. ({})", e.getLocalizedMessage());
       }
