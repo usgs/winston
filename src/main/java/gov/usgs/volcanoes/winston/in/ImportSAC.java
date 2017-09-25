@@ -20,8 +20,11 @@ public class ImportSAC extends StaticImporter {
   private String channel;
   private boolean fixTrimble;
 
-  // private List<String> files;
 
+  public ImportSAC() {
+    super();
+  }
+  
   @Override
   public Map<String, List<Wave>> readFile(final String fn) {
     final SeismicDataFile file = SeismicDataFile.getFile(fn, FileType.SAC);
