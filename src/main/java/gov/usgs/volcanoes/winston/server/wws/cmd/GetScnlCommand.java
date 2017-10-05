@@ -1,7 +1,5 @@
 package gov.usgs.volcanoes.winston.server.wws.cmd;
 
-import java.nio.ByteBuffer;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +29,7 @@ public class GetScnlCommand extends EwDataRequest {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRawCommand.class);
   protected Scnl scnl;
   protected TimeSpan timeSpan;
-  private byte[] fill;
+  private String fillValue;
   private int cmdHash = Integer.MIN_VALUE;
 
   /**
@@ -39,7 +37,6 @@ public class GetScnlCommand extends EwDataRequest {
    */
   public GetScnlCommand() {
     super();
-    // isScnl = true;
   }
 
   protected void parseCommand(WwsCommandString cmd) throws MalformedCommandException {
@@ -47,7 +44,7 @@ public class GetScnlCommand extends EwDataRequest {
     if (cmdHash == Integer.MIN_VALUE || cmdHash != hash) {
       scnl = cmd.getScnl();
       timeSpan = cmd.getEwTimeSpan(WwsCommandString.HAS_LOCATION);
-      fill = cmd.args[1].getBytes();
+      fillValue = cmd.args[1];
     }
   }
 
@@ -119,38 +116,15 @@ public class GetScnlCommand extends EwDataRequest {
     for (int i = 0; i < wave.numSamples(); i++) {
       int sample = wave.buffer[i];
       if (sample == Wave.NO_DATA) {
-        ctx.write(fill);
+        ctx.write(fillValue);
       } else {
         ctx.write(Integer.toString(wave.buffer[i]));
       }
       ctx.writeAndFlush(" ");
     }
     ctx.writeAndFlush("\n");
-//    bb.flip();
-//    LOGGER.debug("GETSCNL returning {} bytes", bb.capacity());
-//    ctx.writeAndFlush(bb.array());
-}    
+  }
 
-//    
-//    
-//    final ByteBuffer bb = ByteBuffer.allocate(wave.numSamples() * 13 + 256);
-//    int sample;
-//    for (int i = 0; i < wave.numSamples(); i++) {
-//      sample = wave.buffer[i];
-//      if (sample == Wave.NO_DATA) {
-//        bb.put(fill);
-//      } else {
-//        bb.put(Integer.toString(wave.buffer[i]).getBytes());
-//      }
-//      bb.put((byte) ' ');
-//    }
-//    bb.put((byte) '\n');
-//    bb.flip();
-//    LOGGER.debug("GETSCNL returning {} bytes", bb.capacity());
-//    ctx.writeAndFlush(bb.array());
-//  }
-
-  @Override
   protected String prettyRequest(WwsCommandString cmd) {
     if (scnl == null || timeSpan == null) {
       return cmd.commandString;
