@@ -31,6 +31,7 @@ public class GetScnlCommand extends EwDataRequest {
   private static final Logger LOGGER = LoggerFactory.getLogger(GetScnlRawCommand.class);
   protected Scnl scnl;
   protected TimeSpan timeSpan;
+  private byte[] fill;
   private int cmdHash = Integer.MIN_VALUE;
 
   /**
@@ -46,6 +47,7 @@ public class GetScnlCommand extends EwDataRequest {
     if (cmdHash == Integer.MIN_VALUE || cmdHash != hash) {
       scnl = cmd.getScnl();
       timeSpan = cmd.getEwTimeSpan(WwsCommandString.HAS_LOCATION);
+      fill = cmd.args[1].getBytes();
     }
   }
 
@@ -56,7 +58,7 @@ public class GetScnlCommand extends EwDataRequest {
     if (scnl == null || timeSpan == null) {
       throw new MalformedCommandException("Cannot parse command. " + cmd);
     }
-    
+
     final Integer chanId = getChanId(scnl);
     if (chanId == -1) {
       ctx.writeAndFlush(String.format("%s FN%n", cmd.id));
@@ -110,40 +112,43 @@ public class GetScnlCommand extends EwDataRequest {
       return;
     }
 
-    // find first sample time
-    double ct = wave.getStartTime() - wave.getRegistrationOffset();
-    final double dt = 1 / wave.getSamplingRate();
-    for (int i = 0; i < wave.numSamples(); i++) {
-      if (ct >= (startTime - dt / 2))
-        break;
-      ct += dt;
-    }
+    String header = String.format("%sF s4 %f %.1f ", hdrPreamble, Time.j2kToEw(wave.getStartTime()),
+        wave.getSamplingRate());
 
-    String header = String.format("%s %d %s F s4 %.4f %d %n", cmd.command, chanId, chan,
-        Time.j2kToEw(ct), (int) wave.getSamplingRate());
     ctx.write(header);
-    final ByteBuffer bb = ByteBuffer.allocate(wave.numSamples() * 13 + 256);
-    int sample;
-    ct = wave.getStartTime();
-    // int samples = 0;
     for (int i = 0; i < wave.numSamples(); i++) {
-      if (ct >= (startTime - dt / 2)) {
-        // samples++;
-        sample = wave.buffer[i];
-        if (sample == Wave.NO_DATA)
-          bb.put(cmd.args[1].getBytes());
-        else
-          bb.put(Integer.toString(wave.buffer[i]).getBytes());
-        bb.put((byte) ' ');
+      int sample = wave.buffer[i];
+      if (sample == Wave.NO_DATA) {
+        ctx.write(fill);
+      } else {
+        ctx.write(Integer.toString(wave.buffer[i]));
       }
-      ct += dt;
-      if (ct >= endTime)
-        break;
+      ctx.writeAndFlush(" ");
     }
-    bb.put((byte) '\n');
-    bb.flip();
-    ctx.writeAndFlush(bb.array());
-  }
+    ctx.writeAndFlush("\n");
+//    bb.flip();
+//    LOGGER.debug("GETSCNL returning {} bytes", bb.capacity());
+//    ctx.writeAndFlush(bb.array());
+}    
+
+//    
+//    
+//    final ByteBuffer bb = ByteBuffer.allocate(wave.numSamples() * 13 + 256);
+//    int sample;
+//    for (int i = 0; i < wave.numSamples(); i++) {
+//      sample = wave.buffer[i];
+//      if (sample == Wave.NO_DATA) {
+//        bb.put(fill);
+//      } else {
+//        bb.put(Integer.toString(wave.buffer[i]).getBytes());
+//      }
+//      bb.put((byte) ' ');
+//    }
+//    bb.put((byte) '\n');
+//    bb.flip();
+//    LOGGER.debug("GETSCNL returning {} bytes", bb.capacity());
+//    ctx.writeAndFlush(bb.array());
+//  }
 
   @Override
   protected String prettyRequest(WwsCommandString cmd) {
