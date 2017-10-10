@@ -5,7 +5,7 @@ Some SQL queries that may come in handy.
 +----------------+
 
 Give the winston user database access:
-GRANT ALL ON `W\_%`.* to wwsuser@'localhost' identified by 'wwspass';
+GRANT ALL ON `WWS\_%`.* to wwsuser@'localhost' identified by 'wwspass';
 
 Find channels which are missing their database:
 SELECT code FROM W_ROOT.channels WHERE CONCAT('W_', code) NOT IN (SELECT schema_name FROM information_schema.schemata);
