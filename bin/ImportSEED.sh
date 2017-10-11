@@ -7,7 +7,7 @@ for arg in "$@" ; do
 		case $1 in
 	  	  -*) ARGS="$ARGS $1 $2" ; shift ;;
 	  	  "") ;;
-		   *) ARGS="$ARGS $PWD/$1" ;;
+		   *) ARGS="$ARGS $1" ;;
 		esac
 		
         shift
