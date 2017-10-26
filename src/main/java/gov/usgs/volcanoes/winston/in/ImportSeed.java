@@ -83,10 +83,18 @@ public class ImportSeed extends StaticImporter {
         continue;
       }
 
-      String network = StringUtils.stringToString(config.getString("network"), scnl.network);
-      String station = StringUtils.stringToString(config.getString("station"), scnl.station);
-      String channel = StringUtils.stringToString(config.getString("channel"), scnl.channel);
-      String location = StringUtils.stringToString(config.getString("location"), scnl.location);
+      String network = scnl.network;
+      String station = scnl.station;
+      String channel = scnl.channel;
+      String location = scnl.location;
+
+      if (config != null) {
+        network = StringUtils.stringToString(config.getString("network"), network);
+        station = StringUtils.stringToString(config.getString("station"), station);
+        channel = StringUtils.stringToString(config.getString("channel"), channel);
+        location = StringUtils.stringToString(config.getString("location"), location);
+      }
+      
       scnl = new Scnl(station, channel, network, location);
 
       final List<Wave> list = new ArrayList<Wave>();
