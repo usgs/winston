@@ -15,6 +15,7 @@
 				<include>LICENSE.md</include>
 				<include>CHANGES.md</include>
 				<include>ImportEW.config</include>
+				<include>ImportWS.config</include>
 				<include>NTP.config</include>
 				<include>WWS.config</include>
 				<include>Winston.config</include>
