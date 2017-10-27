@@ -121,16 +121,15 @@ public class WWS {
     final StringBuffer sb = new StringBuffer();
     sb.append(Version.VERSION_STRING + "\n");
     sb.append("Keys:\n");
-    sb.append("      0-3: logging level\n");
-    sb.append("        q: quit\n");
     sb.append("        ?: display keys\n");
+    sb.append("      0-3: logging level. Larger number for more logging.\n");
+    sb.append("        q: quit after servicing open connections.\n");
     sb.append("        c: print connections sorted by bytes transmited\n");
     sb.append("       cA: print connections sorted by address\n");
     sb.append("       cC: print connections sorted by connect time\n");
     sb.append("       cL: print connections sorted by last request time\n");
     sb.append("       cR: print connections sorted by bytes received\n");
     sb.append("       cT: print connections sorted by bytes transmited\n");
-    sb.append("       cI: print connections sorted by index\n");
     sb.append("         : append '-' to sort in descending order.\n");
 
     System.out.println(sb);

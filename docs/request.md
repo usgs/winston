@@ -1,18 +1,20 @@
 # Winston 3 Commands
 
 ## Protocol Description
-Winston commands take the form of a single line of text terminated by <CRLF>. The line of text begins with a command name followed by a request id, separated by a space. Arguments for a command follow the request id separated by a space. 
+Winston commands take the form of a single line of text terminated by `<CRLF>`. The line of text begins with a command name followed by a request id, separated by a space. Arguments request id separated by a space. 
 
-	<req> = <cmd> <sp> <id> [<sp> <args> ] <crlf>
-	<args> = <command-specific arg 1> [ <sp> <command-specific arg 2> ]
-	       | <channel spec> <sp> [ <command-specific args> ]
-	<id> = 
-	<channel spec> = <SCNL> [ <sp> <time span> ]
-	<SCNL> = <station> <sp> <channel> <sp> <network> <sp> [ <location> ]
-	<time span> = <start time> <sp> <end time>
-	<start time> = <J2kSec>
-	<end time> = <J2kSec>
-
+	request = cmd SP req-id [SP args ] CRLF
+	args = command-arg [ SP command-arg ]
+	     =/ channel-spec [ SP command-arg ]
+	req-id = 1*CHAR
+	channel-spec = scnl [ SP time-span ]
+	scnl = station SP channel SP network [ SP location ]
+	time-span = time-span-j2ksec / time-span-ew
+	time-span-j2ksec = j2ksec SP j2ksec
+	time-span-ew = unix-time SP unix-time
+	J2kSec = 1*DIGIT [ "." *DIGIT ] ; seconds since 2000-01-01T12:00:00+00:00
+	unix-time = 1*DIGIT [ "." *DIGIT ] ; seconds since 1970-01-01T00:00:00+00:00
+	
 The Winston protocol is descended from the protocol used by Earthworm's wave_serverV.
 
 ## Supported Earthworm WaveserverV commands
@@ -24,17 +26,14 @@ The Winston Wave Server supports a subset of the Earthworm WaveserverV command s
 Request listing of known stations and metadata.
 
 ### Request
-    <request> = "MENU" <sp> <request id> [ <sp> "SCNL" ] <nl>
-              | "MENU:" <sp> <request id> [ <sp> "SCNL" ] <nl>
+    request =  "MENU" *1":" SP req-id [ SP "SCNL" ] CRLF
               
 If the SCNL argument is provided, location codes will always be included.
 
 ### Response
-	<response> = <request id> <sp> <sp> <channel record list> <nl>
-	<channel record list> = <channel record>
-	                      | <channel record> <sp> <sp> <channel record list>
-	<channel record> = <channel pin> <sp> <channel spec> <sp> <data type>
-
+	response = req-id SP SP channel-record-list CRLF
+	channel-record-list = channel-record *(SP SP channel-record)
+	channel-record = pin SP scnl SP time-span-ew SP data-type
 
 ## GETSCNRAW
 This is an alias for GETSCNLRAW. Either command will accept a SCN or SCNL and return dat in the form it was received in.
@@ -42,24 +41,19 @@ This is an alias for GETSCNLRAW. Either command will accept a SCN or SCNL and re
 
 ## GETSCNLRAW
 ### Request
-    <cmd> = "GETSCNLRAW" <sp> <id> <sp> <scnl> <sp> <time span>
-    <time span> = <epoch time> <sp> <epoch time>
+    request = "GETSCNLRAW" SP req-id SP scnl SP time-span-ew CRLF
 
 ### Response
-#### Response Header
-    <hdr> = <id> <sp> <pin #> <sp> <scnl> <sp> F <sp> <data type> <sp> <time span> <length> <cr>
-          | <id> <sp> <pin #> <sp> <scnl> <sp> FG <sp> <data type> <cr>
-          | <id> <sp> <pin #> <sp> <scnl> <sp> FR <sp> <data type> <youngest time> <cr>
-          | <id> <sp> <pin #> <sp> <scnl> <sp> FL <sp> <data type> <oldest time> <cr>
-
-If the request header contains the FR flags, then the requested time period is prior to all available data. No rquest body will be returned.
-If the request header contains the FL flags, then the requested time period is after available data. No rquest body will be returned.
+	response = header CRLF *tracebuf
+    header =  req-id SP pin SP scnl SP "F" SP data-tpye ST time-span-ew length CRLF
+           =/ req-id SP pin SP scnl SP "FG" SP data-tpye CRLF
+           =/ req-id SP pin SP scnl SP "FR"SP data-tpye unix-time CRLF
+           =/ req-id SP pin SP scnl SP "FL"SP data-tpye unix-time CRLF
+           
+If the request header contains the FR flags, then the requested time period is prior to all available data. No request body will be returned.
+If the request header contains the FL flags, then the requested time period is after available data. No request body will be returned.
 If the request header contains the FG flags, then the requested time period lies fully within a gap in data. No request body will be returned.
 If the request head contains only the F flag, then data was found and a request body will be returned.
-
-#### Response Body
-
-    <response> = 1*<tracebuf bytes>
 
 If data is found, it will be returned following the header as a stream of tracebuf or tracebuf2 structures. 
 
@@ -69,9 +63,14 @@ This is an alias for SCNL. Either command will accept a SCN or SCNL.
 ## GETSCNL
 
 ### Request
-    <cmd> = "GETSCNL" <sp> <id> <sp> <scnl> <sp> <time span>
+    request = "GETSCNL" SP req-id SP scnl SP time-span-ew CRLF
 
 ### Response
+	response = header CRLF *samples
+    header =  req-id SP pin SP scnl SP "F" SP data-tpye ST time-span-ew length CRLF
+           =/ req-id SP pin SP scnl SP "FG" SP data-tpye CRLF
+           =/ req-id SP pin SP scnl SP "FR"SP data-tpye unix-time CRLF
+           =/ req-id SP pin SP scnl SP "FL"SP data-tpye unix-time CRLF
 
 ## Winston Commands
 Winston commands consist of a sequence of characters optionally terminated by a colon. Times in winston requests are specified as J2kSec. 

@@ -6,6 +6,8 @@
 
 package gov.usgs.volcanoes.winston.server.wws;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,11 +70,12 @@ public class WwsCommandHandler extends SimpleChannelInboundHandler<WwsCommandStr
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-//    if (!"Connection reset by peer".equals(cause.getMessage())) {
-    if (!(cause instanceof java.io.IOException)) {
+    // Normal and expected client connections can cause both of these. Nothing to be done about it
+    if (!(cause instanceof IOException || cause instanceof NullPointerException)) {
       try {
         LOGGER.error("Exception caught in WwsCommandHandler while servicing {}: {} ({})",
             ctx.channel().remoteAddress(), cause.getClass().getName(), cause.getMessage());
+        LOGGER.error("exception: ", cause);
       } catch (Exception e) {
         LOGGER.error("Exception caught catching exception. ({})", e.getLocalizedMessage());
       }
