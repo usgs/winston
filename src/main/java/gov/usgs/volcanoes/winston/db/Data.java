@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -21,8 +22,10 @@ import gov.usgs.plot.data.RSAMData;
 import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
 import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 
 /**
@@ -130,6 +133,22 @@ public class Data {
   }
 
   /**
+   * Get a list of days in a time span
+   *
+   * @param timeSpan timeSpan
+   * @return List of strings representing each day in time span
+   */
+  private List<String> daysBetween(TimeSpan timeSpan) {
+    final ArrayList<String> result = new ArrayList<String>();
+    long time = timeSpan.startTime;
+    while (time < timeSpan.endTime + Time.DAY_IN_MS) {
+      result.add(Time.format(WinstonDatabase.WINSTON_TABLE_DATE_FORMAT, new Date(time)));
+      time += Time.DAY_IN_MS;
+    }
+    return result;
+  }
+
+  /**
    * Finds data gaps in a given channel between two times. Returns null
    * on a Winston error. Returns a single item list with the given time span
    * if the channel doesn't exist or if no data exist in the interval.
@@ -157,18 +176,17 @@ public class Data {
 
     try {
       final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
+      dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
       final List<String> days = daysBetween(t1, t2);
-
-      dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
       final List<double[]> bufs = new ArrayList<double[]>(2 * ONE_DAY);
+
       for (final String day : days) {
         final double tst = J2kSec.parse(WinstonDatabase.WINSTON_TABLE_DATE_FORMAT, day);
         final double tet = tst + ONE_DAY;
         final String table = code + "$$" + day;
         if (!winston.tableExists(code, table))
           continue;
-
         if (tet < t1)
           continue;
         if (tst > t2)
@@ -227,6 +245,79 @@ public class Data {
       e.printStackTrace();
     }
     return null;
+  }
+
+
+  public List<TimeSpan> findGaps(String code, TimeSpan timeSpan) {
+    final List<TimeSpan> gaps = new ArrayList<TimeSpan>();
+    timeSpan = new TimeSpan(applyLookback(timeSpan.startTime), timeSpan.endTime);
+    
+    if (timeSpan.startTime >= timeSpan.endTime) {
+      return gaps;
+    }
+    
+    if (!winston.checkConnect())
+      return gaps;
+
+    if (!winston.useDatabase(code)) {
+      // database didn't exist so the whole thing must be a gap
+      gaps.add(timeSpan);
+      return gaps;
+    }
+
+    
+      final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
+      dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+      final List<String> days = daysBetween(timeSpan);
+
+      double startJ2k = J2kSec.fromEpoch(timeSpan.startTime);
+      double endJ2k = J2kSec.fromEpoch(timeSpan.endTime);
+      double last = startJ2k;
+      for (final String day : days) {
+        List<double[]> bufs;
+        try {
+          bufs = getBufTimes(code, day);
+        } catch (SQLException e) {
+          LOGGER.error("Unable to read day table {}:{}", code, day);
+          bufs = new ArrayList<double[]>();
+        }
+        
+        for (double[] buf : bufs) {
+          if (startJ2k >= buf[1] || endJ2k <= buf[0]) {
+            continue;
+          }
+          
+          if (buf[0] > last) {
+            gaps.add(new TimeSpan(J2kSec.asEpoch(last), J2kSec.asEpoch(buf[0])));
+          }
+          
+          last = buf[1];
+        }
+          
+        if (last < endJ2k) {
+          gaps.add(new TimeSpan(J2kSec.asEpoch(last), timeSpan.endTime));
+        }
+      }
+      return gaps;
+   }
+
+  private List<double[]> getBufTimes(String code, String table) throws SQLException {
+    final List<double[]> bufs = new ArrayList<double[]>(2 * ONE_DAY);
+    if (!winston.tableExists(code, table)) {
+      return bufs;
+    }
+
+    final ResultSet rs = winston.getStatement()
+        .executeQuery("SELECT st, et FROM `" + table + "` ORDER BY st ASC");
+    while (rs.next()) {
+      final double start = rs.getDouble(1);
+      final double end = rs.getDouble(2);
+      bufs.add(new double[] {start, end});
+    }
+    rs.close();
+
+    return bufs;
+
   }
 
   /**
@@ -625,7 +716,7 @@ public class Data {
       sb.append("((j2ksec-").append(startTime).append(") DIV ").append(dsInt).append(") intNum ");
       sb.append(sql_from_where_clause);
       sb.append(" GROUP BY intNum");
-      
+
       return sb.toString();
     } else
       throw new UtilException("Unknown downsampling type: " + ds);
@@ -654,6 +745,11 @@ public class Data {
 
   private double applyLookback(double time) {
     double lookback = J2kSec.now() - winston.maxDays * Time.DAY_IN_S;
+    return Math.max(time, lookback);
+  }
+
+  private long applyLookback(long time) {
+    long lookback = CurrentTime.getInstance().now() - (winston.maxDays * Time.DAY_IN_S * 1000);
     return Math.max(time, lookback);
   }
 

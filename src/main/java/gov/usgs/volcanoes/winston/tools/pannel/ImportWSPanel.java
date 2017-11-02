@@ -21,6 +21,9 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -34,7 +37,7 @@ public class ImportWSPanel extends WinstonToolsStoppablePanel {
 
   private static final long serialVersionUID = 1L;
   private static final Color RED = new Color(0xFFA07A);
-
+private static final Logger LOGGER = LoggerFactory.getLogger(ImportWSPanel.class);
   private ImportWS ws;
   private static JTextField waveServer;
   private static JTextField port;
@@ -182,7 +185,12 @@ public class ImportWSPanel extends WinstonToolsStoppablePanel {
     // config.put("rsam.duration", rsamDuration.getText());
 
     ws.setConfig(config);
-    ws.processConfig();
+    try {
+      ws.processConfig();
+    } catch (ParseException e) {
+      LOGGER.error("Cannot parse config. ({})", e.getLocalizedMessage());
+      return;
+    }
     ws.createJobs();
     ws.startImport();
     importB.setEnabled(true);

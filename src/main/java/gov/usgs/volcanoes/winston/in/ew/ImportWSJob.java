@@ -13,6 +13,7 @@ import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.InputEW;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -31,7 +32,7 @@ public class ImportWSJob {
   private final WaveServer waveServer;
 
   private String channel;
-  private final List<double[]> spans;
+  private final List<TimeSpan> spans;
 
   private final Menu menu;
 
@@ -55,7 +56,7 @@ public class ImportWSJob {
     importWS = is;
     winston = w;
     waveServer = ws;
-    spans = new ArrayList<double[]>(10);
+    spans = new ArrayList<TimeSpan>();
     channels = new Channels(winston);
     input = new InputEW(winston);
     menu = importWS.getMenu();
@@ -76,10 +77,9 @@ public class ImportWSJob {
     return channel;
   }
 
-  public void addSpan(final double t1, final double t2) {
-    spans.add(new double[] {t1, t2});
+  public void addSpans(List<TimeSpan> spans) {
+    this.spans.addAll(spans);
   }
-
   public void setChunkSize(final double sec) {
     chunkSize = sec;
   }
@@ -92,7 +92,7 @@ public class ImportWSJob {
     quit = true;
   }
 
-  private void getData(final double[] span) {
+  private void getData(final TimeSpan span) {
     try {
       final String[] ss = channel.split("\\$");
       String loc = null;
@@ -102,11 +102,10 @@ public class ImportWSJob {
       if (requestSCNL && loc == null)
         loc = "--";
 
-      final double t1 = span[0];
-      final double t2 = span[1];
+      final double t1 = J2kSec.fromEpoch(span.startTime);
+      final double t2 = J2kSec.fromEpoch(span.endTime);
 
-      LOGGER.info("{}: downloading gap: [{} -> {}, {}]", channel, J2kSec.toDateString(span[0]),
-          J2kSec.toDateString(span[1]), Time.secondsToString(span[1] - span[0]));
+      LOGGER.info("{}: downloading gap: {} ({})", channel, span, span.span());
 
       input.setRowParameters((int) chunkSize + 65, 60);
 
@@ -236,7 +235,7 @@ public class ImportWSJob {
   }
 
   private void getAllData() {
-    for (final double[] span : spans) {
+    for (final TimeSpan span : spans) {
       if (!quit)
         getData(span);
     }
@@ -244,15 +243,14 @@ public class ImportWSJob {
 
   public double getSpansDuration() {
     double duration = 0.0;
-    for (final double[] span : spans)
-      duration += span[1] - span[0];
-    return duration;
+    for (final TimeSpan span : spans)
+      duration += span.endTime - span.startTime;
+    return duration / 1000;
   }
 
   public void go() {
-    for (final double[] span : spans) {
-      LOGGER.info(String.format("%s: gap: [%s -> %s, %s]", channel, J2kSec.toDateString(span[0]),
-          J2kSec.toDateString(span[1]), Time.secondsToString(span[1] - span[0])));
+    for (final TimeSpan span : spans) {
+      LOGGER.info("{}: gap: {} ({})", channel, span, span.span());
     }
 
     LOGGER.info(
@@ -275,4 +273,6 @@ public class ImportWSJob {
     waveServer.close();
     spans.clear();
   }
+
+
 }
