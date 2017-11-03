@@ -80,6 +80,7 @@ public class ImportWSJob {
   public void addSpans(List<TimeSpan> spans) {
     this.spans.addAll(spans);
   }
+
   public void setChunkSize(final double sec) {
     chunkSize = sec;
   }
@@ -93,6 +94,7 @@ public class ImportWSJob {
   }
 
   private void getData(final TimeSpan span) {
+    LOGGER.debug("start get data");
     try {
       final String[] ss = channel.split("\\$");
       String loc = null;
@@ -116,15 +118,25 @@ public class ImportWSJob {
       double totalInsTime = 0;
       double totalDlTime = 0;
       while (ct < t2) {
-        if (quit)
+        if (quit) {
+          LOGGER.debug("Job quitting");
           break;
+        }
         ct += chunkSize;
         final double ret = Math.min(ct + chunkSize + 5, t2 + 5);
         final CodeTimer netTimer = new CodeTimer("net");
+        LOGGER.error("TOMP SAYS: {} : {} : {} : {} : {} : {} :", ss[0], ss[1], ss[2], loc, J2kSec.asEpoch(ct - 5),
+            J2kSec.asEpoch(ret));
         tbs = waveServer.getTraceBufs(ss[0], ss[1], ss[2], loc, J2kSec.asEpoch(ct - 5),
             J2kSec.asEpoch(ret));
         netTimer.stop();
         totalDlTime += netTimer.getTotalTimeMillis();
+        if (tbs == null) {
+          LOGGER.error("TOMP SAYS :{}:", tbs);
+        } else {
+          LOGGER.error("TOMP SAYS :{}:", tbs.size());
+        }
+        
         if (tbs != null && tbs.size() > 0) {
           final Iterator<TraceBuf> it = tbs.iterator();
           double minTime = 1E300;
@@ -159,6 +171,8 @@ public class ImportWSJob {
           final CodeTimer inputTimer = new CodeTimer("input");
           final List<InputEW.InputResult> results =
               input.inputTraceBufs(tbs, rsamEnable, rsamDelta, rsamDuration);
+          LOGGER.error("TOMP SAYS :{}:", results.size());
+
           inputTimer.stop();
           totalInsTime += inputTimer.getTotalTimeMillis();
           LOGGER.debug("{}: {} tb ({}/{}ms), [{} -> {}, {}]", channel, tbs.size(),
@@ -232,6 +246,8 @@ public class ImportWSJob {
     } catch (final Throwable t) {
       t.printStackTrace();
     }
+    LOGGER.debug("end get data");
+
   }
 
   private void getAllData() {

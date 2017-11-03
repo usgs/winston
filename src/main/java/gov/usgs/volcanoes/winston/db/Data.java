@@ -206,7 +206,7 @@ public class Data {
         rs.close();
       }
 
-      if (bufs == null || bufs.size() == 0) {
+      if (bufs.size() == 0) {
         // there were no tracebufs in the time range, the whole span is a gap.
         gaps.add(new double[] {t1, t2});
         return gaps;
@@ -251,55 +251,57 @@ public class Data {
   public List<TimeSpan> findGaps(String code, TimeSpan timeSpan) {
     final List<TimeSpan> gaps = new ArrayList<TimeSpan>();
     timeSpan = new TimeSpan(applyLookback(timeSpan.startTime), timeSpan.endTime);
-    
+
     if (timeSpan.startTime >= timeSpan.endTime) {
+      LOGGER.debug("null timeSpan {}", timeSpan);
+      return gaps;
+    }
+
+    if (!winston.checkConnect()) {
+      LOGGER.debug("Cannot connect to winston");
       return gaps;
     }
     
-    if (!winston.checkConnect())
-      return gaps;
-
     if (!winston.useDatabase(code)) {
       // database didn't exist so the whole thing must be a gap
       gaps.add(timeSpan);
       return gaps;
     }
 
-    
-      final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
-      dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-      final List<String> days = daysBetween(timeSpan);
+    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
+    dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+    final List<String> days = daysBetween(timeSpan);
 
-      double startJ2k = J2kSec.fromEpoch(timeSpan.startTime);
-      double endJ2k = J2kSec.fromEpoch(timeSpan.endTime);
-      double last = startJ2k;
-      for (final String day : days) {
-        List<double[]> bufs;
-        try {
-          bufs = getBufTimes(code, day);
-        } catch (SQLException e) {
-          LOGGER.error("Unable to read day table {}:{}", code, day);
-          bufs = new ArrayList<double[]>();
-        }
-        
-        for (double[] buf : bufs) {
-          if (startJ2k >= buf[1] || endJ2k <= buf[0]) {
-            continue;
-          }
-          
-          if (buf[0] > last) {
-            gaps.add(new TimeSpan(J2kSec.asEpoch(last), J2kSec.asEpoch(buf[0])));
-          }
-          
-          last = buf[1];
-        }
-          
-        if (last < endJ2k) {
-          gaps.add(new TimeSpan(J2kSec.asEpoch(last), timeSpan.endTime));
-        }
+    double startJ2k = J2kSec.fromEpoch(timeSpan.startTime);
+    double endJ2k = J2kSec.fromEpoch(timeSpan.endTime);
+    double last = startJ2k;
+    for (final String day : days) {
+      List<double[]> bufs;
+      try {
+        bufs = getBufTimes(code, day);
+      } catch (SQLException e) {
+        LOGGER.error("Unable to read day table {}:{}", code, day);
+        bufs = new ArrayList<double[]>();
       }
-      return gaps;
-   }
+
+      for (double[] buf : bufs) {
+        if (startJ2k >= buf[1] || endJ2k <= buf[0]) {
+          continue;
+        }
+
+        if (buf[0] > last) {
+          gaps.add(new TimeSpan(J2kSec.asEpoch(last), J2kSec.asEpoch(buf[0])));
+        }
+
+        last = buf[1];
+      }
+
+      if (last < endJ2k) {
+        gaps.add(new TimeSpan(J2kSec.asEpoch(last), timeSpan.endTime));
+      }
+    }
+    return gaps;
+  }
 
   private List<double[]> getBufTimes(String code, String table) throws SQLException {
     final List<double[]> bufs = new ArrayList<double[]>(2 * ONE_DAY);
@@ -749,7 +751,7 @@ public class Data {
   }
 
   private long applyLookback(long time) {
-    long lookback = CurrentTime.getInstance().now() - (winston.maxDays * Time.DAY_IN_S * 1000);
+    long lookback = CurrentTime.getInstance().now() - (winston.maxDays * Time.DAY_IN_MS);
     return Math.max(time, lookback);
   }
 

@@ -37,21 +37,21 @@ public class ImportWSPanel extends WinstonToolsStoppablePanel {
 
   private static final long serialVersionUID = 1L;
   private static final Color RED = new Color(0xFFA07A);
-private static final Logger LOGGER = LoggerFactory.getLogger(ImportWSPanel.class);
-  private ImportWS ws;
-  private static JTextField waveServer;
-  private static JTextField port;
-  private static JTextField chunkSize;
-  private static JTextField chunkDelay;
-  private static JCheckBox createChannels;
-  private static JCheckBox findGaps;
-  private static ScnlPanel scnlPanel;
-  private static JRadioButton explicitB;
-  private static JRadioButton relativeB;
-  private static JTextField start;
-  private static JTextField end;
-  private static JComboBox rangeList;
-  private static JButton importB;
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImportWSPanel.class);
+  private transient ImportWS ws;
+  private JTextField waveServer;
+  private JTextField port;
+  private JTextField chunkSize;
+  private JTextField chunkDelay;
+  private JCheckBox createChannels;
+  private JCheckBox findGaps;
+  private ScnlPanel scnlPanel;
+  private JRadioButton explicitB;
+  private JRadioButton relativeB;
+  private JTextField start;
+  private JTextField end;
+  private JComboBox rangeList;
+  private JButton importB;
 
   public ImportWSPanel() {
     super("Import WS");
@@ -221,7 +221,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(ImportWSPanel.class
     return s;
   }
 
-  public class TimeRangeOption {
+  public static class TimeRangeOption {
     String title;
     String value;
 
@@ -240,7 +240,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(ImportWSPanel.class
     }
   }
 
-  public class TimeRangeFocusListener implements FocusListener {
+  public static class TimeRangeFocusListener implements FocusListener {
 
     JRadioButton b;
 
@@ -255,7 +255,7 @@ private static final Logger LOGGER = LoggerFactory.getLogger(ImportWSPanel.class
     public void focusLost(final FocusEvent e) {}
   }
 
-  public class TimeRangeDocumentListener implements DocumentListener {
+  public static class TimeRangeDocumentListener implements DocumentListener {
 
     JTextField f;
 

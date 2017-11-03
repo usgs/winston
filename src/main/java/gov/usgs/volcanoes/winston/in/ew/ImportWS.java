@@ -275,12 +275,12 @@ public class ImportWS {
   }
 
   public void quit() {
+    LOGGER.info("Quitting cleanly.");
     if (currentJob != null)
       currentJob.quit();
     else
       LOGGER.info("Null job");
     quit = true;
-    LOGGER.info("Quitting cleanly.");
   }
 
   /**
