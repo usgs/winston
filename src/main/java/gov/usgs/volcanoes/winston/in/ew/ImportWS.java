@@ -24,7 +24,6 @@ import gov.usgs.earthworm.MenuItem;
 import gov.usgs.earthworm.WaveServer;
 import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
-import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.StringUtils;
