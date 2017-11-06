@@ -245,7 +245,7 @@ public class ImportWS {
     for (final ImportWSJob job : jobs) {
       currentJob = job;
       LOGGER.info("{}: finding gaps", job.getChannel());
-      final List<double[]> gaps = data.findGaps(job.getChannel(), startTime, endTime);
+      final List<double[]> gaps = data.findGaps(job.getChannel(), endTime, startTime);
       for (final double[] gap : gaps)
         job.addSpan(gap[0], gap[1]);
 
