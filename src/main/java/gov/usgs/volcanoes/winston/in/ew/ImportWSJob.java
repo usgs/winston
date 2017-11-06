@@ -125,18 +125,18 @@ public class ImportWSJob {
         ct += chunkSize;
         final double ret = Math.min(ct + chunkSize + 5, t2 + 5);
         final CodeTimer netTimer = new CodeTimer("net");
-        LOGGER.error("TOMP SAYS: {} : {} : {} : {} : {} : {} :", ss[0], ss[1], ss[2], loc, J2kSec.asEpoch(ct - 5),
-            J2kSec.asEpoch(ret));
-        tbs = waveServer.getTraceBufs(ss[0], ss[1], ss[2], loc, J2kSec.asEpoch(ct - 5),
-            J2kSec.asEpoch(ret));
+        LOGGER.debug("REQUESTING: {}_{}_{}_{} {}-{}",ss[0], ss[1], ss[2], loc, J2kSec.toDateString(ct - 5),
+            J2kSec.toDateString(ret));
+        tbs = waveServer.getTraceBufs(ss[0], ss[1], ss[2], loc, Time.j2kToEw(ct - 5),
+            Time.j2kToEw(ret));
         netTimer.stop();
         totalDlTime += netTimer.getTotalTimeMillis();
-        if (tbs == null) {
-          LOGGER.error("TOMP SAYS :{}:", tbs);
+        if (tbs != null) {
+          LOGGER.debug("Got {} tracebufs", tbs.size());
         } else {
-          LOGGER.error("TOMP SAYS :{}:", tbs.size());
+          LOGGER.debug("Got null tracebufs");
         }
-        
+
         if (tbs != null && tbs.size() > 0) {
           final Iterator<TraceBuf> it = tbs.iterator();
           double minTime = 1E300;
@@ -171,7 +171,6 @@ public class ImportWSJob {
           final CodeTimer inputTimer = new CodeTimer("input");
           final List<InputEW.InputResult> results =
               input.inputTraceBufs(tbs, rsamEnable, rsamDelta, rsamDuration);
-          LOGGER.error("TOMP SAYS :{}:", results.size());
 
           inputTimer.stop();
           totalInsTime += inputTimer.getTotalTimeMillis();
