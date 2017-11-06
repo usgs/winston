@@ -261,7 +261,7 @@ public class Data {
       LOGGER.debug("Cannot connect to winston");
       return gaps;
     }
-    
+
     if (!winston.useDatabase(code)) {
       // database didn't exist so the whole thing must be a gap
       gaps.add(timeSpan);
@@ -292,14 +292,14 @@ public class Data {
         if (buf[0] > last) {
           gaps.add(new TimeSpan(J2kSec.asEpoch(last), J2kSec.asEpoch(buf[0])));
         }
-
         last = buf[1];
       }
-
-      if (last < endJ2k) {
-        gaps.add(new TimeSpan(J2kSec.asEpoch(last), timeSpan.endTime));
-      }
     }
+
+    if (last < endJ2k) {
+      gaps.add(new TimeSpan(J2kSec.asEpoch(last), timeSpan.endTime));
+    }
+
     return gaps;
   }
 
@@ -309,8 +309,8 @@ public class Data {
       return bufs;
     }
 
-    final ResultSet rs = winston.getStatement()
-        .executeQuery("SELECT st, et FROM `" + table + "` ORDER BY st ASC");
+    String sql = String.format("SELECT st, et FROM `%s` ORDER BY st ASC", table);
+    final ResultSet rs = winston.getStatement().executeQuery(sql);
     while (rs.next()) {
       final double start = rs.getDouble(1);
       final double end = rs.getDouble(2);
