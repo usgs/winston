@@ -57,13 +57,17 @@ public class GetScnlRawCommand extends EwDataRequest {
     }
   }
 
+  protected String formatChannelName(Scnl scnl) {
+    return scnl.toString(" ");
+  }
+
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
     parseCommand(cmd);
 
     final String id = cmd.id;
-    final String chan = scnl.toString(" ");
+    final String chan = formatChannelName(scnl);
     final String code = DbUtils.scnlAsWinstonCode(scnl);
 
     final double startTime = J2kSec.fromEpoch(timeSpan.startTime);
