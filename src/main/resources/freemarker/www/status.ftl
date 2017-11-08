@@ -1,8 +1,6 @@
 <html>
 	<head>
 		<title>Winston Status</title>
-		<script language="javascript" type="text/javascript">
-    </script>
 	</head>
 	<body>
 		<script type="text/javascript">
@@ -101,5 +99,18 @@
 				</TD>
 			</TR>
 		</TABLE>
+		<script language="javascript" type="text/javascript">
+			function popup(title, stations) { 
+				newwindow=window.open('','','width=300,height=500,scrollbars=1,resizable=1');
+				var tmp = newwindow.document;
+				tmp.write('<html><head><title>title</title></head>');
+				tmp.write('<body><B>' + title + '</B><pre>');
+				for (var i=0; i <stations.length; i++)
+				tmp.write(stations[i] + "\n");
+				tmp.write('</pre></body></html>');
+				tmp.close();
+			 }
+		</script>
+		
 	</BODY>
 </HTML>
