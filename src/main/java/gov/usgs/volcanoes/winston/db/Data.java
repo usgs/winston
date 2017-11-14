@@ -90,7 +90,7 @@ public class Data {
    */
   public double[] getTimeSpan(final String code) {
     if (!winston.checkConnect())
-      return null;
+      return new double[] {0,0};
     try {
       ResultSet rs = winston.getStatement().executeQuery("SELECT st, et FROM `"
           + winston.databasePrefix + "_ROOT`.channels WHERE code='" + code + "'");
