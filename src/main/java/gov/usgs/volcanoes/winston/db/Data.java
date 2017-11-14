@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -110,7 +111,7 @@ public class Data {
     } catch (final Exception e) {
       LOGGER.error("Could not get time span for channel: {}. ({})", code, e.getLocalizedMessage());
     }
-    return null;
+    return new double[] {0,0};
   }
 
   /**
@@ -241,8 +242,10 @@ public class Data {
       }
 
       return gaps;
-    } catch (final Exception e) {
-      e.printStackTrace();
+    } catch (ParseException e) {
+      LOGGER.error("Cannot parse j2kSec from date");
+    } catch (SQLException e) {
+      LOGGER.error("Cannot get times");
     }
     return null;
   }
@@ -490,7 +493,7 @@ public class Data {
         traceBufs.add(new TraceBuf(buf));
 
       return traceBufs;
-    } catch (final Exception e) {
+    } catch (final IOException e) {
       LOGGER.error("Could not get TraceBufs for {}, {}->{}", code, t1, t2);
     }
     return null;
@@ -650,7 +653,7 @@ public class Data {
             try {
               rs = winston.getStatement().executeQuery("SELECT COUNT(*) FROM (SELECT 1 "
                   + sql.substring(sql.indexOf("FROM")) + ") as T");
-            } catch (final Exception e) {
+            } catch (final SQLException e) {
               // table not found
               continue;
             }
