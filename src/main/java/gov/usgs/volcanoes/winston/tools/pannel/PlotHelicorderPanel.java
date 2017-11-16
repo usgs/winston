@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,11 +26,19 @@ import javax.swing.event.DocumentListener;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
+import gov.usgs.volcanoes.core.data.HelicorderData;
+import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.legacy.plot.Plot;
+import gov.usgs.volcanoes.core.legacy.plot.PlotException;
+import gov.usgs.volcanoes.core.legacy.plot.render.HelicorderRenderer;
+import gov.usgs.volcanoes.core.time.CurrentTime;
+import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.winston.tools.FilePanel;
 import gov.usgs.volcanoes.winston.tools.ScnlPanel;
 import gov.usgs.volcanoes.winston.tools.WinstonToolsRunnablePanel;
-import gov.usgs.winston.PlotHelicorder;
+import gov.usgs.volcanoes.wwsclient.WWSClient;
 import gov.usgs.winston.PlotHelicorder.FileType;
 
 /**
@@ -38,6 +47,32 @@ import gov.usgs.winston.PlotHelicorder.FileType;
  * @author Tom Parker
  */
 public class PlotHelicorderPanel extends WinstonToolsRunnablePanel {
+  public static enum FileType {
+    JPEG("jpg"), PNG("png"), PS("ps");
+
+    private String extension;
+
+    private FileType(String s) {
+      extension = s;
+    }
+
+    public static FileType fromExtenstion(String s) {
+      int i = s.lastIndexOf('.');
+      if (i != -1)
+        s = s.substring(s.indexOf('.'));
+
+      for (FileType m : FileType.values())
+        if (m.getExtension() == s)
+          return m;
+
+      return null;
+    }
+
+    public String getExtension() {
+      return extension;
+    }
+  }
+
 
   public class FileTypeActionListener implements ActionListener {
     public void actionPerformed(final ActionEvent e) {
@@ -51,6 +86,8 @@ public class PlotHelicorderPanel extends WinstonToolsRunnablePanel {
       filePanel.setFileName(sn);
     }
   }
+
+
   public class TimeRangeDocumentListener implements DocumentListener {
 
     JTextField f;
@@ -79,6 +116,7 @@ public class PlotHelicorderPanel extends WinstonToolsRunnablePanel {
     }
   }
 
+
   public class TimeRangeOption {
     String title;
     String value;
@@ -98,45 +136,55 @@ public class PlotHelicorderPanel extends WinstonToolsRunnablePanel {
     }
   }
 
-  private static final int[] chunkValues = new int[] {10, 15, 20, 30, 60, 120, 180, 360};
 
+
+  private static final int[] chunkValues = new int[] {10, 15, 20, 30, 60, 120, 180, 360};
+  private static final int[] spanValues =
+      new int[] {2, 4, 6, 12, 24, 48, 72, 96, 120, 144, 168, 192, 216, 240, 264, 288, 312, 336};
   private static final String DEFAULT_BAR_RANGE = "auto";
   private static final int DEFAULT_CHUNK = 30;
-
   private static final String DEFAULT_CLIP_VALUE = "auto";
   private static final String DEFAULT_FILE_NAME = "heli.png";
   private static final FileType DEFAULT_FILE_TYPE = FileType.PNG;
   private static final int DEFAULT_HEIGHT = 1280;
-
   private static final int DEFAULT_SPAN = 24;
   private static final String DEFAULT_TIME_ZONE = "UTC";
-
   private static final int DEFAULT_WIDTH = 1024;
   private static final Color RED = new Color(0xFFA07A);
   private static final long serialVersionUID = 1L;
-  private static final int[] spanValues =
-      new int[] {2, 4, 6, 12, 24, 48, 72, 96, 120, 144, 168, 192, 216, 240, 264, 288, 312, 336};
-  private JTextField barRange;
-  private JComboBox chunkList;
-  private JTextField clipValue;
-  private JTextField end;
+
+  private JTextField barRangeField;
+  private JComboBox chunkListBox;
+  private JTextField clipValueField;
+  private JTextField endTimeField;
   private FilePanel filePanel;
   private ButtonGroup fileTypeGroup;
   private JPanel fileTypePanel;
-  private JTextField height;
-  private JButton plotB;
-  private JTextField portF;
+  private JTextField heightField;
+  private JTextField widthField;
+  private JButton plotButton;
+  private JTextField portField;
   private ScnlPanel scnlPanel;
-  private JCheckBox showClip;
+  private JCheckBox showClipBox;
   private JPanel showClipPanel;
-  private JComboBox spanList;
-
-
-  private JComboBox timeZones;
-
+  private JComboBox spanListBox;
+  private JComboBox timeZoneBox;
   private JTextField waveServerF;
 
-  private JTextField width;
+  private String server;
+  private int port;
+  private transient TimeSpan timeSpan;
+  private transient Scnl scnl;
+  private long hours;
+  private int timeChunk;
+  private int heightPx;
+  private int widthPx;
+  private int barRange;
+  private int clipValue;
+  private boolean showClip;
+  private TimeZone timeZone;
+  private FileType fileType;
+  private String fileName;
 
   public PlotHelicorderPanel() {
     super("Plot Helicorder");
@@ -145,18 +193,18 @@ public class PlotHelicorderPanel extends WinstonToolsRunnablePanel {
   @Override
   protected void createFields() {
     waveServerF = new JTextField(15);
-    portF = new JTextField();
-    portF.setText("16022");
+    portField = new JTextField();
+    portField.setText("16022");
 
     scnlPanel = new ScnlPanel();
 
     filePanel = new FilePanel(FilePanel.Type.SAVE);
 
-    end = new JTextField(15);
+    endTimeField = new JTextField(15);
     SimpleDateFormat dateF = new SimpleDateFormat(Time.INPUT_TIME_FORMAT);
-    end.setText(dateF.format(new Date()));
-    end.setToolTipText(Time.INPUT_TIME_FORMAT);
-    end.getDocument().addDocumentListener(new TimeRangeDocumentListener(end));
+    endTimeField.setText(dateF.format(new Date()));
+    endTimeField.setToolTipText(Time.INPUT_TIME_FORMAT);
+    endTimeField.getDocument().addDocumentListener(new TimeRangeDocumentListener(endTimeField));
 
     fileTypePanel = new JPanel();
     fileTypeGroup = new ButtonGroup();
@@ -180,47 +228,47 @@ public class PlotHelicorderPanel extends WinstonToolsRunnablePanel {
       chunks[i] = "" + chunkValues[i];
     }
 
-    chunkList = new JComboBox(chunks);
-    chunkList.setSelectedItem("" + DEFAULT_CHUNK);
+    chunkListBox = new JComboBox(chunks);
+    chunkListBox.setSelectedItem("" + DEFAULT_CHUNK);
 
     final String[] spans = new String[spanValues.length];
     for (int i = 0; i < spans.length; i++) {
       spans[i] = "" + spanValues[i];
     }
 
-    spanList = new JComboBox(spans);
-    spanList.setSelectedItem("" + DEFAULT_SPAN);
+    spanListBox = new JComboBox(spans);
+    spanListBox.setSelectedItem("" + DEFAULT_SPAN);
 
     final String[] tzs = TimeZone.getAvailableIDs();
     Arrays.sort(tzs);
-    timeZones = new JComboBox(tzs);
-    timeZones.setSelectedItem(DEFAULT_TIME_ZONE);
+    timeZoneBox = new JComboBox(tzs);
+    timeZoneBox.setSelectedItem(DEFAULT_TIME_ZONE);
 
-    height = new JTextField(6);
-    height.setText("" + DEFAULT_HEIGHT);
-    width = new JTextField(6);
-    width.setText("" + DEFAULT_WIDTH);
+    heightField = new JTextField(6);
+    heightField.setText("" + DEFAULT_HEIGHT);
+    widthField = new JTextField(6);
+    widthField.setText("" + DEFAULT_WIDTH);
 
-    barRange = new JTextField(6);
-    barRange.setText(DEFAULT_BAR_RANGE);
+    barRangeField = new JTextField(6);
+    barRangeField.setText(DEFAULT_BAR_RANGE);
 
-    clipValue = new JTextField(6);
-    clipValue.setText(DEFAULT_CLIP_VALUE);
+    clipValueField = new JTextField(6);
+    clipValueField.setText(DEFAULT_CLIP_VALUE);
 
-    showClip = new JCheckBox();
-    showClip.setSelected(true);
-    showClip.addActionListener(new ActionListener() {
+    showClipBox = new JCheckBox();
+    showClipBox.setSelected(true);
+    showClipBox.addActionListener(new ActionListener() {
       public void actionPerformed(final ActionEvent e) {
-        clipValue.setEnabled(showClip.isSelected());
+        clipValueField.setEnabled(showClipBox.isSelected());
       }
     });
 
     showClipPanel = new JPanel();
-    showClipPanel.add(showClip);
-    showClipPanel.add(clipValue);
+    showClipPanel.add(showClipBox);
+    showClipPanel.add(clipValueField);
 
-    plotB = new JButton("Generate Plot");
-    plotB.addActionListener(new ActionListener() {
+    plotButton = new JButton("Generate Plot");
+    plotButton.addActionListener(new ActionListener() {
       public void actionPerformed(final ActionEvent e) {
         start();
       }
@@ -240,7 +288,7 @@ public class PlotHelicorderPanel extends WinstonToolsRunnablePanel {
     builder.appendSeparator("Source Wave Server");
     builder.append("Host", waveServerF);
     builder.nextLine();
-    builder.append("Port", portF);
+    builder.append("Port", portField);
     builder.nextLine();
     builder.appendSeparator("Channel");
     builder.append("SCNL", scnlPanel);
@@ -250,90 +298,176 @@ public class PlotHelicorderPanel extends WinstonToolsRunnablePanel {
     builder.nextLine();
     builder.append("File Type", fileTypePanel);
     builder.nextLine();
-    builder.append("Height, px", height);
+    builder.append("Height, px", heightField);
     builder.nextLine();
-    builder.append("Width, px", width);
+    builder.append("Width, px", widthField);
     builder.nextLine();
     builder.append("Show Clip", showClipPanel);
     builder.nextLine();
-    builder.append("Bar Range", barRange);
+    builder.append("Bar Range", barRangeField);
     builder.nextLine();
     builder.appendSeparator("Time Range");
     builder.nextLine();
-    builder.append("End", end);
+    builder.append("End", endTimeField);
     builder.nextLine();
-    builder.append("Time Zone", timeZones);
+    builder.append("Time Zone", timeZoneBox);
     builder.nextLine();
-    builder.append("X, minutes", chunkList);
+    builder.append("X, minutes", chunkListBox);
     builder.nextLine();
-    builder.append("Y, hours", spanList);
+    builder.append("Y, hours", spanListBox);
     builder.nextLine();
     builder.appendUnrelatedComponentsGapRow();
     builder.nextLine();
-    builder.append("", plotB);
+    builder.append("", plotButton);
 
     this.add(builder.getPanel(), BorderLayout.CENTER);
   }
 
   @Override
   protected void go() {
-    plotB.setEnabled(false);
+    plotButton.setEnabled(false);
 
-    final String server = waveServerF.getText().trim();
-    final int port = Integer.parseInt(portF.getText().trim());
-    final String scnl = scnlPanel.getSCNLasSCNL('_');
-
-    final String timeZone = (String) timeZones.getSelectedItem();
-    final SimpleDateFormat dateFormat = new SimpleDateFormat(Time.INPUT_TIME_FORMAT);
-    long date = 0;
+    HelicorderData heliData = null;
     try {
-      date = dateFormat.parse(end.getText()).getTime();
-    } catch (final ParseException e) {
+      parseFields();
+      heliData = getData();
+    } catch (ParseException e) {
+      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 
-    // TODO fix error handling
-    final ArrayList<String> args = new ArrayList<String>();
+    if (heliData.rows() > 0) {
+      System.out.println("TOMP ALSO SAYS: " + heliData.getData());
+      Plot plot = plot(heliData);
 
-    args.add("-wws");
-    args.add(server + ":" + port);
-    args.add("-s");
-    args.add(scnl);
-    args.add("-e");
-    args.add(end.getText());
-    args.add("-m");
-    args.add(chunkList.getSelectedItem().toString());
-    args.add("-h");
-    args.add(spanList.getSelectedItem().toString());
-    args.add("-tz");
-    args.add(timeZone);
-    args.add("-to");
-    args.add("" + TimeZone.getTimeZone(timeZone).getOffset(date));
-    args.add("-x");
-    args.add("1000");
-    args.add("-y");
-    args.add("1000");
-    args.add("-lm");
-    args.add("70");
-    args.add("-rm");
-    args.add("70");
-    args.add("-o");
-    args.add(filePanel.getFileName());
-    if (!clipValue.getText().equalsIgnoreCase("auto")) {
-      args.add("-c");
-      args.add(clipValue.getText());
+      System.out.print("writing ");
+      try {
+        switch (fileType) {
+          case JPEG:
+            System.out.print("JPEG ");
+            plot.writeJPEG(fileName);
+            break;
+          case PNG:
+            System.out.print("PNG ");
+            plot.writePNG(fileName);
+            break;
+          case PS:
+            System.out.print("PS ");
+            plot.writePS(fileName);
+            break;
+          default:
+            System.out.println("I don't know how to write a "
+                + fileType + " file format.");
+            break;
+        }
+        plot.writePNG(fileName);
+      } catch (PlotException e) {
+        e.printStackTrace();
+      }
+      System.out.println("Done.");
+    } else {
+      System.err.println("request returned no data.");
     }
-    args.add("-b");
-    args.add(null);
-    args.add("-r");
-    args.add("" + (showClip.isSelected() ? 1 : 0));
-    args.add("-ft");
-    args.add(fileTypeGroup.getSelection().getActionCommand());
+    plotButton.setEnabled(true);
 
-    new PlotHelicorder(args.toArray(new String[0]));
-    System.out.println("Done.");
+    plotButton.setEnabled(true);
+  }
 
-    plotB.setEnabled(true);
+  private void parseFields() throws ParseException {
+    server = waveServerF.getText().trim();
+    port = Integer.parseInt(portField.getText().trim());
+    scnl = scnlPanel.getScnlAsScnl();
+
+    String endTimeString = endTimeField.getText();
+    long endTime;
+    if ("now".equalsIgnoreCase(endTimeString)) {
+      endTime = CurrentTime.getInstance().now();
+    } else if (endTimeString.startsWith("-")) {
+      endTime = CurrentTime.getInstance().now();
+      endTime -= (long) (Time.getRelativeTime(endTimeString) * 1000);
+    } else {
+      DateFormat format = new SimpleDateFormat(Time.INPUT_TIME_FORMAT);
+      endTime = format.parse(endTimeString).getTime();
+    }
+
+    hours = Integer.parseInt(spanListBox.getSelectedItem().toString());
+    timeChunk = Integer.parseInt(chunkListBox.getSelectedItem().toString());
+    timeChunk *= 60;
+
+    long span = hours * 60 * 60 * 1000;
+    long startTime = endTime - span;
+    startTime -= startTime % timeChunk;
+
+    timeSpan = new TimeSpan(startTime, endTime);
+
+    heightPx = Integer.parseInt(heightField.getText());
+    widthPx = Integer.parseInt(widthField.getText());
+
+    String clipText = clipValueField.getText();
+    if ("auto".equalsIgnoreCase(clipText)) {
+      clipValue = -1;
+    } else {
+      clipValue = Integer.parseInt(clipText);
+    }
+
+    String barRangeText = barRangeField.getText();
+    if ("auto".equalsIgnoreCase(barRangeText)) {
+      barRange = -1;
+    } else {
+      barRange = Integer.parseInt(barRangeText);
+    }
+
+    showClip = showClipBox.isSelected();
+    timeZone = TimeZone.getTimeZone(timeZoneBox.getSelectedItem().toString());
+    fileType = FileType.valueOf(fileTypeGroup.getSelection().getActionCommand().toUpperCase());
+    fileName = filePanel.getFileName();
+  }
+
+  private HelicorderData getData() {
+    WWSClient winston = new WWSClient(server, port);
+    HelicorderData heliData = winston.getHelicorder(scnl, timeSpan, true);
+    winston.close();
+
+    return heliData;
+  }
+
+
+  private Plot plot(HelicorderData heliData) {
+    HelicorderRenderer heliRenderer = new HelicorderRenderer();
+    heliRenderer.setData(heliData);
+    heliRenderer.setTimeChunk(timeChunk);
+    heliRenderer.setLocation(70, 20, widthPx - (2 * 70), heightPx - (20 + 50));
+
+    double mean = heliData.getMeanMax();
+    double bias = heliData.getBias();
+    mean = Math.abs(bias - mean);
+
+    if (clipValue == -1) {
+      clipValue = (int) (21 * mean);
+      System.out.println("Automatic clip value: " + clipValue);
+    }
+    
+    if (barRange == -1) {
+      barRange = (int) (3 * mean);
+      System.out.println("Automatic bar range: " + barRange);
+    }
+
+    heliRenderer.setHelicorderExtents(heliData.getStartTime(), heliData.getEndTime(),
+        -1 * Math.abs(barRange), Math.abs(barRange));
+
+    heliRenderer.setClipValue(clipValue);
+    heliRenderer.setShowClip(showClip);
+
+    heliRenderer.setClipBars(barRange);
+    heliRenderer.setTimeZoneAbbr(timeZone.getDisplayName());
+    heliRenderer.setTimeZoneOffset(timeZone.getOffset(timeSpan.startTime));
+    heliRenderer.createDefaultAxis();
+
+    Plot plot = new Plot();
+    plot.setSize(widthPx, heightPx);
+    plot.addRenderer(heliRenderer);
+
+    return plot;
   }
 
   @Override

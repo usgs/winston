@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.TimeZone;
 
-import gov.usgs.earthworm.message.TraceBuf;
+import gov.usgs.volcanoes.core.legacy.ew.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.winston.db.InputEW;

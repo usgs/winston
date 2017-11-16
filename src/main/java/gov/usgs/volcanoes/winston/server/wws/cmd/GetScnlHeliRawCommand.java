@@ -10,8 +10,8 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.plot.data.HelicorderData;
 import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.data.HelicorderData;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
