@@ -39,7 +39,6 @@ import gov.usgs.volcanoes.winston.tools.FilePanel;
 import gov.usgs.volcanoes.winston.tools.ScnlPanel;
 import gov.usgs.volcanoes.winston.tools.WinstonToolsRunnablePanel;
 import gov.usgs.volcanoes.wwsclient.WWSClient;
-import gov.usgs.winston.PlotHelicorder.FileType;
 
 /**
  * A simple wrapper around gov.usgs.volcanoes.winston.PlotHelicorder
