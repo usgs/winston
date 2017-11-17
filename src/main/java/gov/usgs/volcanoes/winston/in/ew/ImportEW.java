@@ -966,17 +966,17 @@ public class ImportEW extends Thread {
           } else if (s.startsWith("c")) {
             im.printChannels(s);
           } else if (s.equals("0")) {
-            Log.setLevel(Level.OFF);
-            LOGGER.error("Logging disabled");
+            org.apache.log4j.Logger.getRootLogger().setLevel(Level.OFF);
+            System.out.println("Logging disabled");
           } else if (s.equals("1")) {
-            Log.setLevel(Level.ERROR);
-            LOGGER.error("Logging errors only");
+            org.apache.log4j.Logger.getRootLogger().setLevel(Level.ERROR);
+            System.out.println("Logging errors only");
           } else if (s.equals("2")) {
-            Log.setLevel(Level.INFO);
-            LOGGER.error("Logging level info and above.");
+            org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
+            System.out.println("Logging info and above");
           } else if (s.equals("3")) {
-            Log.setLevel(Level.ALL);
-            LOGGER.error("Logging debug and above.");
+            org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+            System.out.println("Logging everything I can");
           } else if (s.equals("i")) {
             acceptCommands = false;
             LOGGER.error("No longer accepting console commands.");
