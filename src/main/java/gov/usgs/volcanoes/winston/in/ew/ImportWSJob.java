@@ -7,12 +7,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.earthworm.Menu;
-import gov.usgs.earthworm.WaveServer;
-import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.CodeTimer;
+import gov.usgs.volcanoes.core.legacy.ew.Menu;
+import gov.usgs.volcanoes.core.legacy.ew.WaveServer;
+import gov.usgs.volcanoes.core.legacy.ew.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.InputEW;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
@@ -31,7 +32,7 @@ public class ImportWSJob {
   private final WaveServer waveServer;
 
   private String channel;
-  private final List<double[]> spans;
+  private final List<TimeSpan> spans;
 
   private final Menu menu;
 
@@ -55,7 +56,7 @@ public class ImportWSJob {
     importWS = is;
     winston = w;
     waveServer = ws;
-    spans = new ArrayList<double[]>(10);
+    spans = new ArrayList<TimeSpan>();
     channels = new Channels(winston);
     input = new InputEW(winston);
     menu = importWS.getMenu();
@@ -76,8 +77,8 @@ public class ImportWSJob {
     return channel;
   }
 
-  public void addSpan(final double t1, final double t2) {
-    spans.add(new double[] {t1, t2});
+  public void addSpans(List<TimeSpan> spans) {
+    this.spans.addAll(spans);
   }
 
   public void setChunkSize(final double sec) {
@@ -92,7 +93,8 @@ public class ImportWSJob {
     quit = true;
   }
 
-  private void getData(final double[] span) {
+  private void getData(final TimeSpan span) {
+    LOGGER.debug("start get data");
     try {
       final String[] ss = channel.split("\\$");
       String loc = null;
@@ -102,11 +104,10 @@ public class ImportWSJob {
       if (requestSCNL && loc == null)
         loc = "--";
 
-      final double t1 = span[0];
-      final double t2 = span[1];
+      final double t1 = J2kSec.fromEpoch(span.startTime);
+      final double t2 = J2kSec.fromEpoch(span.endTime);
 
-      LOGGER.info("{}: downloading gap: [{} -> {}, {}]", channel, J2kSec.toDateString(span[0]),
-          J2kSec.toDateString(span[1]), Time.secondsToString(span[1] - span[0]));
+      LOGGER.info("{}: downloading gap: {} ({})", channel, span, span.span());
 
       input.setRowParameters((int) chunkSize + 65, 60);
 
@@ -117,15 +118,25 @@ public class ImportWSJob {
       double totalInsTime = 0;
       double totalDlTime = 0;
       while (ct < t2) {
-        if (quit)
+        if (quit) {
+          LOGGER.debug("Job quitting");
           break;
+        }
         ct += chunkSize;
         final double ret = Math.min(ct + chunkSize + 5, t2 + 5);
         final CodeTimer netTimer = new CodeTimer("net");
-        tbs = waveServer.getTraceBufs(ss[0], ss[1], ss[2], loc, J2kSec.asEpoch(ct - 5),
-            J2kSec.asEpoch(ret));
+        LOGGER.debug("REQUESTING: {}_{}_{}_{} {}-{}",ss[0], ss[1], ss[2], loc, J2kSec.toDateString(ct - 5),
+            J2kSec.toDateString(ret));
+        tbs = waveServer.getTraceBufs(ss[0], ss[1], ss[2], loc, Time.j2kToEw(ct - 5),
+            Time.j2kToEw(ret));
         netTimer.stop();
         totalDlTime += netTimer.getTotalTimeMillis();
+        if (tbs != null) {
+          LOGGER.debug("Got {} tracebufs", tbs.size());
+        } else {
+          LOGGER.debug("Got null tracebufs");
+        }
+
         if (tbs != null && tbs.size() > 0) {
           final Iterator<TraceBuf> it = tbs.iterator();
           double minTime = 1E300;
@@ -160,6 +171,7 @@ public class ImportWSJob {
           final CodeTimer inputTimer = new CodeTimer("input");
           final List<InputEW.InputResult> results =
               input.inputTraceBufs(tbs, rsamEnable, rsamDelta, rsamDuration);
+
           inputTimer.stop();
           totalInsTime += inputTimer.getTotalTimeMillis();
           LOGGER.debug("{}: {} tb ({}/{}ms), [{} -> {}, {}]", channel, tbs.size(),
@@ -233,10 +245,12 @@ public class ImportWSJob {
     } catch (final Throwable t) {
       t.printStackTrace();
     }
+    LOGGER.debug("end get data");
+
   }
 
   private void getAllData() {
-    for (final double[] span : spans) {
+    for (final TimeSpan span : spans) {
       if (!quit)
         getData(span);
     }
@@ -244,15 +258,14 @@ public class ImportWSJob {
 
   public double getSpansDuration() {
     double duration = 0.0;
-    for (final double[] span : spans)
-      duration += span[1] - span[0];
-    return duration;
+    for (final TimeSpan span : spans)
+      duration += span.endTime - span.startTime;
+    return duration / 1000;
   }
 
   public void go() {
-    for (final double[] span : spans) {
-      LOGGER.info(String.format("%s: gap: [%s -> %s, %s]", channel, J2kSec.toDateString(span[0]),
-          J2kSec.toDateString(span[1]), Time.secondsToString(span[1] - span[0])));
+    for (final TimeSpan span : spans) {
+      LOGGER.info("{}: gap: {} ({})", channel, span, span.span());
     }
 
     LOGGER.info(
@@ -275,4 +288,6 @@ public class ImportWSJob {
     waveServer.close();
     spans.clear();
   }
+
+
 }

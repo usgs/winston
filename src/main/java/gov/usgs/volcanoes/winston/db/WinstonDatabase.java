@@ -29,7 +29,7 @@ public class WinstonDatabase {
 
   public static final String WINSTON_TABLE_DATE_FORMAT = "yyyy_MM_dd";
   public static final String CURRENT_SCHEMA_VERSION = "1.1.1";
-  public static final long MAX_DAYS_UNLIMITED = Long.MAX_VALUE / Time.DAY_IN_S;
+  public static final long MAX_DAYS_UNLIMITED = Long.MAX_VALUE / Time.DAY_IN_MS;
 
   private static final String DEFAULT_DATABASE_PREFIX = "W";
   private static final String DEFAULT_CONFIG_FILENAME = "Winston.config";

@@ -1,13 +1,18 @@
 package gov.usgs.volcanoes.winston.db;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
-import gov.usgs.plot.data.Wave;
-import gov.usgs.plot.data.file.SeismicDataFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.data.Wave;
+import gov.usgs.volcanoes.core.data.file.SeismicDataFile;
 import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.util.UtilException;
 
 /**
  *
@@ -16,6 +21,7 @@ import gov.usgs.volcanoes.core.time.J2kSec;
  * @author Dan Cervelli
  */
 public class Export {
+  private static final Logger LOGGER = LoggerFactory.getLogger(Export.class);
   private final WinstonDatabase winston;
   private final Data data;
 
@@ -36,14 +42,14 @@ public class Export {
   }
 
   public void export(final String code, final String pre, final double t1, final double t2) {
-    try {
-      final double maxSize = 3600;
-      final double nst = t1 - (t1 % 5);
-      // double net = t2 + (5 - t2 % 5);
-      double ct = nst;
-      int cnt = 0;
-      while (ct < t2) {
-        Wave sw;
+    final double maxSize = 3600;
+    final double nst = t1 - (t1 % 5);
+    // double net = t2 + (5 - t2 % 5);
+    double ct = nst;
+    int cnt = 0;
+    while (ct < t2) {
+      Wave sw = null;
+      try {
         if (t2 - ct > maxSize) {
           sw = data.getWave(code, ct, ct + maxSize, 0);
           ct += maxSize;
@@ -51,17 +57,21 @@ public class Export {
           sw = data.getWave(code, ct, ct + maxSize, 0);
           ct = t2;
         }
-        if (sw != null) {
-          final SeismicDataFile file =
-              SeismicDataFile.getFile(pre + "_" + code + "_" + cnt + ".txt");
-          file.putWave(code, sw);
-          file.write();
-        }
-        System.out.println((ct - t1) + "s");
-        cnt++;
+      } catch (UtilException ex) {
+        LOGGER.error("Export error: {}", ex);
       }
-    } catch (final Exception e) {
-      e.printStackTrace();
+      if (sw != null) {
+        final SeismicDataFile file =
+            SeismicDataFile.getFile(pre + "_" + code + "_" + cnt + ".txt");
+        file.putWave(code, sw);
+        try {
+          file.write();
+        } catch (IOException ex) {
+          LOGGER.error("Unable to write file: {}", ex);
+        }
+      }
+      System.out.println((ct - t1) + "s");
+      cnt++;
     }
   }
 

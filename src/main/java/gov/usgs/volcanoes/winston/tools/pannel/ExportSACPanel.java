@@ -18,11 +18,13 @@ import javax.swing.event.DocumentListener;
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.winston.tools.FilePanel;
 import gov.usgs.volcanoes.winston.tools.ScnlPanel;
 import gov.usgs.volcanoes.winston.tools.WinstonToolsRunnablePanel;
-import gov.usgs.winston.server.WWSClient;
+import gov.usgs.volcanoes.wwsclient.WWSClient;
 
 public class ExportSACPanel extends WinstonToolsRunnablePanel {
 
@@ -70,11 +72,11 @@ public class ExportSACPanel extends WinstonToolsRunnablePanel {
     builder.nextLine();
     builder.append("End", end);
     builder.nextLine();
-    builder.appendSeparator("Schedule");
-    builder.append("Gulp Size (s)", chunkSize);
-    builder.nextLine();
-    builder.append("Gulp Delay (s)", waitTime);
-    builder.nextLine();
+//    builder.appendSeparator("Schedule");
+//    builder.append("Gulp Size (s)", chunkSize);
+//    builder.nextLine();
+//    builder.append("Gulp Delay (s)", waitTime);
+//    builder.nextLine();
     builder.appendUnrelatedComponentsGapRow();
     builder.nextLine();
     builder.append("", exportB);
@@ -125,7 +127,7 @@ public class ExportSACPanel extends WinstonToolsRunnablePanel {
 
     final String server = waveServerF.getText().trim();
     final int port = Integer.parseInt(portF.getText().trim());
-    final String scnl = scnlPanel.getSCNL('$');
+    final Scnl scnl = scnlPanel.getScnlAsScnl();
     final String file = filePanel.getFileName();
 
     double cs;
@@ -143,17 +145,19 @@ public class ExportSACPanel extends WinstonToolsRunnablePanel {
     }
 
     // TODO fix error handling
-    double[] d;
-
+    TimeSpan timeSpan = null;
     try {
-      d = Time.parseTimeRange(start.getText() + "," + end.getText());
-      System.out.println("Starting export...");
-      if (cs == 0)
-        WWSClient.outputSac(server, port, d[0], d[1], scnl, file);
-      else
-        WWSClient.outputSac(server, port, d[0], d[1], scnl, file, cs, wt);
-    } catch (final ParseException e) {
+      timeSpan = TimeSpan.parse(start.getText() + "," + end.getText());
+    } catch (ParseException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
     }
+    System.out.println("Starting export...");
+    WWSClient.outputSac(server, port, timeSpan, scnl, file);
+    // if (cs == 0)
+    // WWSClient.outputSac(server, port, timeSpan, scnl, file);
+    // else
+    // WWSClient.outputSac(server, port, timeSpan, scnl, file, cs, wt);
 
     System.out.println("Done.");
 

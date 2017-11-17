@@ -3,6 +3,7 @@ package gov.usgs.volcanoes.winston.in.ew;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,13 +19,13 @@ import com.martiansoftware.jsap.SimpleJSAP;
 import com.martiansoftware.jsap.Switch;
 import com.martiansoftware.jsap.UnflaggedOption;
 
-import gov.usgs.earthworm.Menu;
-import gov.usgs.earthworm.MenuItem;
-import gov.usgs.earthworm.WaveServer;
 import gov.usgs.volcanoes.core.CodeTimer;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
-import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.legacy.ew.Menu;
+import gov.usgs.volcanoes.core.legacy.ew.MenuItem;
+import gov.usgs.volcanoes.core.legacy.ew.WaveServer;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
@@ -61,8 +62,9 @@ public class ImportWS {
   private ImportWSJob currentJob;
   private List<String> sourceChannels;
 
-  private double startTime;
-  private double endTime;
+  private TimeSpan timeSpan;
+  // private double startTime;
+  // private double endTime;
 
   private double chunkSize;
   private int chunkDelay;
@@ -104,7 +106,7 @@ public class ImportWS {
     appTimer = new CodeTimer("application");
   }
 
-  public ImportWS(final String fileName) {
+  public ImportWS(final String fileName) throws ParseException {
     this();
     config = new ConfigFile(fileName);
     processConfig();
@@ -122,7 +124,7 @@ public class ImportWS {
     return requestSCNL;
   }
 
-  public void processConfig() {
+  public void processConfig() throws ParseException {
     createDatabase = StringUtils.stringToBoolean(config.getString("createDatabase"));
     LOGGER.info("createDatabase: " + createDatabase);
 
@@ -151,7 +153,7 @@ public class ImportWS {
 
     final String timeRange = config.getString("timeRange");
     LOGGER.info("timeRange: {}", timeRange);
-    parseTimeRange(timeRange);
+    setTimeRange(timeRange);
 
     chunkSize = StringUtils.stringToDouble(config.getString("chunkSize"), DEFAULT_CHUNK_SIZE);
     LOGGER.info("chunkSize: {}", chunkSize);
@@ -177,19 +179,19 @@ public class ImportWS {
     totalInsertTime += ti;
   }
 
-  private void parseTimeRange(final String timeRange) {
-    try {
-      final double[] tr = Time.parseTimeRange(timeRange);
-      startTime = tr[0];
-      endTime = tr[1];
-    } catch (final Exception e) {
-      throw new RuntimeException("Error parsing time range: " + e.getMessage());
-    }
-
-    LOGGER
-        .info(String.format("Requested time range: [%s -> %s, %s]", J2kSec.toDateString(startTime),
-            J2kSec.toDateString(endTime), Time.secondsToString(endTime - startTime)));
-  }
+  // private void parseTimeRange(final String timeRange) {
+  // try {
+  // final double[] tr = Time.parseTimeRange(timeRange);
+  // startTime = tr[0];
+  // endTime = tr[1];
+  // } catch (final Exception e) {
+  // throw new RuntimeException("Error parsing time range: " + e.getMessage());
+  // }
+  //
+  // LOGGER
+  // .info(String.format("Requested time range: [%s -> %s, %s]", J2kSec.toDateString(startTime),
+  // J2kSec.toDateString(endTime), Time.secondsToString(endTime - startTime)));
+  // }
 
   public void setWinston(final WinstonDatabase w) {
     winston = w;
@@ -245,9 +247,8 @@ public class ImportWS {
     for (final ImportWSJob job : jobs) {
       currentJob = job;
       LOGGER.info("{}: finding gaps", job.getChannel());
-      final List<double[]> gaps = data.findGaps(job.getChannel(), endTime, startTime);
-      for (final double[] gap : gaps)
-        job.addSpan(gap[0], gap[1]);
+      final List<TimeSpan> gaps = data.findGaps(job.getChannel(), timeSpan);
+      job.addSpans(gaps);
 
       job.go();
 
@@ -273,12 +274,12 @@ public class ImportWS {
   }
 
   public void quit() {
+    LOGGER.info("Quitting cleanly.");
     if (currentJob != null)
       currentJob.quit();
     else
       LOGGER.info("Null job");
     quit = true;
-    LOGGER.info("Quitting cleanly.");
   }
 
   /**
@@ -300,17 +301,25 @@ public class ImportWS {
       if (!config.getBoolean("help"))
         throw new RuntimeException("Try using the --help flag.");
     }
-    
+
     return config;
   }
 
-  
-  public static void main(final String[] args) throws IOException, JSAPException {
+  private void setTimeRange(String timeRange) throws ParseException {
+    timeSpan = TimeSpan.parse(timeRange);
+  }
+
+  public void setQuit(final boolean b) {
+    quit = b;
+  }
+
+  public static void main(final String[] args) throws IOException, JSAPException, ParseException {
     final JSAPResult config = getArguments(args);
     final ImportWS w = new ImportWS(config.getString("configFilename"));
 
-    if (config.getString("timeRange") != null)
-      w.parseTimeRange(config.getString("timeRange"));
+    if (config.getString("timeRange") != null) {
+      w.setTimeRange(config.getString("timeRange"));
+    }
 
     if (config.getString("waveServer") != null)
       w.waveServer = new WaveServer(config.getString("waveServer"));
@@ -332,9 +341,4 @@ public class ImportWS {
       }
     }
   }
-
-  public void setQuit(final boolean b) {
-    quit = b;
-  }
-
 }

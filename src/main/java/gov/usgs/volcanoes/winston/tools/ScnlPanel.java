@@ -3,6 +3,8 @@ package gov.usgs.volcanoes.winston.tools;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import gov.usgs.volcanoes.core.data.Scnl;
+
 public class ScnlPanel extends JPanel {
 
   private static final long serialVersionUID = 1L;
@@ -42,13 +44,8 @@ public class ScnlPanel extends JPanel {
       return s + c + l;
   }
 
-  public String getSCNLasSCNL(final char c) {
-    final String s = sta.getText() + c + comp.getText() + c + net.getText();
-    String l = loc.getText();
-    if (l.equals(""))
-      l = "--";
-
-    return s + c + l;
+  public Scnl getScnlAsScnl() {
+    return new Scnl(sta.getText(), comp.getText(), net.getText(), loc.getText());
   }
 
   public String getSCNL() {

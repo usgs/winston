@@ -7,7 +7,7 @@ package gov.usgs.volcanoes.winston.server.http.cmd.fdsnws.constraint;
 
 import java.awt.geom.Point2D;
 
-import gov.usgs.proj.Projection;
+import gov.usgs.volcanoes.core.math.proj.Projection;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.Instrument;
