@@ -700,12 +700,16 @@ public class ImportEW extends Thread {
             LOGGER.warn("No error/success code: " + tb.toString());
             break;
           case ERROR_HELICORDER:
+            LOGGER.warn("Cannot write heli: " + tb.toString());
             break;
           case ERROR_INPUT:
+            LOGGER.warn("Error writing tb: " + tb.toString());            
             break;
           case ERROR_NO_WINSTON:
+            LOGGER.warn("Cannot find winston: " + tb.toString());            
             break;
           case ERROR_TIME_SPAN:
+            LOGGER.warn("Timespan error: " + tb.toString());            
             break;
           case SUCCESS_HELICORDER:
             break;
