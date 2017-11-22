@@ -993,7 +993,6 @@ public class ImportEW extends Thread {
 
   public static void main(final String[] args) throws IOException, JSAPException {
     Log.addFileAppender("ImportEW.log");
-    org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
     final JSAPResult config = getArguments(args);
 
     if (!config.getBoolean("help")) {
