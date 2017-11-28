@@ -1,10 +1,5 @@
 package gov.usgs.volcanoes.winston.in;
 
-import gov.usgs.plot.data.Wave;
-import gov.usgs.plot.data.file.FileType;
-import gov.usgs.plot.data.file.SeismicDataFile;
-import gov.usgs.plot.data.file.WinDataFile;
-import gov.usgs.volcanoes.core.legacy.Arguments;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +9,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import gov.usgs.volcanoes.core.data.Wave;
+import gov.usgs.volcanoes.core.data.file.FileType;
+import gov.usgs.volcanoes.core.data.file.SeismicDataFile;
+import gov.usgs.volcanoes.core.data.file.WinDataFile;
+import gov.usgs.volcanoes.core.legacy.Arguments;
 
 /**
  * Import WIN file into Winston.

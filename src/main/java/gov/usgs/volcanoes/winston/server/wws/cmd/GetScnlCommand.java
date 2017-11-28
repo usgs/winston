@@ -3,9 +3,9 @@ package gov.usgs.volcanoes.winston.server.wws.cmd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.contrib.HashCodeUtil;
 import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.data.Wave;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;

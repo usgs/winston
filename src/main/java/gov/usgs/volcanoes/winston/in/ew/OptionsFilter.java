@@ -3,8 +3,8 @@ package gov.usgs.volcanoes.winston.in.ew;
 import java.util.ArrayList;
 import java.util.List;
 
-import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.configfile.ConfigFile;
+import gov.usgs.volcanoes.core.legacy.ew.message.TraceBuf;
 
 /**
  *

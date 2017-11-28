@@ -8,10 +8,10 @@ package gov.usgs.volcanoes.winston.server.http.cmd;
 import java.util.Map;
 import java.util.TimeZone;
 
-import gov.usgs.plot.HelicorderSettings;
-import gov.usgs.plot.PlotException;
-import gov.usgs.plot.data.HelicorderData;
+import gov.usgs.volcanoes.core.data.HelicorderData;
 import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.legacy.plot.HelicorderSettings;
+import gov.usgs.volcanoes.core.legacy.plot.PlotException;
 import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Data;

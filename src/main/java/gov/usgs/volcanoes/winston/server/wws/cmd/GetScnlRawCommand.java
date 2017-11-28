@@ -13,9 +13,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.earthworm.message.TraceBuf;
 import gov.usgs.volcanoes.core.contrib.HashCodeUtil;
 import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.legacy.ew.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
@@ -57,13 +57,17 @@ public class GetScnlRawCommand extends EwDataRequest {
     }
   }
 
+  protected String formatChannelName(Scnl scnl) {
+    return scnl.toString(" ");
+  }
+
   public void doCommand(ChannelHandlerContext ctx, WwsCommandString cmd)
       throws MalformedCommandException, UtilException {
 
     parseCommand(cmd);
 
     final String id = cmd.id;
-    final String chan = scnl.toString(" ");
+    final String chan = formatChannelName(scnl);
     final String code = DbUtils.scnlAsWinstonCode(scnl);
 
     final double startTime = J2kSec.fromEpoch(timeSpan.startTime);

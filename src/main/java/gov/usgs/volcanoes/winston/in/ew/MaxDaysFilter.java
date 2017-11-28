@@ -1,6 +1,6 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
-import gov.usgs.earthworm.message.TraceBuf;
+import gov.usgs.volcanoes.core.legacy.ew.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.J2kSec;
 
 /**

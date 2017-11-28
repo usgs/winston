@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import gov.usgs.earthworm.Menu;
-import gov.usgs.earthworm.MenuItem;
-import gov.usgs.earthworm.SCN;
-import gov.usgs.earthworm.WaveServer;
-import gov.usgs.earthworm.message.TraceBuf;
+import gov.usgs.volcanoes.core.legacy.ew.Menu;
+import gov.usgs.volcanoes.core.legacy.ew.MenuItem;
+import gov.usgs.volcanoes.core.legacy.ew.SCN;
+import gov.usgs.volcanoes.core.legacy.ew.WaveServer;
+import gov.usgs.volcanoes.core.legacy.ew.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.winston.db.Channels;

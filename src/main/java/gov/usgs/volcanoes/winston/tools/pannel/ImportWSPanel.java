@@ -21,6 +21,9 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.jgoodies.forms.builder.DefaultFormBuilder;
 import com.jgoodies.forms.layout.FormLayout;
 
@@ -34,21 +37,21 @@ public class ImportWSPanel extends WinstonToolsStoppablePanel {
 
   private static final long serialVersionUID = 1L;
   private static final Color RED = new Color(0xFFA07A);
-
-  private ImportWS ws;
-  private static JTextField waveServer;
-  private static JTextField port;
-  private static JTextField chunkSize;
-  private static JTextField chunkDelay;
-  private static JCheckBox createChannels;
-  private static JCheckBox findGaps;
-  private static ScnlPanel scnlPanel;
-  private static JRadioButton explicitB;
-  private static JRadioButton relativeB;
-  private static JTextField start;
-  private static JTextField end;
-  private static JComboBox rangeList;
-  private static JButton importB;
+  private static final Logger LOGGER = LoggerFactory.getLogger(ImportWSPanel.class);
+  private transient ImportWS ws;
+  private JTextField waveServer;
+  private JTextField port;
+  private JTextField chunkSize;
+  private JTextField chunkDelay;
+  private JCheckBox createChannels;
+  private JCheckBox findGaps;
+  private ScnlPanel scnlPanel;
+  private JRadioButton explicitB;
+  private JRadioButton relativeB;
+  private JTextField start;
+  private JTextField end;
+  private JComboBox rangeList;
+  private JButton importB;
 
   public ImportWSPanel() {
     super("Import WS");
@@ -182,7 +185,12 @@ public class ImportWSPanel extends WinstonToolsStoppablePanel {
     // config.put("rsam.duration", rsamDuration.getText());
 
     ws.setConfig(config);
-    ws.processConfig();
+    try {
+      ws.processConfig();
+    } catch (ParseException e) {
+      LOGGER.error("Cannot parse config. ({})", e.getLocalizedMessage());
+      return;
+    }
     ws.createJobs();
     ws.startImport();
     importB.setEnabled(true);
@@ -213,7 +221,7 @@ public class ImportWSPanel extends WinstonToolsStoppablePanel {
     return s;
   }
 
-  public class TimeRangeOption {
+  public static class TimeRangeOption {
     String title;
     String value;
 
@@ -232,7 +240,7 @@ public class ImportWSPanel extends WinstonToolsStoppablePanel {
     }
   }
 
-  public class TimeRangeFocusListener implements FocusListener {
+  public static class TimeRangeFocusListener implements FocusListener {
 
     JRadioButton b;
 
@@ -247,7 +255,7 @@ public class ImportWSPanel extends WinstonToolsStoppablePanel {
     public void focusLost(final FocusEvent e) {}
   }
 
-  public class TimeRangeDocumentListener implements DocumentListener {
+  public static class TimeRangeDocumentListener implements DocumentListener {
 
     JTextField f;
 

@@ -6,23 +6,27 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gov.usgs.earthworm.message.TraceBuf;
-import gov.usgs.math.DownsamplingType;
-import gov.usgs.plot.data.HelicorderData;
-import gov.usgs.plot.data.RSAMData;
-import gov.usgs.plot.data.Wave;
 import gov.usgs.volcanoes.core.Zip;
+import gov.usgs.volcanoes.core.data.HelicorderData;
+import gov.usgs.volcanoes.core.data.RSAMData;
 import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.data.Wave;
+import gov.usgs.volcanoes.core.legacy.ew.message.TraceBuf;
+import gov.usgs.volcanoes.core.math.DownsamplingType;
+import gov.usgs.volcanoes.core.time.CurrentTime;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.core.util.UtilException;
 
 /**
@@ -87,7 +91,7 @@ public class Data {
    */
   public double[] getTimeSpan(final String code) {
     if (!winston.checkConnect())
-      return null;
+      return new double[] {0,0};
     try {
       ResultSet rs = winston.getStatement().executeQuery("SELECT st, et FROM `"
           + winston.databasePrefix + "_ROOT`.channels WHERE code='" + code + "'");
@@ -107,7 +111,7 @@ public class Data {
     } catch (final Exception e) {
       LOGGER.error("Could not get time span for channel: {}. ({})", code, e.getLocalizedMessage());
     }
-    return null;
+    return new double[] {0,0};
   }
 
   /**
@@ -125,6 +129,22 @@ public class Data {
     while (ct < t2 + ONE_DAY) {
       result.add(J2kSec.format(WinstonDatabase.WINSTON_TABLE_DATE_FORMAT, ct));
       ct += ONE_DAY;
+    }
+    return result;
+  }
+
+  /**
+   * Get a list of days in a time span
+   *
+   * @param timeSpan timeSpan
+   * @return List of strings representing each day in time span
+   */
+  private List<String> daysBetween(TimeSpan timeSpan) {
+    final ArrayList<String> result = new ArrayList<String>();
+    long time = timeSpan.startTime;
+    while (time < timeSpan.endTime + Time.DAY_IN_MS) {
+      result.add(Time.format(WinstonDatabase.WINSTON_TABLE_DATE_FORMAT, new Date(time)));
+      time += Time.DAY_IN_MS;
     }
     return result;
   }
@@ -157,18 +177,17 @@ public class Data {
 
     try {
       final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
+      dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 
       final List<String> days = daysBetween(t1, t2);
-
-      dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
       final List<double[]> bufs = new ArrayList<double[]>(2 * ONE_DAY);
+
       for (final String day : days) {
         final double tst = J2kSec.parse(WinstonDatabase.WINSTON_TABLE_DATE_FORMAT, day);
         final double tet = tst + ONE_DAY;
         final String table = code + "$$" + day;
         if (!winston.tableExists(code, table))
           continue;
-
         if (tet < t1)
           continue;
         if (tst > t2)
@@ -188,7 +207,7 @@ public class Data {
         rs.close();
       }
 
-      if (bufs == null || bufs.size() == 0) {
+      if (bufs.size() == 0) {
         // there were no tracebufs in the time range, the whole span is a gap.
         gaps.add(new double[] {t1, t2});
         return gaps;
@@ -223,10 +242,87 @@ public class Data {
       }
 
       return gaps;
-    } catch (final Exception e) {
-      e.printStackTrace();
+    } catch (ParseException e) {
+      LOGGER.error("Cannot parse j2kSec from date");
+    } catch (SQLException e) {
+      LOGGER.error("Cannot get times");
     }
     return null;
+  }
+
+
+  public List<TimeSpan> findGaps(String code, TimeSpan timeSpan) {
+    final List<TimeSpan> gaps = new ArrayList<TimeSpan>();
+    timeSpan = new TimeSpan(applyLookback(timeSpan.startTime), timeSpan.endTime);
+
+    if (timeSpan.startTime >= timeSpan.endTime) {
+      LOGGER.debug("null timeSpan {}", timeSpan);
+      return gaps;
+    }
+
+    if (!winston.checkConnect()) {
+      LOGGER.debug("Cannot connect to winston");
+      return gaps;
+    }
+
+    if (!winston.useDatabase(code)) {
+      // database didn't exist so the whole thing must be a gap
+      gaps.add(timeSpan);
+      return gaps;
+    }
+
+    final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
+    dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+    final List<String> days = daysBetween(timeSpan);
+
+    double startJ2k = J2kSec.fromEpoch(timeSpan.startTime);
+    double endJ2k = J2kSec.fromEpoch(timeSpan.endTime);
+    double last = startJ2k;
+    for (final String day : days) {
+      List<double[]> bufs;
+      try {
+        bufs = getBufTimes(code, day);
+      } catch (SQLException e) {
+        LOGGER.error("Unable to read day table {}:{}", code, day);
+        bufs = new ArrayList<double[]>();
+      }
+
+      for (double[] buf : bufs) {
+        if (startJ2k >= buf[1] || endJ2k <= buf[0]) {
+          continue;
+        }
+
+        if (buf[0] > last) {
+          gaps.add(new TimeSpan(J2kSec.asEpoch(last), J2kSec.asEpoch(buf[0])));
+        }
+        last = buf[1];
+      }
+    }
+
+    if (last < endJ2k) {
+      gaps.add(new TimeSpan(J2kSec.asEpoch(last), timeSpan.endTime));
+    }
+
+    return gaps;
+  }
+
+  private List<double[]> getBufTimes(String code, String table) throws SQLException {
+    final List<double[]> bufs = new ArrayList<double[]>(2 * ONE_DAY);
+    if (!winston.tableExists(code, table)) {
+      return bufs;
+    }
+
+    String sql = String.format("SELECT st, et FROM `%s` ORDER BY st ASC", table);
+    final ResultSet rs = winston.getStatement().executeQuery(sql);
+    while (rs.next()) {
+      final double start = rs.getDouble(1);
+      final double end = rs.getDouble(2);
+      bufs.add(new double[] {start, end});
+    }
+    rs.close();
+
+    return bufs;
+
   }
 
   /**
@@ -397,7 +493,7 @@ public class Data {
         traceBufs.add(new TraceBuf(buf));
 
       return traceBufs;
-    } catch (final Exception e) {
+    } catch (final IOException e) {
       LOGGER.error("Could not get TraceBufs for {}, {}->{}", code, t1, t2);
     }
     return null;
@@ -557,7 +653,7 @@ public class Data {
             try {
               rs = winston.getStatement().executeQuery("SELECT COUNT(*) FROM (SELECT 1 "
                   + sql.substring(sql.indexOf("FROM")) + ") as T");
-            } catch (final Exception e) {
+            } catch (final SQLException e) {
               // table not found
               continue;
             }
@@ -625,7 +721,7 @@ public class Data {
       sb.append("((j2ksec-").append(startTime).append(") DIV ").append(dsInt).append(") intNum ");
       sb.append(sql_from_where_clause);
       sb.append(" GROUP BY intNum");
-      
+
       return sb.toString();
     } else
       throw new UtilException("Unknown downsampling type: " + ds);
@@ -654,6 +750,11 @@ public class Data {
 
   private double applyLookback(double time) {
     double lookback = J2kSec.now() - winston.maxDays * Time.DAY_IN_S;
+    return Math.max(time, lookback);
+  }
+
+  private long applyLookback(long time) {
+    long lookback = CurrentTime.getInstance().now() - (winston.maxDays * Time.DAY_IN_MS);
     return Math.max(time, lookback);
   }
 

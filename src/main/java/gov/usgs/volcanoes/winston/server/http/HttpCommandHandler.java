@@ -85,8 +85,12 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
 
     String command = req.getUri().substring(1);
     if (command.length() == 0) {
+      String host = req.headers().get("Host");
+      if (host == null) {
+        host = ctx.channel().localAddress().toString().substring(1);
+      }
       response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.OK,
-          sendUsage(ctx.channel().localAddress().toString().substring(1)));
+          sendUsage(host));
     } else {
 
       // HTTP command
@@ -112,7 +116,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
       } catch (MalformedCommandException e) {
         response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST,
             e.getLocalizedMessage());
-	LOGGER.debug(e.getLocalizedMessage());
+        LOGGER.debug(e.getLocalizedMessage());
       } catch (UtilException e) {
         LOGGER.debug(e.getLocalizedMessage());
         response = buildResponse(req.getProtocolVersion(), HttpResponseStatus.BAD_REQUEST,
@@ -129,7 +133,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
       }
       ctx.writeAndFlush(response);
     }
-    
+
     // If keep-alive is not set, close the connection once the content is fully written.
     if (!HttpHeaders.isKeepAlive(req)) {
       ctx.writeAndFlush(Unpooled.EMPTY_BUFFER).addListener(ChannelFutureListener.CLOSE);
@@ -168,7 +172,7 @@ public class HttpCommandHandler extends SimpleChannelInboundHandler<FullHttpRequ
     for (Channel chan : channels) {
       channelNames.add(chan.scnl.toString("_"));
     }
-    
+
     Map<String, Object> root = new HashMap<String, Object>();
 
     root.put("timeZones", TimeZone.getAvailableIDs());
