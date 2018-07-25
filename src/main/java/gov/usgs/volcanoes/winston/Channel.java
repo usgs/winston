@@ -1,5 +1,11 @@
 package gov.usgs.volcanoes.winston;
 
+import gov.usgs.volcanoes.core.data.Scnl;
+import gov.usgs.volcanoes.core.time.J2kSec;
+import gov.usgs.volcanoes.core.time.TimeSpan;
+import gov.usgs.volcanoes.core.util.UtilException;
+import gov.usgs.volcanoes.winston.db.DbUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -8,13 +14,6 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import gov.usgs.volcanoes.core.contrib.HashCodeUtil;
-import gov.usgs.volcanoes.core.data.Scnl;
-import gov.usgs.volcanoes.core.time.J2kSec;
-import gov.usgs.volcanoes.core.time.TimeSpan;
-import gov.usgs.volcanoes.core.util.UtilException;
-import gov.usgs.volcanoes.winston.db.DbUtils;
 
 
 /**
@@ -126,7 +125,8 @@ public class Channel implements Comparable<Channel> {
 
     public Builder parse(String s) throws UtilException {
 //      2139:ANCK$BHE$AV:553935572.827000:559119563.488000:-999.000000:-999.000000
-
+//      1:ABNG$SHE$VG$00:561970805.005000:571694285.010000:115.434767:-8.294367:Asia/Singapore:::NaN:NaN:Networks!^Indonesia:
+        
       final String[] ss = s.split(":");
       sid = Integer.parseInt(ss[0]);
       scnl = Scnl.parse(ss[1]);
@@ -137,16 +137,18 @@ public class Channel implements Comparable<Channel> {
       Instrument.Builder builder = new Instrument.Builder();
       builder.longitude(Double.parseDouble(ss[4]));
       builder.latitude(Double.parseDouble(ss[5]));
-      instrument = builder.build();
 
       if (ss.length == 12) // metadata present
       {
-        if (ss[6].length() >= 1)
+        if (ss[6].length() >= 1){
           builder.timeZone(ss[6]);
-        if (ss[7].length() >= 1)
+        }
+        if (ss[7].length() >= 1){
           alias = ss[7];
-        if (ss[8].length() >= 1)
+        }
+        if (ss[8].length() >= 1){
           unit = ss[8];
+        }
         linearA = Double.parseDouble(ss[9]);
         linearB = Double.parseDouble(ss[10]);
         if (!ss[11].equals("~")) {
@@ -155,6 +157,7 @@ public class Channel implements Comparable<Channel> {
             group(g);
         }
       }
+      instrument = builder.build();
 
       return this;
     }
