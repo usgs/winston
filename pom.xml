@@ -4,7 +4,7 @@
 
 	<groupId>gov.usgs.volcanoes</groupId>
 	<artifactId>winston</artifactId>
-	<version>1.3.1</version>
+	<version>1.3.3</version>
 	<packaging>jar</packaging>
 
 	<name>Winston</name>
@@ -186,7 +186,7 @@
 							<minimizeJar>true</minimizeJar>
 							<filters>
 								<filter>
-									<artifact>org.apache:log4j</artifact>
+									<artifact>log4j:log4j</artifact>
 									<includes>
 										<include>org/apache/log4j/**</include>
 									</includes>
@@ -248,7 +248,7 @@
 									<include>com.martiansoftware:jsap</include>
 									<include>net.sourceforge.jtransforms:jtransforms</include>
 									<include>org.slf4j:*</include>
-									<include>org.apache:log4j</include>
+									<include>log4j:log4j</include>
 									<include>net.alomax:*</include>
 									<include>edu.sc.seis:*</include>
 									<include>colt:colt</include>
@@ -482,17 +482,7 @@
 		<dependency>
 			<groupId>edu.iris</groupId>
 			<artifactId>JavaSeedLite</artifactId>
-			<version>1.0</version>
-		</dependency>
-		<dependency>
-			<groupId>edu.iris</groupId>
-			<artifactId>seedCodec</artifactId>
-			<version>1.0.10</version>
-		</dependency>
-		<dependency>
-			<groupId>edu.sc.seis</groupId>
-			<artifactId>seisFile</artifactId>
-			<version>1.6.3</version>
+			<version>3.8.4</version>
 		</dependency>
 		<dependency>
 			<groupId>net.alomax</groupId>
@@ -515,14 +505,9 @@
 			<version>1.7.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache</groupId>
-			<artifactId>log4j</artifactId>
-			<version>1.2.13</version>
-		</dependency>
-		<dependency>
 			<groupId>gov.usgs.volcanoes</groupId>
 			<artifactId>volcano-core</artifactId>
-			<version>1.4.1</version>
+			<version>1.4.6</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-collections</groupId>
@@ -577,9 +562,9 @@
             </exclusions>
         </dependency>
         <dependency>
-        	<groupId>gov.usgs.volcanoes</groupId>
-        	<artifactId>wwsclient</artifactId>
-        	<version>1.3.3</version>
+        		<groupId>gov.usgs.volcanoes</groupId>
+        		<artifactId>wwsclient</artifactId>
+        		<version>1.3.3</version>
         </dependency>
 	</dependencies>
 </project>

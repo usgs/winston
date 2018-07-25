@@ -700,12 +700,16 @@ public class ImportEW extends Thread {
             LOGGER.warn("No error/success code: " + tb.toString());
             break;
           case ERROR_HELICORDER:
+            LOGGER.warn("Cannot write heli: " + tb.toString());
             break;
           case ERROR_INPUT:
+            LOGGER.warn("Error writing tb: " + tb.toString());
             break;
           case ERROR_NO_WINSTON:
+            LOGGER.warn("Cannot find winston: " + tb.toString());
             break;
           case ERROR_TIME_SPAN:
+            LOGGER.warn("Timespan error: " + tb.toString());
             break;
           case SUCCESS_HELICORDER:
             break;
@@ -916,7 +920,7 @@ public class ImportEW extends Thread {
   public static void printKeys() {
     final StringBuffer sb = new StringBuffer();
     sb.append("Keys:\n");
-    sb.append(" 0-3: logging level\n");
+    sb.append(" 0-3: logging level. Bigger number, bigger logs.\n");
     sb.append("   i: stop accepting console commands\n");
     sb.append("   s: print status\n");
     sb.append("   c: print channels\n");
@@ -957,19 +961,23 @@ public class ImportEW extends Thread {
               im.printStatus();
             }
             System.exit(0);
-          } else if (s.equals("s"))
+          } else if (s.equals("s")) {
             im.printStatus();
-          else if (s.startsWith("c"))
+          } else if (s.startsWith("c")) {
             im.printChannels(s);
-          else if (s.equals("0"))
-            Log.setLevel(Level.OFF);
-          else if (s.equals("1"))
-            Log.setLevel(Level.ERROR);
-          else if (s.equals("2"))
-            Log.setLevel(Level.INFO);
-          else if (s.equals("3"))
-            Log.setLevel(Level.TRACE);
-          else if (s.equals("i")) {
+          } else if (s.equals("0")) {
+            org.apache.log4j.Logger.getRootLogger().setLevel(Level.OFF);
+            System.out.println("Logging disabled");
+          } else if (s.equals("1")) {
+            org.apache.log4j.Logger.getRootLogger().setLevel(Level.ERROR);
+            System.out.println("Logging errors only");
+          } else if (s.equals("2")) {
+            org.apache.log4j.Logger.getRootLogger().setLevel(Level.INFO);
+            System.out.println("Logging info and above");
+          } else if (s.equals("3")) {
+            org.apache.log4j.Logger.getRootLogger().setLevel(Level.ALL);
+            System.out.println("Logging everything I can");
+          } else if (s.equals("i")) {
             acceptCommands = false;
             LOGGER.error("No longer accepting console commands.");
           } else if (s.equals("?"))
@@ -993,7 +1001,7 @@ public class ImportEW extends Thread {
       final ImportEW im = new ImportEW(fn);
 
       im.start();
-      
+
       if (!(config.getBoolean("noinput")))
         consoleInputManager(im);
     }
