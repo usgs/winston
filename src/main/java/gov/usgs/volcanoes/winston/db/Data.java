@@ -159,15 +159,16 @@ public class Data {
    * @param t2
    * @return List of data gaps (each gap by a start and end time) or null if no data
    */
-  public List<double[]> findGaps(final String code, double t1, final double t2) {
+  public List<double[]> findGaps(final Scnl scnl, double t1, final double t2) {
     t1 = applyLookback(t1);
-    if (t2 >= t1) {
+    if (t2 <= t1) {
       return null;
     }
 
     if (!winston.checkConnect())
       return null;
 
+    String code = DbUtils.scnlAsWinstonCode(scnl);
     final List<double[]> gaps = new ArrayList<double[]>();
     if (!winston.useDatabase(code)) {
       // database didn't exist so the whole thing must be a gap

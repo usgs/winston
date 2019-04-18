@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.util.StringUtils;
@@ -51,7 +52,7 @@ public final class GapsCommand extends HttpBaseCommand {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(GapsCommand.class);
 
-  private String code;
+  private Scnl scnl;
   private Double endTime;
   private Double startTime;
   private String timeZone;
@@ -96,14 +97,11 @@ public final class GapsCommand extends HttpBaseCommand {
     }
 
     // Station
-    code = params.get("code");
+    String code = params.get("code");
     if (code == null) {
       error.append("Error: you must specify a channel (code).");
     } else {
-      code = code.replace('_', '$');
-      if (code.indexOf(";") != -1) {
-        error.append("Error: illegal characters in channel (code).");
-      }
+      scnl = Scnl.parse(code, "_");
     }
 
     // End Time
@@ -152,14 +150,13 @@ public final class GapsCommand extends HttpBaseCommand {
         gaps = databasePool.doCommand(new WinstonConsumer<List<double[]>>() {
 
           public List<double[]> execute(WinstonDatabase winston) throws UtilException {
-            return new Data(winston).findGaps(code, startTime, endTime);
+            return new Data(winston).findGaps(scnl, startTime, endTime);
           }
         });
       } catch (Exception e) {
         throw new UtilException(e.getMessage());
       }
 
-      code = code.replace('$', '_');
       startTimeS = dateF.format(J2kSec.asEpoch(startTime));
       endTimeE = dateF.format(J2kSec.asEpoch(startTime));
       totalTime = endTime - startTime;
@@ -178,7 +175,7 @@ public final class GapsCommand extends HttpBaseCommand {
     root.put("startTime", J2kSec.asEpoch(startTime));
     root.put("endTime", J2kSec.asEpoch(endTime));
     root.put("timeZone", HttpConstants.TIME_ZONE);
-    root.put("channel", code);
+    root.put("channel", scnl);
     root.put("minimumGapDuration", minGapDuration);
     root.put("totalTime", totalTime);
 
@@ -243,7 +240,7 @@ public final class GapsCommand extends HttpBaseCommand {
     // Write Computer Winston Gaps
     header.append("# Start Time: " + startTimeS + " (" + startTime + ")\n# End Time: " + endTimeE
         + " (" + endTime + ")\n# Total Time: " + totalTime + "\n# Time Zone: " + timeZone
-        + "\n# Station: " + code + "\n# Minumum Gap Duration: " + minGapDuration + "\n# GapCount: "
+        + "\n# Station: " + scnl + "\n# Minumum Gap Duration: " + minGapDuration + "\n# GapCount: "
         + gapCount + "\n");
 
     header.append(output);

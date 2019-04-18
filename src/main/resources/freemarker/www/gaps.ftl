@@ -76,9 +76,11 @@
 						</TR>
 						<#list gaps as gap>
 						<TR STYLE="background: #ffeeee;">
-							<TD>${gap[0]?number_to_datetime}</TD>
-							<TD>${gap[1]?number_to_datetime}</TD>
-							<TD ALIGN=right>${gap[1] - gap[0]} seconds</TD>
+						    <#assign start = gap[0]?number_to_datetime>
+						    <#assign end = gap[1]?number_to_datetime>
+							<TD>${start?iso_utc}</TD>
+							<TD>${end?iso_utc}</TD>
+							<TD ALIGN=right>${(gap[1] - gap[0]) / 1000} seconds</TD>
 						</TR>
 						</#list>
 					</TABLE>

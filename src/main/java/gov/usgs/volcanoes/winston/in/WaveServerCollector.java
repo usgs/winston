@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.legacy.ew.Menu;
 import gov.usgs.volcanoes.core.legacy.ew.MenuItem;
 import gov.usgs.volcanoes.core.legacy.ew.SCN;
@@ -11,6 +12,7 @@ import gov.usgs.volcanoes.core.legacy.ew.WaveServer;
 import gov.usgs.volcanoes.core.legacy.ew.message.TraceBuf;
 import gov.usgs.volcanoes.core.time.Ew;
 import gov.usgs.volcanoes.core.time.Time;
+import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.Input;
@@ -105,7 +107,14 @@ public class WaveServerCollector extends Thread {
       if (mi == null)
         continue;
 
-      final List<double[]> gaps = data.findGaps(code, Time.ewToj2k(mi.startTime), now);
+      Scnl scnl = null;
+      try {
+        scnl = Scnl.parse(code, "_");
+      } catch (UtilException e) {
+        System.err.println("Cannot parse code: " + code);
+        e.printStackTrace();
+      }
+      final List<double[]> gaps = data.findGaps(scnl, Time.ewToj2k(mi.startTime), now);
       final double[] span = data.getTimeSpan(code);
       final double fdt = span[0];
       if (fdt > Time.ewToj2k(mi.startTime)) {
