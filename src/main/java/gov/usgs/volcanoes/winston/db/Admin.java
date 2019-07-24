@@ -256,7 +256,7 @@ public class Admin {
       winston.useRootDatabase();
       doDeleteChannel(ch);
     } catch (final Exception e) {
-      LOGGER.error("Error during deleteChannel().");
+      LOGGER.error("Error during deleteChannel(): {}", e.getMessage());
     }
   }
 
@@ -314,8 +314,16 @@ public class Admin {
    * @throws SQLException if a SQL exception occurs.
    */
   private void doDeleteChannel(final String ch) throws SQLException {
-    winston.getStatement().execute("DELETE FROM channels WHERE code='" + ch + "'");
-    winston.getStatement().execute("DROP DATABASE `" + winston.databasePrefix + "_" + ch + "`");
+    winston.useRootDatabase();
+    LOGGER.info("Deleting channel {}", ch);
+   String cmd = "DELETE FROM channels WHERE code='" + ch + "';";
+   LOGGER.info(cmd);
+    winston.getStatement().execute(cmd);
+
+    LOGGER.info("Dropping channel database {}", winston.databasePrefix + "_" + ch);
+    cmd = "DROP DATABASE `" + winston.databasePrefix + "_" + ch + "`;";
+    LOGGER.info(cmd);
+    winston.getStatement().execute(cmd);
   }
 
   /**
