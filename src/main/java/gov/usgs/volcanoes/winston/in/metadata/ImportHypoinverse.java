@@ -51,7 +51,7 @@ public class ImportHypoinverse extends AbstractMetadataImporter {
 
         double lon = Double.parseDouble(record.substring(26, 29).trim());
         lon += Double.parseDouble(record.substring(30, 36).trim()) / 60;
-        if (record.substring(37, 38).equals("W"))
+        if (!record.substring(37, 38).equals("E"))
           lon *= -1;
         builder.longitude(lon);
 
