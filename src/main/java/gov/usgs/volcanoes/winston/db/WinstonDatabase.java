@@ -229,7 +229,7 @@ public class WinstonDatabase {
           + "value TEXT, " + "PRIMARY KEY (sid, name)) " + tableEngine);
 
       getStatement()
-          .execute("CREATE TABLE instrumentmeetadata (imid INT PRIMARY KEY AUTO_INCREMENT, "
+          .execute("CREATE TABLE instrumentmetadata (imid INT PRIMARY KEY AUTO_INCREMENT, "
               + "iid INT, " + "name VARCHAR(255), " + "value TEXT) " + tableEngine);
 
       getStatement().execute("CREATE TABLE supp_data (sdid INT NOT NULL AUTO_INCREMENT, "
