@@ -976,7 +976,6 @@ public class ImportEW extends Thread {
   }
 
   public static void main(final String[] args) throws IOException, JSAPException {
-    Log.addFileAppender("ImportEW.log");
     final JSAPResult config = getArguments(args);
     Log.addFileAppender(new File(config.getString("log-dir"), "ImportEW.log").toString());
 
