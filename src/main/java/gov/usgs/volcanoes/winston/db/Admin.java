@@ -275,6 +275,8 @@ public class Admin {
         LOGGER.info("deleteChannels: no channels found ({})", chx);
       } else {
         // delete each channel
+        LOGGER.info("Deleting channels: {}", channelList);
+        Thread.sleep(2000);
         for (int i = 0; i < channelList.size(); i++) {
           ch = channelList.get(i);
           if (i != 0 && delay != 0) {
