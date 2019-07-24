@@ -264,13 +264,14 @@ public class ImportWS {
     quit = true;
   }
 
-  public void go() {
+  public void go() throws InterruptedException {
     final Thread launchThread = new Thread(new Runnable() {
       public void run() {
         startImport();
       }
     });
     launchThread.start();
+    launchThread.join();
   }
 
   public void quit() {
@@ -313,7 +314,7 @@ public class ImportWS {
     quit = b;
   }
 
-  public static void main(final String[] args) throws IOException, JSAPException, ParseException {
+  public static void main(final String[] args) throws IOException, JSAPException, ParseException, InterruptedException {
     final JSAPResult config = getArguments(args);
     final ImportWS w = new ImportWS(config.getString("configFilename"));
 
@@ -330,15 +331,6 @@ public class ImportWS {
 
     w.createJobs();
     w.go();
-    final BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-
-    while (acceptCommands && !w.quit) {
-      String s = in.readLine();
-      if (s != null) {
-        s = s.toLowerCase().trim();
-        if (s.equals("q"))
-          w.quit();
-      }
-    }
+    System.exit(0);
   }
 }
