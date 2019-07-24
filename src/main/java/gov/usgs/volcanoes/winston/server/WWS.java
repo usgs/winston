@@ -57,7 +57,7 @@ public class WWS {
   public static void main(final String[] args) throws Exception {
 
     final WWSArgs config = new WWSArgs(args);
-    Log.addFileAppender(new File(config.logDir, "WWSW.log").toString());
+    Log.addFileAppender(new File(config.logDir, "WWS.log").toString());
     final WWS wws = new WWS(config.configFileName);
 
     wws.launch();
