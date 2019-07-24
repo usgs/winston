@@ -278,10 +278,13 @@ public class Channels {
     final List<String> codes = new ArrayList<String>();
     try {
       winston.useRootDatabase();
-      final ResultSet rs = winston.executeQuery(
-          "SELECT code FROM channels WHERE code LIKE '" + chx + "' ORDER BY code ASC");
+      String cmd = "SELECT code FROM channels WHERE code LIKE '" + chx + "' ORDER BY code ASC";
+      LOGGER.info(cmd);
+      final ResultSet rs = winston.executeQuery(cmd);
       while (rs.next()) {
-        codes.add(rs.getString(1));
+        String chan = rs.getString(1);
+        LOGGER.info("Found channel {}", chan);
+        codes.add(chan);
       }
       rs.close();
       return codes;

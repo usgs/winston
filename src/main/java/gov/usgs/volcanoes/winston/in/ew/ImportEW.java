@@ -1,6 +1,7 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DateFormat;
@@ -78,9 +79,6 @@ public class ImportEW extends Thread {
   public static final int DEFAULT_MAX_DAYS = 0;
   public static final int DEFAULT_MAX_BACKLOG = 100;
   public static final String DEFAULT_LOG_LEVEL = "FINE";
-  public static final String DEFAULT_LOG_FILE = "ImportEW.log";
-  public static final int DEFAULT_LOG_NUM_FILES = 10;
-  public static final int DEFAULT_LOG_FILE_SIZE = 1000000;
   public static final boolean DEFAULT_ENABLE_VALARM_VIEW = false;
 
   public static final double DEFAULT_TIME_THRESHOLD = 1.0;
@@ -122,8 +120,11 @@ public class ImportEW extends Thread {
       new Switch("loghigh", '2', "loghigh", "High logging level (equivalent to --log-level FINE)."),
       new Switch("logall", '3', "logall", "High logging level (equivalent to --log-level ALL)."),
       new Switch("noinput", 'i', "noinput", "Don't accept input from the console."),
+      new FlaggedOption("log-dir", JSAP.STRING_PARSER, ".",
+          JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "log-dir", "where to place log files"),
       new UnflaggedOption("configFilename", JSAP.STRING_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED,
-          JSAP.NOT_GREEDY, "The config file name.")};
+          JSAP.NOT_GREEDY, "The config file name.")
+  };
 
   protected String configFilename;
   protected ConfigFile config;
@@ -239,7 +240,6 @@ public class ImportEW extends Thread {
    * options and filters.
    */
   protected void processConfigFile() {
-    processLoggerConfig();
     processImportConfig();
     processWinstonConfig();
     processDefaultOptions();
@@ -247,22 +247,6 @@ public class ImportEW extends Thread {
     processFilters();
   }
 
-  /**
-   * Extracts logging configuration information.
-   */
-  protected void processLoggerConfig() {
-    logFile = StringUtils.stringToString(config.getString("import.log.name"), DEFAULT_LOG_FILE);
-    logNumFiles =
-        StringUtils.stringToInt(config.getString("import.log.numFiles"), DEFAULT_LOG_NUM_FILES);
-    logSize =
-        StringUtils.stringToInt(config.getString("import.log.maxSize"), DEFAULT_LOG_FILE_SIZE);
-
-
-    LOGGER.info(Version.VERSION_STRING);
-    LOGGER.info("config: import.log.name=" + logFile);
-    LOGGER.info("config: import.log.numFiles=" + logNumFiles);
-    LOGGER.info("config: import.log.maxSize=" + logSize);
-  }
 
   /**
    * Extracts generalised configuration information.
@@ -992,8 +976,8 @@ public class ImportEW extends Thread {
   }
 
   public static void main(final String[] args) throws IOException, JSAPException {
-    Log.addFileAppender("ImportEW.log");
     final JSAPResult config = getArguments(args);
+    Log.addFileAppender(new File(config.getString("log-dir"), "ImportEW.log").toString());
 
     if (!config.getBoolean("help")) {
       String configFileName = config.getString("configFilename");
