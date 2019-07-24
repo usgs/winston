@@ -9,6 +9,8 @@ package gov.usgs.volcanoes.winston.server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.martiansoftware.jsap.FlaggedOption;
+import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPResult;
 
 import gov.usgs.volcanoes.core.args.Args;
@@ -35,6 +37,9 @@ public class WWSArgs {
   /** if true be verbose */
   public final boolean isVerbose;
 
+  /** Where to place logs */
+  public final String logDir;
+
   /**
    * Class constructor.
    * 
@@ -47,6 +52,8 @@ public class WWSArgs {
     args = new Args(PROGRAM_NAME, EXPLANATION, null);
     args = new ConfigFileArg(DEFAULT_CONFIG_FILENAME, args);
     args = new VerboseArg(args);
+    args.registerParameter(new FlaggedOption("log-dir", JSAP.STRING_PARSER, ".",
+        JSAP.NOT_REQUIRED, JSAP.NO_SHORTFLAG, "log-dir", "where to place log files"));
 
     JSAPResult jsapResult = null;
     jsapResult = args.parse(commandLineArgs);
@@ -57,5 +64,7 @@ public class WWSArgs {
     configFileName = jsapResult.getString("config-filename");
     LOGGER.debug("Setting: config-filename={}", configFileName);
     
+    logDir = jsapResult.getString("log-dir");
+    LOGGER.debug("Setting: log-dir={}", logDir);
   }
 }

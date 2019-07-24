@@ -7,6 +7,7 @@ package gov.usgs.volcanoes.winston.server;
 
 
 import java.io.Console;
+import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -55,8 +56,8 @@ public class WWS {
    */
   public static void main(final String[] args) throws Exception {
 
-    Log.addFileAppender("WWS.log");
     final WWSArgs config = new WWSArgs(args);
+    Log.addFileAppender(new File(config.logDir, "WWSW.log").toString());
     final WWS wws = new WWS(config.configFileName);
 
     wws.launch();
