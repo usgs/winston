@@ -137,10 +137,13 @@ public class Admin {
         status = 1;
       }
     }
-
+    admin.close();
+    
     if (status != 0) {
       printUsage(status, cmd);
     }
+    
+    System.exit(0);
   }
 
   private static void printUsage(final int status, final String cmd) {
@@ -208,7 +211,14 @@ public class Admin {
     channels = new Channels(winston);
     input = new Input(winston);
   }
-
+  
+  /**
+   * Close winston connection
+   */
+  public void close() {
+    winston.close();
+  }
+  
   /**
    * Calculate table spans
    */
@@ -369,6 +379,7 @@ public class Admin {
   public void listChannels(final boolean times) {
     final List<Channel> st = channels.getChannels();
     for (final Channel ch : st) {
+      System.out.print("chan: " + ch);
       final String code = ch.scnl.toString();
       System.out.print(code);
       if (times) {
