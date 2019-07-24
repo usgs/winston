@@ -121,7 +121,10 @@ public final class RsamCommand extends HttpBaseCommand {
         throw new UtilException(e.getMessage());
       }
 
-      if (rsamData != null && rsamData.rows() > 0) {
+      if (rsamData == null)
+        throw new UtilException("No RSAM data for " + scnl + " " + startTime + "->" + endTime);
+      
+      if (rsamData.rows() > 0) {
         rsamData.adjustTime(timeZoneOffset);
 
         if (despike)
