@@ -96,7 +96,8 @@ public class WinstonDatabase {
       preparedStatements.clear();
       LOGGER.info("Connected to database.");
     } catch (final ClassNotFoundException e) {
-      throw new RuntimeException("Could not load the database driver, check your CLASSPATH. ({})", e);
+      throw new RuntimeException("Could not load the database driver, check your CLASSPATH. ({})",
+          e);
     } catch (final Exception e) {
       winstonConnection = null;
       winstonStatement = null;
@@ -201,15 +202,15 @@ public class WinstonDatabase {
 
   private void createTables() {
     try {
-      getStatement().execute("CREATE TABLE instruments (" + "iid INT PRIMARY KEY AUTO_INCREMENT,"
-          + "name VARCHAR(255) UNIQUE, " + "description VARCHAR(255), "
-          + "lon DOUBLE DEFAULT -999, " + "lat DOUBLE DEFAULT -999, "
-          + "height DOUBLE DEFAULT -999, " + "timezone VARCHAR(128)) " + tableEngine);
+      getStatement().execute("CREATE TABLE instruments (iid INT PRIMARY KEY AUTO_INCREMENT,"
+          + "name VARCHAR(250) UNIQUE, description VARCHAR(255), "
+          + "lon DOUBLE DEFAULT -999, lat DOUBLE DEFAULT -999, "
+          + "height DOUBLE DEFAULT -999, timezone VARCHAR(128)) " + tableEngine);
 
-      getStatement().execute("CREATE TABLE channels (" + "sid INT PRIMARY KEY AUTO_INCREMENT, "
-          + "iid INT, " + "code VARCHAR(50), " + "st DOUBLE, " + "et DOUBLE, "
-          + "alias VARCHAR(255), " + "unit VARCHAR(255), " + "linearA DOUBLE DEFAULT 1E300, "
-          + "linearB DOUBLE DEFAULT 1E300, "
+      getStatement().execute("CREATE TABLE channels (sid INT PRIMARY KEY AUTO_INCREMENT,"
+          + "iid INT, code VARCHAR(50), st DOUBLE, et DOUBLE,"
+          + " alias VARCHAR(255), unit VARCHAR(255), linearA DOUBLE DEFAULT 1E300 "
+          + " linearB DOUBLE DEFAULT 1E300, "
           + " UNIQUE KEY (code) "
           + " ) " + tableEngine);
 
@@ -225,8 +226,8 @@ public class WinstonDatabase {
       getStatement().execute("CREATE TABLE groupnodes (nid INT PRIMARY KEY AUTO_INCREMENT, "
           + "parent INT DEFAULT 0, " + "name CHAR(255), " + "open BOOL DEFAULT 0) " + tableEngine);
 
-      getStatement().execute("CREATE TABLE channelmetadata (" + "sid INT, " + "name VARCHAR(255), "
-          + "value TEXT, " + "PRIMARY KEY (sid, name)) " + tableEngine);
+      getStatement().execute("CREATE TABLE channelmetadata (sid INT, name VARCHAR(249),"
+          + " value TEXT, PRIMARY KEY (sid, name)) " + tableEngine);
 
       getStatement()
           .execute("CREATE TABLE instrumentmetadata (imid INT PRIMARY KEY AUTO_INCREMENT, "
