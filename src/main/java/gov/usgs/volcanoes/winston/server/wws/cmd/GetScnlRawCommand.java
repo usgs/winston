@@ -87,9 +87,9 @@ public class GetScnlRawCommand extends EwDataRequest {
     if (endTime < startTime) {
       errorString = hdrPreamble + " FB";
     } else if (endTime < timeSpan[0]) {
-      errorString = hdrPreamble + " FL s4";
+      errorString = hdrPreamble + " FL s4 " + Time.j2kToEw(timeSpan[0]);
     } else if (startTime > timeSpan[1]) {
-      errorString = hdrPreamble + " FR s4";
+      errorString = hdrPreamble + " FR s4 " + Time.j2kToEw(timeSpan[1]);
     }
 
     if (errorString != null) {
