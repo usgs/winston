@@ -75,7 +75,7 @@ public class WinstonTools extends JFrame {
 
     tabbedPane = new JTabbedPane(SwingConstants.LEFT);
     addPanel(new TimePanel());
-    addPanel(new ExportSACPanel());
+//    addPanel(new ExportSACPanel());
     addPanel(new PlotHelicorderPanel());
     addPanel(new ImportSACPanel());
     addPanel(new ImportSeedPanel());
