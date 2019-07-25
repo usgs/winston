@@ -116,6 +116,7 @@ public class WWS {
         WWS.printKeys();
       }
     }
+    System.exit(0);
   }
 
   private static void printKeys() {

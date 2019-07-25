@@ -936,14 +936,16 @@ public class ImportEW extends Thread {
         if (s != null) {
           s = s.toLowerCase().trim();
           if (s.equals("q")) {
+            acceptCommands = false;
             im.quit();
-            try {
-              im.join();
-            } catch (final Throwable e) {
-              LOGGER.error("Failed to quit cleanly. {}");
-            } finally {
-              im.printStatus();
-            }
+            // exit Importer quickly, don't wait to flush any pending writes
+//            try {
+//              im.join();
+//            } catch (final Throwable e) {
+//              LOGGER.error("Failed to quit cleanly. {}");
+//            } finally {
+//              im.printStatus();
+//            }
             System.exit(0);
           } else if (s.equals("s")) {
             im.printStatus();
