@@ -296,13 +296,13 @@ public class Data {
 
         if (buf[0] > last) {
           gaps.add(new TimeSpan(J2kSec.asEpoch(last), J2kSec.asEpoch(buf[0])));
-          LOGGER.info("gap1 {}", code);
-
         }
         last = buf[1];
+        LOGGER.info("last: {} :: {}", J2kSec.asEpoch(last), timeSpan.endTime);
       }
     }
 
+    
     if (last < endJ2k) {
       gaps.add(new TimeSpan(J2kSec.asEpoch(last), timeSpan.endTime));
       LOGGER.info("gap2 {}", code);
