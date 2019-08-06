@@ -303,6 +303,7 @@ public class WinstonDatabase {
     try {
       final ResultSet rs = getStatement().executeQuery(
           String.format("SELECT COUNT(*) FROM `%s_%s`.%s", databasePrefix, db, table));
+      LOGGER.info("TOMP SQL2: {}", String.format("SELECT COUNT(*) FROM `%s_%s`.%s", databasePrefix, db, table));
       final boolean result = rs.next();
       rs.close();
       return result;
