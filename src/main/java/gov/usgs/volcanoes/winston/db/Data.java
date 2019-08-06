@@ -291,6 +291,7 @@ public class Data {
 
       for (double[] buf : bufs) {
         if (startJ2k >= buf[1] || endJ2k <= buf[0]) {
+          LOGGER.info("{} >= {} || {} <= {}", startJ2k, buf[1], endJ2k, buf[0]);
           continue;
         }
 
@@ -301,7 +302,6 @@ public class Data {
         LOGGER.info("last: {} :: {}", J2kSec.asEpoch(last), timeSpan.endTime);
       }
     }
-
     
     if (last < endJ2k) {
       gaps.add(new TimeSpan(J2kSec.asEpoch(last), timeSpan.endTime));
