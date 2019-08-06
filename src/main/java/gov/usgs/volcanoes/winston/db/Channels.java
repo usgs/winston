@@ -352,23 +352,15 @@ public class Channels {
    * @return true if channel w/ code exists
    */
   public boolean channelExists(final String code) {
-    
-    Scnl scnl = null;
-    try {
-      scnl = Scnl.parse(code);
-    } catch (UtilException e1) {
-      LOGGER.error("Cannot parse channel {}", code);
-    }
-    
     if (!winston.checkConnect())
       return false;
 
     try {
       boolean result = false;
       winston.useRootDatabase();
-      LOGGER.info("SQL: SELECT sid FROM channels WHERE code='" + scnl.toString() + "'");
+      LOGGER.info("SQL: SELECT sid FROM channels WHERE code='" + code + "'");
       final ResultSet rs =
-          winston.getStatement().executeQuery("SELECT sid FROM channels WHERE code='" + scnl.toString() + "'");
+          winston.getStatement().executeQuery("SELECT sid FROM channels WHERE code='" + code + "'");
       result = rs.next();
       rs.close();
       return result;
