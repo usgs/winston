@@ -366,6 +366,7 @@ public class Channels {
     try {
       boolean result = false;
       winston.useRootDatabase();
+      LOGGER.info("SQL: SELECT sid FROM channels WHERE code='" + scnl.toString() + "'");
       final ResultSet rs =
           winston.getStatement().executeQuery("SELECT sid FROM channels WHERE code='" + scnl.toString() + "'");
       result = rs.next();
