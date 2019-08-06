@@ -179,20 +179,6 @@ public class ImportWS {
     totalInsertTime += ti;
   }
 
-  // private void parseTimeRange(final String timeRange) {
-  // try {
-  // final double[] tr = Time.parseTimeRange(timeRange);
-  // startTime = tr[0];
-  // endTime = tr[1];
-  // } catch (final Exception e) {
-  // throw new RuntimeException("Error parsing time range: " + e.getMessage());
-  // }
-  //
-  // LOGGER
-  // .info(String.format("Requested time range: [%s -> %s, %s]", J2kSec.toDateString(startTime),
-  // J2kSec.toDateString(endTime), Time.secondsToString(endTime - startTime)));
-  // }
-
   public void setWinston(final WinstonDatabase w) {
     winston = w;
   }
