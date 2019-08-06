@@ -301,7 +301,6 @@ public class WinstonDatabase {
 
   public boolean tableExists(final String db, final String table) {
     try {
-      LOGGER.info("TOMP SQL2: {}", String.format("SELECT COUNT(*) FROM `%s_%s`.%s", databasePrefix, db, table));
       final ResultSet rs = getStatement().executeQuery(
           String.format("SELECT COUNT(*) FROM `%s_%s`.%s", databasePrefix, db, table));
       final boolean result = rs.next();

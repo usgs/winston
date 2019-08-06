@@ -326,7 +326,6 @@ public class Data {
     }
     rs.close();
 
-    LOGGER.info("TOMP returning {} bufs", bufs.size());
     return bufs;
 
   }
