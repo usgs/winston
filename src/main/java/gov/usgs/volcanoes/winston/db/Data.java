@@ -268,6 +268,7 @@ public class Data {
 
     if (!winston.useDatabase(code)) {
       // database didn't exist so the whole thing must be a gap
+      LOGGER.debug("didn't find channel {}", code);
       gaps.add(timeSpan);
       return gaps;
     }
@@ -295,6 +296,8 @@ public class Data {
 
         if (buf[0] > last) {
           gaps.add(new TimeSpan(J2kSec.asEpoch(last), J2kSec.asEpoch(buf[0])));
+          LOGGER.debug("gap1 {}", code);
+
         }
         last = buf[1];
       }
@@ -302,6 +305,8 @@ public class Data {
 
     if (last < endJ2k) {
       gaps.add(new TimeSpan(J2kSec.asEpoch(last), timeSpan.endTime));
+      LOGGER.debug("gap2 {}", code);
+
     }
 
     return gaps;
