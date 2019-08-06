@@ -220,7 +220,7 @@ public class ImportWS {
             if (channels.channelExists(wc2)) {
               LOGGER.info("{} does exist", wc2);
             } else {
-              
+              LOGGER.info("{} doesn't exist either", wc2);
             }
             continue;
           }
