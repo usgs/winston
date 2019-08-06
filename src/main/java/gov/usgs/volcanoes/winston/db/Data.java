@@ -276,13 +276,11 @@ public class Data {
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     final List<String> days = daysBetween(timeSpan);
-    LOGGER.info("TOMP says hi!");
 
     double startJ2k = J2kSec.fromEpoch(timeSpan.startTime);
     double endJ2k = J2kSec.fromEpoch(timeSpan.endTime);
     double last = startJ2k;
     for (final String day : days) {
-      LOGGER.info("TOMP says day {}", day);
       List<double[]> bufs;
       try {
         bufs = getBufTimes(code, day);
@@ -322,7 +320,7 @@ public class Data {
     }
 
     String sql = String.format("SELECT st, et FROM `%s` ORDER BY st ASC", table);
-    LOGGER.info("TOMP " + sql);
+    LOGGER.info("TOMP SQL: " + sql);
 
     final ResultSet rs = winston.getStatement().executeQuery(sql);
     while (rs.next()) {
