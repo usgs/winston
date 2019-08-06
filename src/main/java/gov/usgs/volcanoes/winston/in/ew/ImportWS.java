@@ -325,7 +325,7 @@ public class ImportWS {
     if (config.getString("waveServer") != null)
       w.waveServer = new WaveServer(config.getString("waveServer"));
 
-    final boolean acceptCommands = !(config.getBoolean("noInput"));
+    final boolean acceptCommands = !(System.console() == null || config.getBoolean("noInput"));
 
     w.setRequestSCNL((config.getBoolean("SCNL")));
 
