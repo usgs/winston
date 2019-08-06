@@ -355,7 +355,7 @@ public class Channels {
     
     Scnl scnl = null;
     try {
-      scnl = Scnl.parse(code, "$");
+      scnl = Scnl.parse(code);
     } catch (UtilException e1) {
       LOGGER.error("Cannot parse channel {}", code);
     }

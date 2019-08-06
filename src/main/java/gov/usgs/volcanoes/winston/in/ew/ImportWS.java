@@ -214,9 +214,11 @@ public class ImportWS {
         if (item.match(ss[0], ss[1], ss[2], loc)) {
           final String wc = item.getSCNSCNL("$");
 
-          if (!createChannels && !channels.channelExists(wc))
+          if (!createChannels && !channels.channelExists(wc)) {
+            LOGGER.info("{} doesn't exist and I'm not creating channels.");
             continue;
-
+          }
+          
           LOGGER.info("Remote channel matched: {}", wc);
           final ImportWSJob job = new ImportWSJob(winston, waveServer, this);
           job.setChannel(wc);
