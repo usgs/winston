@@ -320,6 +320,8 @@ public class Data {
     }
 
     String sql = String.format("SELECT st, et FROM `%s` ORDER BY st ASC", table);
+    LOGGER.info("TOMP " + sql);
+
     final ResultSet rs = winston.getStatement().executeQuery(sql);
     while (rs.next()) {
       final double start = rs.getDouble(1);
@@ -328,6 +330,7 @@ public class Data {
     }
     rs.close();
 
+    LOGGER.info("TOMP returning {} bufs", bufs.size());
     return bufs;
 
   }
