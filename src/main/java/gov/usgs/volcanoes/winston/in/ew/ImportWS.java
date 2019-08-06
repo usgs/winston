@@ -205,7 +205,6 @@ public class ImportWS {
 
     final List<MenuItem> items = menu.getItems();
     for (final MenuItem item : items) {
-      LOGGER.info("checking channel {}", item);
       for (final String channel : sourceChannels) {
         final String[] ss = channel.split("[\\$\\_ ]");
         String loc = null;
@@ -216,7 +215,7 @@ public class ImportWS {
           final String wc = item.getSCNSCNL("$");
 
           if (!createChannels && !channels.channelExists(wc)) {
-            LOGGER.info("{} doesn't exist and I'm not creating channels.");
+            LOGGER.info("{} doesn't exist and I'm not creating channels.", wc);
             continue;
           }
           
