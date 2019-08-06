@@ -283,7 +283,8 @@ public class Data {
     for (final String day : days) {
       List<double[]> bufs;
       try {
-        bufs = getBufTimes(code, day);
+        String table = code + "$$" + day;
+        bufs = getBufTimes(code, table);
         LOGGER.info("TOMP zero bufs is a problem: {}", bufs.size());
       } catch (SQLException e) {
         LOGGER.error("Unable to read day table {}:{}", code, day);
