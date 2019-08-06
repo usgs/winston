@@ -216,12 +216,6 @@ public class ImportWS {
 
           if (!createChannels && !channels.channelExists(wc)) {
             LOGGER.info("{} doesn't exist and I'm not creating channels.", wc);
-            String wc2 = wc + "$--";
-            if (channels.channelExists(wc2)) {
-              LOGGER.info("{} does exist", wc2);
-            } else {
-              LOGGER.info("{} doesn't exist either", wc2);
-            }
             continue;
           }
           
