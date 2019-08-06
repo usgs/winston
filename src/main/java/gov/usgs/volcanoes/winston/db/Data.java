@@ -276,6 +276,7 @@ public class Data {
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy_MM_dd");
     dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
     final List<String> days = daysBetween(timeSpan);
+    LOGGER.info("TOMP says hi!");
 
     double startJ2k = J2kSec.fromEpoch(timeSpan.startTime);
     double endJ2k = J2kSec.fromEpoch(timeSpan.endTime);
