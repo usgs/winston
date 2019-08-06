@@ -285,7 +285,6 @@ public class Data {
       try {
         String table = code + "$$" + day;
         bufs = getBufTimes(code, table);
-        LOGGER.info("TOMP zero bufs is a problem: {}", bufs.size());
       } catch (SQLException e) {
         LOGGER.error("Unable to read day table {}:{}", code, day);
         bufs = new ArrayList<double[]>();
@@ -293,7 +292,6 @@ public class Data {
 
       for (double[] buf : bufs) {
         if (startJ2k >= buf[1] || endJ2k <= buf[0]) {
-          LOGGER.info("{} >= {} || {} <= {}", startJ2k, buf[1], endJ2k, buf[0]);
           continue;
         }
 
@@ -301,13 +299,11 @@ public class Data {
           gaps.add(new TimeSpan(J2kSec.asEpoch(last), J2kSec.asEpoch(buf[0])));
         }
         last = buf[1];
-        LOGGER.info("last: {} :: {}", J2kSec.asEpoch(last), timeSpan.endTime);
       }
     }
     
     if (last < endJ2k) {
       gaps.add(new TimeSpan(J2kSec.asEpoch(last), timeSpan.endTime));
-      LOGGER.info("gap2 {}", code);
 
     }
 
@@ -321,7 +317,6 @@ public class Data {
     }
 
     String sql = String.format("SELECT st, et FROM `%s` ORDER BY st ASC", table);
-    LOGGER.info("TOMP SQL: " + sql);
 
     final ResultSet rs = winston.getStatement().executeQuery(sql);
     while (rs.next()) {
