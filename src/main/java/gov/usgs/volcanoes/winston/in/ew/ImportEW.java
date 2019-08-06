@@ -939,13 +939,13 @@ public class ImportEW extends Thread {
             acceptCommands = false;
             im.quit();
             // exit Importer quickly, don't wait to flush any pending writes
-//            try {
-//              im.join();
-//            } catch (final Throwable e) {
-//              LOGGER.error("Failed to quit cleanly. {}");
-//            } finally {
-//              im.printStatus();
-//            }
+            // try {
+            // im.join();
+            // } catch (final Throwable e) {
+            // LOGGER.error("Failed to quit cleanly. {}");
+            // } finally {
+            // im.printStatus();
+            // }
             System.exit(0);
           } else if (s.equals("s")) {
             im.printStatus();
@@ -988,8 +988,11 @@ public class ImportEW extends Thread {
 
       im.start();
 
-      if (!(config.getBoolean("noinput")))
+      if (!(System.console() == null || config.getBoolean("noinput"))) {
         consoleInputManager(im);
+      } else {
+        LOGGER.info("Not listening for console commands.");
+      }
     }
   }
 }

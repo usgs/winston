@@ -2,6 +2,7 @@ package gov.usgs.volcanoes.winston.db;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,7 +17,6 @@ import gov.usgs.volcanoes.core.data.Scnl;
 import gov.usgs.volcanoes.core.time.J2kSec;
 import gov.usgs.volcanoes.core.time.Time;
 import gov.usgs.volcanoes.core.time.TimeSpan;
-import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.core.util.UtilException;
 import gov.usgs.volcanoes.winston.Channel;
 import gov.usgs.volcanoes.winston.GroupNode;
@@ -354,6 +354,7 @@ public class Channels {
   public boolean channelExists(final String code) {
     if (!winston.checkConnect())
       return false;
+
     try {
       boolean result = false;
       winston.useRootDatabase();
@@ -362,7 +363,7 @@ public class Channels {
       result = rs.next();
       rs.close();
       return result;
-    } catch (final Exception e) {
+    } catch (final SQLException e) {
       LOGGER.error("Could not determine channel existence.");
     }
     return false;

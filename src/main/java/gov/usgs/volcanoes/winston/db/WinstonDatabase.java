@@ -306,7 +306,8 @@ public class WinstonDatabase {
       final boolean result = rs.next();
       rs.close();
       return result;
-    } catch (final Exception e) {
+    } catch (final SQLException e) {
+      LOGGER.info("SQLException: {}", e.getMessage());
     }
     return false;
   }

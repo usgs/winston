@@ -268,6 +268,7 @@ public class Data {
 
     if (!winston.useDatabase(code)) {
       // database didn't exist so the whole thing must be a gap
+      LOGGER.info("didn't find channel {}", code);
       gaps.add(timeSpan);
       return gaps;
     }
@@ -282,7 +283,8 @@ public class Data {
     for (final String day : days) {
       List<double[]> bufs;
       try {
-        bufs = getBufTimes(code, day);
+        String table = code + "$$" + day;
+        bufs = getBufTimes(code, table);
       } catch (SQLException e) {
         LOGGER.error("Unable to read day table {}:{}", code, day);
         bufs = new ArrayList<double[]>();
@@ -299,9 +301,10 @@ public class Data {
         last = buf[1];
       }
     }
-
+    
     if (last < endJ2k) {
       gaps.add(new TimeSpan(J2kSec.asEpoch(last), timeSpan.endTime));
+
     }
 
     return gaps;
@@ -314,6 +317,7 @@ public class Data {
     }
 
     String sql = String.format("SELECT st, et FROM `%s` ORDER BY st ASC", table);
+
     final ResultSet rs = winston.getStatement().executeQuery(sql);
     while (rs.next()) {
       final double start = rs.getDouble(1);
