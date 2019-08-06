@@ -205,6 +205,7 @@ public class ImportWS {
 
     final List<MenuItem> items = menu.getItems();
     for (final MenuItem item : items) {
+      LOGGER.info("checking channel {}", item);
       for (final String channel : sourceChannels) {
         final String[] ss = channel.split("[\\$\\_ ]");
         String loc = null;
