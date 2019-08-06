@@ -284,6 +284,7 @@ public class Data {
       List<double[]> bufs;
       try {
         bufs = getBufTimes(code, day);
+        LOGGER.info("Got {} bufs", bufs.size());
       } catch (SQLException e) {
         LOGGER.error("Unable to read day table {}:{}", code, day);
         bufs = new ArrayList<double[]>();
