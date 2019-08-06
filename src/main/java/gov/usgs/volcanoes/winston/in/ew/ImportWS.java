@@ -219,6 +219,10 @@ public class ImportWS {
             continue;
           }
           
+          if (channels.channelExists(wc + "$--")) {
+            LOGGER.info("{} does exist", (wc + "$--"));
+          }
+          
           LOGGER.info("Remote channel matched: {}", wc);
           final ImportWSJob job = new ImportWSJob(winston, waveServer, this);
           job.setChannel(wc);
