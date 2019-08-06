@@ -282,6 +282,7 @@ public class Data {
     double endJ2k = J2kSec.fromEpoch(timeSpan.endTime);
     double last = startJ2k;
     for (final String day : days) {
+      LOGGER.info("TOMP says day {}", day);
       List<double[]> bufs;
       try {
         bufs = getBufTimes(code, day);
