@@ -322,6 +322,8 @@ public class ImportWS {
       return;
     }
     
+    LOGGER.info("Pushing metrics to {}", pushGateway);
+    
     Counter.build().name("totalInserted").help("Tracebufs inserted.").register(registry)
         .inc(totalInserted);
 
