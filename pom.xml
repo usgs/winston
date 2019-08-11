@@ -4,7 +4,7 @@
 
 	<groupId>gov.usgs.volcanoes</groupId>
 	<artifactId>winston</artifactId>
-	<version>1.3.10</version>
+	<version>1.3.11</version>
 	<packaging>jar</packaging>
 
 	<name>Winston</name>
@@ -260,7 +260,7 @@
 									<include>io.netty:netty-all</include>
 									<include>org.apache.commons:commons-pool2</include>
 									<include>commons-io:commons-io</include>
-									<include>io.prometheus:simpleclient_pushgateway</include>
+									<include>io.prometheus:*</include>
 								</includes>
 							</artifactSet>
 						</configuration>
