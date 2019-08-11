@@ -185,6 +185,7 @@ public class ImportWS {
     LOGGER.info("rsamDuration: {}", rsamDuration);
 
     pushGateway = StringUtils.stringToString(config.getString("pushGateway"), DEFAULT_PUSHGATEWAY);
+    LOGGER.info("pushGateway: {}", pushGateway);
   }
 
   public void addStats(final int t, final double td, final double ti) {
