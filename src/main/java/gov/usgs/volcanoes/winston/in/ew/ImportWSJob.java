@@ -17,6 +17,7 @@ import gov.usgs.volcanoes.core.time.TimeSpan;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.InputEW;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
+import io.prometheus.client.CollectorRegistry;
 
 /**
  * If a span is added to the job it is an explicit guarantee that there is
