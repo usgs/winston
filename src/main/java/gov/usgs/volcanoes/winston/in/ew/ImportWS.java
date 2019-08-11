@@ -29,6 +29,7 @@ import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
 import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Counter;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.PushGateway;
 
@@ -70,11 +71,12 @@ public class ImportWS {
 
   private double chunkSize;
   private int chunkDelay;
-  
+
   private String pushGateway;
   private final CollectorRegistry registry;
   private final Gauge.Timer durationTimer;
-  
+
+
   private boolean rsamEnable;
   private int rsamDelta;
   private int rsamDuration;
@@ -112,7 +114,8 @@ public class ImportWS {
     appTimer = new CodeTimer("application");
     registry = new CollectorRegistry();
     Gauge duration = Gauge.build()
-        .name("importws_duration_seconds").help("Duration of ImportWS run in seconds.").register(registry);
+        .name("importws_duration_seconds").help("Duration of ImportWS run in seconds.")
+        .register(registry);
     durationTimer = duration.startTimer();
   }
 
@@ -229,8 +232,8 @@ public class ImportWS {
             LOGGER.info("{} doesn't exist and I'm not creating channels.", wc);
             continue;
           }
-          
-          
+
+
           LOGGER.info("Remote channel matched: {}", wc);
           final ImportWSJob job = new ImportWSJob(winston, waveServer, this);
           job.setChannel(wc);
@@ -315,21 +318,33 @@ public class ImportWS {
   }
 
   private void pushMetrics() {
-      Gauge lastSuccess = Gauge.build()
-          .name("importws_last_success").help("Last time ImportWS succeeded, in unixtime.").register(registry);
-      lastSuccess.setToCurrentTime();
-      durationTimer.setDuration();
-      PushGateway pg = new PushGateway(pushGateway);
-      try {
-        pg.pushAdd(registry, "ImportWS");
-      } catch (IOException e) {
-        LOGGER.error("Unable to push metrics to {}: {}", pushGateway, e.getMessage());
-        e.printStackTrace();
-      }
+    Counter.build().name("totalInserted").help("Tracebufs inserted.").register(registry)
+        .inc(totalInserted);
+
+    Counter.build().name("totalDownloadTime").help("Total Download Time.").register(registry)
+        .inc(totalDownloadTime);
+
+    Counter.build().name("totalInsertTime").help("Total Insert Time.").register(registry)
+        .inc(totalInsertTime);
+
+    Gauge.build().name("importws_last_success").help("Last time ImportWS succeeded, in unixtime.")
+        .register(registry).setToCurrentTime();
+
+    durationTimer.setDuration();
+
+    PushGateway pg = new PushGateway(pushGateway);
+
+    try {
+      pg.pushAdd(registry, "ImportWS");
+    } catch (IOException e) {
+      LOGGER.error("Unable to push metrics to {}: {}", pushGateway, e.getMessage());
+      e.printStackTrace();
     }
-  
-  
-  public static void main(final String[] args) throws IOException, JSAPException, ParseException, InterruptedException {
+  }
+
+
+  public static void main(final String[] args)
+      throws IOException, JSAPException, ParseException, InterruptedException {
     final JSAPResult config = getArguments(args);
     final ImportWS w = new ImportWS(config.getString("configFilename"));
 
@@ -346,9 +361,7 @@ public class ImportWS {
 
     w.createJobs();
     w.go();
-    
-    
-    
+    w.pushMetrics();
     System.exit(0);
   }
 }
