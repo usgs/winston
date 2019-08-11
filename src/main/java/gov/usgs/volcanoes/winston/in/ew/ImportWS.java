@@ -318,6 +318,10 @@ public class ImportWS {
   }
 
   private void pushMetrics() {
+    if (pushGateway == null) {
+      return;
+    }
+    
     Counter.build().name("totalInserted").help("Tracebufs inserted.").register(registry)
         .inc(totalInserted);
 
