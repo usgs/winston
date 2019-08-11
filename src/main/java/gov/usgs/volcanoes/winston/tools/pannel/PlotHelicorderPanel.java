@@ -336,7 +336,6 @@ public class PlotHelicorderPanel extends WinstonToolsRunnablePanel {
     }
 
     if (heliData.rows() > 0) {
-      System.out.println("TOMP ALSO SAYS: " + heliData.getData());
       Plot plot = plot(heliData);
 
       System.out.print("writing ");

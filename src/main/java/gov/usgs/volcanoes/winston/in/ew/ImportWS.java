@@ -190,20 +190,6 @@ public class ImportWS {
     totalInsertTime += ti;
   }
 
-  // private void parseTimeRange(final String timeRange) {
-  // try {
-  // final double[] tr = Time.parseTimeRange(timeRange);
-  // startTime = tr[0];
-  // endTime = tr[1];
-  // } catch (final Exception e) {
-  // throw new RuntimeException("Error parsing time range: " + e.getMessage());
-  // }
-  //
-  // LOGGER
-  // .info(String.format("Requested time range: [%s -> %s, %s]", J2kSec.toDateString(startTime),
-  // J2kSec.toDateString(endTime), Time.secondsToString(endTime - startTime)));
-  // }
-
   public void setWinston(final WinstonDatabase w) {
     winston = w;
   }
@@ -239,9 +225,12 @@ public class ImportWS {
         if (item.match(ss[0], ss[1], ss[2], loc)) {
           final String wc = item.getSCNSCNL("$");
 
-          if (!createChannels && !channels.channelExists(wc))
+          if (!createChannels && !channels.channelExists(wc)) {
+            LOGGER.info("{} doesn't exist and I'm not creating channels.", wc);
             continue;
-
+          }
+          
+          
           LOGGER.info("Remote channel matched: {}", wc);
           final ImportWSJob job = new ImportWSJob(winston, waveServer, this);
           job.setChannel(wc);
@@ -351,7 +340,7 @@ public class ImportWS {
     if (config.getString("waveServer") != null)
       w.waveServer = new WaveServer(config.getString("waveServer"));
 
-    final boolean acceptCommands = !(config.getBoolean("noInput"));
+    final boolean acceptCommands = !(System.console() == null || config.getBoolean("noInput"));
 
     w.setRequestSCNL((config.getBoolean("SCNL")));
 
