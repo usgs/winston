@@ -1,8 +1,6 @@
 package gov.usgs.volcanoes.winston.in.ew;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +28,9 @@ import gov.usgs.volcanoes.core.util.StringUtils;
 import gov.usgs.volcanoes.winston.db.Channels;
 import gov.usgs.volcanoes.winston.db.Data;
 import gov.usgs.volcanoes.winston.db.WinstonDatabase;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.Gauge;
+import io.prometheus.client.exporter.PushGateway;
 
 /**
  *
@@ -41,6 +42,7 @@ public class ImportWS {
   private static final String DEFAULT_CONFIG_FILENAME = "ImportWS.config";
   private static final double DEFAULT_CHUNK_SIZE = 600.0;
   private static final int DEFAULT_CHUNK_DELAY = 500;
+  private static final String DEFAULT_PUSHGATEWAY = null;
 
   private static final boolean DEFAULT_RSAM_ENABLE = true;
   private static final int DEFAULT_RSAM_DELTA = 10;
@@ -68,7 +70,11 @@ public class ImportWS {
 
   private double chunkSize;
   private int chunkDelay;
-
+  
+  private String pushGateway;
+  private final CollectorRegistry registry;
+  private final Gauge.Timer durationTimer;
+  
   private boolean rsamEnable;
   private int rsamDelta;
   private int rsamDuration;
@@ -104,6 +110,10 @@ public class ImportWS {
 
   public ImportWS() {
     appTimer = new CodeTimer("application");
+    registry = new CollectorRegistry();
+    Gauge duration = Gauge.build()
+        .name("importws_duration_seconds").help("Duration of ImportWS run in seconds.").register(registry);
+    durationTimer = duration.startTimer();
   }
 
   public ImportWS(final String fileName) throws ParseException {
@@ -170,7 +180,8 @@ public class ImportWS {
     rsamDuration =
         StringUtils.stringToInt(config.getString("rsam.duration"), DEFAULT_RSAM_DURATION);
     LOGGER.info("rsamDuration: {}", rsamDuration);
-    // TODO: log level
+
+    pushGateway = StringUtils.stringToString(config.getString("pushGateway"), DEFAULT_PUSHGATEWAY);
   }
 
   public void addStats(final int t, final double td, final double ti) {
@@ -314,6 +325,21 @@ public class ImportWS {
     quit = b;
   }
 
+  private void pushMetrics() {
+      Gauge lastSuccess = Gauge.build()
+          .name("importws_last_success").help("Last time ImportWS succeeded, in unixtime.").register(registry);
+      lastSuccess.setToCurrentTime();
+      durationTimer.setDuration();
+      PushGateway pg = new PushGateway(pushGateway);
+      try {
+        pg.pushAdd(registry, "ImportWS");
+      } catch (IOException e) {
+        LOGGER.error("Unable to push metrics to {}: {}", pushGateway, e.getMessage());
+        e.printStackTrace();
+      }
+    }
+  
+  
   public static void main(final String[] args) throws IOException, JSAPException, ParseException, InterruptedException {
     final JSAPResult config = getArguments(args);
     final ImportWS w = new ImportWS(config.getString("configFilename"));
@@ -331,6 +357,9 @@ public class ImportWS {
 
     w.createJobs();
     w.go();
+    
+    
+    
     System.exit(0);
   }
 }
