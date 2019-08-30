@@ -209,7 +209,7 @@ public class WinstonDatabase {
 
       getStatement().execute("CREATE TABLE channels (sid INT PRIMARY KEY AUTO_INCREMENT,"
           + "iid INT, code VARCHAR(50), st DOUBLE, et DOUBLE,"
-          + " alias VARCHAR(255), unit VARCHAR(255), linearA DOUBLE DEFAULT 1E300 "
+          + " alias VARCHAR(255), unit VARCHAR(255), linearA DOUBLE DEFAULT 1E300, "
           + " linearB DOUBLE DEFAULT 1E300, "
           + " UNIQUE KEY (code) "
           + " ) " + tableEngine);
